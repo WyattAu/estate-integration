@@ -1,0 +1,63 @@
+[package]
+name = "estate-integration"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "Cross-crate dogfooding suite proving the WyattAu crate estate composes the way real users combine it"
+repository = "https://github.com/WyattAu/estate-integration"
+keywords = ["integration", "testing", "axum", "jwt", "email"]
+categories = ["development-tools::testing"]
+publish = false
+exclude = ["target/"]
+
+[dependencies]
+# --- WyattAu estate crates -------------------------------------------------
+# Pinned to exact published versions: these tests verify that the released
+# artifacts interoperate, so every failure is attributable to a real drift
+# between crates, not to a moving dependency.
+salting = "=1.2.1"
+tokenkit = { version = "=0.4.0", features = ["revocation", "rotation"] }
+validkit = "=1.3.0"
+barbican = "=0.2.1"
+breaker = { version = "=2.0.0", features = ["tower", "timeout"] }
+healthkit = { version = "=1.2.0", features = ["axum"] }
+throttle-kit = { version = "=1.1.1", features = ["in-memory", "tower"] }
+otelkit = "=2.0.2"
+mailkit = { version = "=0.3.0", features = ["resend", "sendgrid"] }
+sieve-kit = "=0.2.1"
+media-kit = "=0.2.1"
+blobkit = { version = "=0.4.1", features = ["memory", "std", "serde"] }
+cas-kit = { version = "=0.2.1", features = ["tokio"] }
+mail-sync-kit = "=0.1.0"
+eventbus-kit = { version = "=0.3.5", features = ["sqlite"] }
+resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
+retry-backoff = "=0.2.0"
+
+# --- plumbing ---------------------------------------------------------------
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = { version = "0.8", features = ["ws"] }
+bytes = "1"
+chrono = "0.4"
+futures = "0.3"
+tower = { version = "0.5", features = ["util"] }
+async-trait = "0.1"
+tracing = "0.1"
+reqwest = { version = "0.12", features = ["json"] }
+uuid = { version = "1", features = ["v7"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+
+[dev-dependencies]
+wiremock = "0.6"
+tempfile = "3"
+
+[workspace]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "warn"
