@@ -8,7 +8,10 @@ jobs:
   quality:
     uses: WyattAu/engineering-standards/.github/workflows/rust-kit.yml@main
     with:
-      tier: a
+      # Tier c: integration-suite repo (bins/examples only, never published).
+      # check/clippy/fmt/deny/test still gate; coverage is informational —
+      # the suites exercise published crates, not lines in this repo.
+      tier: c
       all-features: true
       loom: false
       wasm: false
