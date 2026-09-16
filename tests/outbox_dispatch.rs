@@ -250,13 +250,61 @@ async fn open_breaker_pauses_dispatch_without_burning_attempts() {
         "exactly max_attempts sends before parking"
     );
 
-    // Ride out most of the open window: polls keep firing but the sender
-    // must stay silent — the breaker, not the retry budget, owns the wait.
+    // Silence during the open window must be attributable to the breaker,
+    // not to the event being parked: re-arm the parked event as due
+    // *now*, then ride out most of the 400 ms open window. Polls keep
+    // firing on a due event, but the sender must not be invoked —
+    // and the attempt budget must not move.
+    store
+        .mark_failed(
+            &event.id,
+            "re-arm while breaker is open",
+            outbox_kit::now_millis(),
+        )
+        .await
+        .expect("re-arm");
+    let due = store.fetch_due(10, u64::MAX).await.expect("fetch_due");
+    assert_eq!(due.len(), 1, "the re-armed event is due again");
+    let attempts_on_rearm = due.first().expect("re-armed event").attempts;
     tokio::time::sleep(Duration::from_millis(150)).await;
+    assert_eq!(
+        dispatcher.breaker_state(),
+        breaker::State::Open,
+        "breaker must still be open inside its cooldown"
+    );
     assert_eq!(
         calls.load(Ordering::Relaxed),
         sends_at_park,
         "an open breaker must pause dispatching entirely"
+    );
+    let still_due = store.fetch_due(10, u64::MAX).await.expect("fetch_due");
+    assert_eq!(still_due.len(), 1, "the event stays due while paused");
+    assert_eq!(
+        still_due.first().map(|ev| ev.attempts),
+        Some(attempts_on_rearm),
+        "paused dispatches must not consume attempt budget"
+    );
+
+    // After the cooldown a half-open probe is admitted — proving the
+    // silence above was the breaker's pause, not lost dispatch work. The
+    // probe fails (the sender still fails) and re-trips the circuit.
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
+    while calls.load(Ordering::Relaxed) <= sends_at_park {
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "half-open probe never admitted a call"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert_eq!(
+        calls.load(Ordering::Relaxed),
+        sends_at_park + 1,
+        "exactly one half-open probe (excess calls are rejected)"
+    );
+    assert_eq!(
+        store.parked_count().await.expect("parked"),
+        1,
+        "the failed probe re-parks the event"
     );
 
     dispatcher.shutdown();

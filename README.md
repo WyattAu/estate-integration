@@ -129,6 +129,14 @@ Dogfooding notes filed back to the estate (pinned in test comments):
 
 Round-3 notes (the 2026-09-16 kit wave):
 
+- **outbox-kit 0.1.0 × breaker `timeout` feature cannot coexist in one
+  graph.** outbox-kit's dispatcher matches `CircuitBreakerError` without
+  a `Timeout`/wildcard arm, while breaker exposes `Timeout` behind the
+  additive `timeout` feature — so any host that enables `timeout`
+  anywhere fails to compile outbox-kit's `dispatch` feature (Cargo
+  feature unification is graph-wide). This repo dropped the feature it
+  previously enabled; outbox-kit should either match exhaustively with a
+  wildcard or the variant should not be feature-gated.
 - outbox-kit 0.1.0's `MemoryStore` keeps dispatched events as bare ids
   (`mark_dispatched` drops the envelope), so a host cannot ask "how many
   attempts did event X take" after success — the suite records attempts
