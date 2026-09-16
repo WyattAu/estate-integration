@@ -5,6 +5,35 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
 
 ## [Unreleased]
 
+### Added
+- Round-3 dogfooding suites for the 2026-09-16 kit wave (all exact-pinned
+  at their published 0.1.0):
+  - `tests/config_secrets.rs`: config-kit layered load (file → env →
+    override precedence), `Sensitive<T>` redaction through `Debug`/
+    `Display`, `load_strict` unknown-key denial.
+  - `tests/idempotent_webhook.rs`: webhookkit HMAC/Stripe verification →
+    idempotency-kit claim (First/Replay/release-and-retry).
+  - `tests/outbox_dispatch.rs`: outbox-kit dispatcher with a flaky sender
+    — breaker trip, open-circuit pause without attempt burn, half-open
+    probe recovery, 5/5 dispatched, shutdown < 2 s.
+  - `tests/percentile_report.rs`: tracker quantiles vs sorted reference,
+    markdown snapshot, criterion fixture + committed budgets PASS and
+    typed `BudgetExceeded` FAIL.
+  - `tests/chaos_resilience.rs`: chaos-kit tower layer over axum with a
+    seeded throttle/error schedule; 100 requests match the schedule
+    exactly; same-seed reproduction; paused-clock latency fault.
+  - `tests/metrics_scrape.rs`: healthkit checks driving a metrics-kit
+    registry, rendered and validated as Prometheus 0.0.4 by an inline
+    parser.
+
+### Changed
+- breaker pin 2.0.0 → 2.0.1 (test-only release over 2.0.0; current exact
+  pin — the round-3 outbox suite configures the dispatcher's breaker with
+  breaker 2.0.1's own `CircuitBreakerConfig`/`BackoffStrategy` types).
+- New dependencies (exact-pinned estate kits): config-kit, idempotency-kit,
+  outbox-kit, percentile-kit, chaos-kit, metrics-kit, webhookkit; dev-deps
+  `hmac`/`sha2` to compute the webhook signatures webhookkit verifies.
+
 ## [0.1.0] - 2026-09-12
 
 ### Added

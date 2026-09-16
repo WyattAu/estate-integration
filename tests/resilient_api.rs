@@ -271,11 +271,7 @@ async fn breaker_tower_layer_opens_against_failing_upstream() {
         let result = svc.ready().await.expect("ready").call(()).await;
         match result {
             Err(CircuitBreakerError::CircuitOpen) => opens += 1,
-            Err(
-                CircuitBreakerError::Failure(_)
-                | CircuitBreakerError::Rejected
-                | CircuitBreakerError::Timeout,
-            ) => {}
+            Err(CircuitBreakerError::Failure(_) | CircuitBreakerError::Rejected) => {}
             Ok(_) => panic!("upstream always 500s"),
         }
     }

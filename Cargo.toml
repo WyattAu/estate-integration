@@ -20,7 +20,12 @@ salting = "=1.2.1"
 tokenkit = { version = "=0.4.0", features = ["revocation", "rotation"] }
 validkit = "=1.3.0"
 barbican = "=0.2.1"
-breaker = { version = "=2.0.0", features = ["tower", "timeout"] }
+# 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
+# NOTE: the `timeout` feature is deliberately OFF — see tests/outbox_dispatch.rs
+# and the README findings: outbox-kit 0.1.0's dispatcher match on
+# `CircuitBreakerError` has no `Timeout` arm, so enabling breaker's additive
+# `timeout` feature anywhere in the graph breaks outbox-kit's build.
+breaker = { version = "=2.0.1", features = ["tower"] }
 healthkit = { version = "=1.2.0", features = ["axum"] }
 throttle-kit = { version = "=1.1.1", features = ["in-memory", "tower"] }
 otelkit = "=2.0.2"
@@ -33,6 +38,16 @@ mail-sync-kit = "=0.1.0"
 eventbus-kit = { version = "=0.3.5", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
 retry-backoff = "=0.2.0"
+
+# --- round 3: dogfooding the 2026-09-16 kit wave -----------------------------
+# Each pin names the suite that exercises it (tests/).
+config-kit = "=0.1.0"                        # tests/config_secrets.rs
+idempotency-kit = "=0.1.0"                   # tests/idempotent_webhook.rs (default: memory)
+outbox-kit = "=0.1.0"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
+percentile-kit = "=0.1.0"                    # tests/percentile_report.rs (default: tracker+report)
+chaos-kit = "=0.1.0"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
+metrics-kit = "=0.1.0"                       # tests/metrics_scrape.rs
+webhookkit = "=2.0.0"                        # tests/idempotent_webhook.rs
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
@@ -52,6 +67,14 @@ image = { version = "0.25", default-features = false, features = ["jpeg", "png"]
 [dev-dependencies]
 wiremock = "0.6"
 tempfile = "3"
+# tests/idempotent_webhook.rs: locally compute the HMAC-SHA256 signatures
+# webhookkit then verifies (the same crates webhookkit 2.0.0 builds on).
+hmac = "0.12"
+sha2 = "0.10"
+# tests/config_secrets.rs: builds the `overrides` layer values
+# (BTreeMap<String, toml::Value>) config-kit's ConfigLayer::overrides takes.
+# Same major as config-kit 0.1.0's own toml, so the graphs unify.
+toml = "1"
 
 [workspace]
 
