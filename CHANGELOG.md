@@ -47,6 +47,10 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
     parser.
 
 ### Changed
+- CI: adopt the org-level `cargo vet` gate — the shared rust-kit workflow
+  gained an unconditional `vet` job after round 3; the store is
+  bootstrapped with `cargo vet init` (current lockfile as the vetted
+  baseline, 435 locked crates), `cargo vet --locked` green locally.
 - breaker pin 2.0.0 → 2.0.1 (test-only release over 2.0.0; current exact
   pin — the round-3 outbox suite configures the dispatcher's breaker with
   breaker 2.0.1's own `CircuitBreakerConfig`/`BackoffStrategy` types).
