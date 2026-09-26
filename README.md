@@ -69,6 +69,35 @@ real running system (`tests/` proves it, `examples/` shows it).
   scrape     │ healthkit checks ──► metrics-kit registry ──►        │
             │  Prometheus 0.0.4 exposition (inline naive parser)   │
             └──────────────────┴───────────────────────────────────┘
+            ┌──────────────────┬───────────────────────────────────┐
+            │  telemetry-boot  │  worker-supervisor-drain          │
+            │                  │                                   │
+            │  bootstrap       │  Telemetry::init(metrics budget)  │
+            │                  │  gives the metrics-kit Arc        │
+            │                  │  counter/gauge/histogram render,  │
+            │                  │  then an inline parser            │
+            │                  │  validates Prometheus 0.0.4: TYPE │
+            │                  │  lines, cumulative                │
+            │                  │  buckets, +Inf == _count, _sum    │
+            │                  │  exact                            │
+            │                  │  double-init = typed              │
+            │                  │  AlreadyInitialized; shutdown     │
+            │                  │  idempotent; RUST_LOG beats the   │
+            │                  │  configured level                 │
+            │                  │                                   │
+            │  3 jobs          │  fast-succeeding / slow-overrun   │
+            │                  │  coalesced /                      │
+            │  + drain         │  failing-past-budget = Degraded;  │
+            │                  │  shared                           │
+            │                  │  ShutdownGuard, drain < 2 s,      │
+            │                  │  RunReport exact                  │
+            │                  │                                   │
+            │  leader +        │  no lease = MemoryLease fires;    │
+            │                  │  denied lease =                   │
+            │  jitter          │  skips, never failures; same      │
+            │                  │  seeds, same                      │
+            │                  │  first-fire windows               │
+            └──────────────────┴───────────────────────────────────┘
 
 Hermetic CI: tempdirs, wiremock, in-process SQLite. No cloud credentials,
 no external network.
@@ -89,6 +118,8 @@ no external network.
 | `tests/percentile_report.rs` | tracker quantiles equal the sorted `nearest_rank` reference and are monotone; markdown row snapshot; criterion-shaped `estimates.json`/`sample.json` fixture gated to PASS, then to a typed `BudgetExceeded` FAIL; budget TOML rejects typo'd keys | percentile-kit 0.1.0 |
 | `tests/chaos_resilience.rs` | axum service under `chaos_layer` (seeded 30 % throttle + scripted error at index 7); 100 requests match the precomputed schedule exactly; recorder counts exact; same seed reproduces bit-for-bit; paused-clock latency fault | chaos-kit 0.1.0 (+ axum/tower) |
 | `tests/metrics_scrape.rs` | healthkit checks drive a metrics-kit registry (per-method counter, inflight gauge, duration histogram); rendered registry validated as Prometheus 0.0.4 by an inline parser: TYPE lines, cumulative buckets, `+Inf` == `_count`, `_sum` consistent | metrics-kit 0.1.0, healthkit 1.2.0 |
+| `tests/telemetry_bootstrap.rs` | one-call bootstrap: the configured metrics budget caps registration through `Telemetry::metrics()`; labeled counter + gauge + histogram render a valid Prometheus 0.0.4 exposition (inline parser); double init is the typed `AlreadyInitialized`, `shutdown` is idempotent, and `RUST_LOG` overrides the configured directive (asserted via `build_subscriber` + `max_level_hint`) | telemetry-init 0.1.0, metrics-kit 0.1.0 |
+| `tests/worker_supervisor_drain.rs` | three jobs (fast-succeeding; slow-overrun that coalesces instead of stacking; always-failing rollup that turns `Degraded` at its failure budget and keeps running) run on the shared shutdown-kit `ShutdownGuard`, drain < 2 s, and the name-ordered `RunReport` is exact; default no-lease leadership fires (`MemoryLease` always wins) while a never-winning host lease records skips — never failures; same-seed jitter windows identical across supervisors | worker-kit 0.1.0 (no default features — see round-4 findings), shutdown-kit 0.3.0 |
 
 ## Run
 
@@ -111,6 +142,9 @@ flow (state transitions, counters, rendered artifacts), never just that
 an API call returned. Round-3 suites add: deterministic chaos asserted
 against a precomputed schedule, and scrapes validated by an inline
 format parser — no new network dependencies beyond the estate kits.
+Round-4 suites add: telemetry bootstraps validated at the exposition
+level, and a supervisor flow reported exactly (fires/failures/`Degraded`)
+with a sub-2-second drain — leadership exercised in-process, no Redis.
 
 ## Integration findings
 
@@ -163,3 +197,49 @@ Round-3 notes (the 2026-09-16 kit wave):
   per budgeted bench (P99 budgets are optional only when `sample.json` is
   missing) — hosts gating raw samples without criterion bootstrap output
   cannot use the gate as-is.
+
+Round-4 notes (the 2026-09-25 wave — telemetry-init, worker-kit):
+
+- **worker-kit 0.1.0's manifest re-arms the breaker × `timeout` graph
+  conflict that round 3 documented for outbox-kit.** worker-kit pins
+  breaker with `features = ["timeout"]` on its breaker dependency, so
+  the feature unifies graph-wide into every host that also pulls
+  outbox-kit 0.1.0 — and outbox-kit's `Dispatcher::process`
+  (`src/dispatch.rs:247–271`) matches `CircuitBreakerError` without a
+  `Timeout`/wildcard arm: the composition fails with E0004
+  (`non-exhaustive patterns: Err(CircuitBreakerError::Timeout) not
+  covered`; reproduced in this repo before working around it).
+  worker-kit's own runner is already hardened —
+  `JobRunner::invoke_through_breaker` (`src/runner.rs:333–341`) carries
+  a wildcard arm whose comment cites "the outbox-kit 0.1.0 regression
+  class" — but the manifest choice ships the same bomb to hosts. Ask:
+  drop the explicit `timeout` feature from worker-kit's breaker dep
+  (nothing in worker-kit consumes the variant; the wildcard arm already
+  covers it), or ship the missing arm in outbox-kit. This repo runs
+  worker-kit `default-features = false` (breaker off) to keep both
+  crates in one graph; the failure-budget → `Degraded` flow under test
+  lives in the runner, not the breaker, so the suite survives.
+- worker-kit 0.1.0's `RunReport` drops the skip/pause counters.
+  `JobStatus` records leader `skips` and breaker `paused`, but the
+  end-of-run `JobRunSummary` (`src/supervisor.rs:66–77`) keeps only
+  fires/failures/degraded/`last_error` — from the report alone a host
+  cannot distinguish "leader-locked job that skipped all night" from
+  "job that never ticked". This suite polls live `status()` before
+  shutdown to observe skips. Adding `skips`/`paused` to the summary
+  would make leadership and breaker behavior auditable after the run.
+- telemetry-init 0.1.0 gives hosts no way to verify the *installed*
+  filter. After `Telemetry::init`, the resolved directive (`RUST_LOG`
+  vs config) is invisible — the handle carries only the metrics
+  registry — so hosts verifying their bootstrap (as this suite does)
+  must go through `build_subscriber(..).max_level_hint()`, a sibling
+  pipeline that was never installed (`src/telemetry.rs:175–228` builds
+  both from the same `build_pipeline`, but only `init`'s copy is
+  global). A `Telemetry::max_level_hint()` — or returning the resolved
+  directive — would close the verification gap.
+- telemetry-init 0.1.0's `build_subscriber` returns
+  `Box<dyn Subscriber + Send + Sync>`, which is not `Debug`, so
+  `Result::unwrap_err()` does not compile in host tests (E0277; the
+  `Telemetry` handle carries a manual non-exhaustive `Debug` for
+  exactly this reason). Hosts match by hand. A light newtype around
+  the boxed subscriber with a `Debug` impl would keep the typed-error
+  ergonomics the crate promises elsewhere.

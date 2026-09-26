@@ -6,6 +6,26 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
 ## [Unreleased]
 
 ### Added
+- Round-4 dogfooding suites for the 2026-09-25 wave:
+  - `tests/telemetry_bootstrap.rs`: telemetry-init one-call bootstrap
+    with a metrics budget → register counter/gauge/histogram through
+    `Telemetry::metrics()` → render → validate as Prometheus 0.0.4 with
+    an inline parser; typed `AlreadyInitialized` on double init;
+    idempotent `shutdown`; `RUST_LOG` override asserted via
+    `build_subscriber().max_level_hint()`. `otlp` stays off (hermetic).
+  - `tests/worker_supervisor_drain.rs`: worker-kit supervisor with three
+    jobs (fast-succeeding; slow-overrun coalesced, never stacked;
+    always-failing rollup → `Degraded` past its budget), run on the
+    shared shutdown-kit `ShutdownGuard`, drained < 2 s, `RunReport`
+    name-ordered and exact; leadership via the `leader` feature
+    (`MemoryLease` default fires, a never-winning host lease records
+    skips, never failures); same-seed jitter windows identical across
+    supervisors.
+- Round-4 integration findings (README): worker-kit's breaker dep
+  re-arms the `timeout` feature conflict that breaks outbox-kit's
+  compile graph-wide; `RunReport` drops skip/pause counters;
+  telemetry-init exposes no way to verify the installed filter; the
+  `build_subscriber` return type is not `Debug`.
 - Round-3 dogfooding suites for the 2026-09-16 kit wave (all exact-pinned
   at their published 0.1.0):
   - `tests/config_secrets.rs`: config-kit layered load (file → env →
@@ -33,6 +53,12 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
 - New dependencies (exact-pinned estate kits): config-kit, idempotency-kit,
   outbox-kit, percentile-kit, chaos-kit, metrics-kit, webhookkit; dev-deps
   `hmac`/`sha2` to compute the webhook signatures webhookkit verifies.
+- Round 4 adds (exact-pinned estate kits): telemetry-init 0.1.0 (default
+  features; `otlp` stays off), worker-kit 0.1.0 (`default-features =
+  false`, features `leader` — the default `breaker` feature forces
+  breaker's `timeout` feature graph-wide and breaks outbox-kit 0.1.0's
+  compile; see the README round-4 findings), shutdown-kit 0.3.0;
+  metrics-kit 0.1.0 was already pinned.
 
 ## [0.1.0] - 2026-09-12
 

@@ -49,6 +49,16 @@ chaos-kit = "=0.1.0"                         # tests/chaos_resilience.rs (defaul
 metrics-kit = "=0.1.0"                       # tests/metrics_scrape.rs
 webhookkit = "=2.0.0"                        # tests/idempotent_webhook.rs
 
+# --- round 4: dogfooding the 2026-09-25 wave -----------------------------
+telemetry-init = "=0.1.0"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
+# NOTE: default-features = false. worker-kit's default `breaker` feature pins
+# breaker with `features = ["timeout"]`, which unifies graph-wide and breaks
+# outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
+# E0004, verified). Same regression class as the round-3 finding; see the
+# README integration findings for the details and the ask.
+worker-kit = { version = "=0.1.0", default-features = false, features = ["leader"] } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
+shutdown-kit = "=0.3.0"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
+
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
