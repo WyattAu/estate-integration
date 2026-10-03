@@ -6,6 +6,73 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
 ## [Unreleased]
 
 ### Added
+- Round-5 composition suites — ten flows proving the consumer-less
+  crates compose (all exact-pinned at their published versions, verified
+  via the crates.io API):
+  - `tests/clock_precision.rs`: clock-kit (TSC-calibrated) +
+    percentile-kit — calibrated reads monotonic and typed; one measured
+    workload into both a `LatencyRing` and a `PercentileTracker` with
+    bit-identical nearest-rank statistics; committed-style budget PASS
+    and a typed `BudgetExceeded` FAIL naming the metric.
+  - `tests/book_feed.rs`: wire-kit + book-kit — FIX 4.4 `35=X` encode →
+    parse/checksum → typed `Command` mapping → `replay` (`GapPolicy`)
+    → depth exactness, replay checksum-identical to direct application;
+    truncation, corruption, and journal gaps are typed failures.
+  - `tests/hw_pinned_hotpath.rs`: hw-kit (`pin_current_core`, fail-closed
+    mask read-back) + clock-kit — a pinned hot loop measured into a
+    `LatencyRing`, tolerance-bounded stability (P99 ≤ 10× median, no
+    half-to-half drift), calibrated-vs-`Instant` cross-check, affinity
+    restored and verified; typed pin failures and `CpuSet` round-trips.
+  - `tests/uring_proxy.rs`: uring-kit + breaker + throttle-kit — a real
+    echo proxy on an `io_uring` engine thread under breaker-first /
+    GCRA-second admission (CIRCUIT_OPEN pause, THROTTLED retry_after,
+    two scripted failures trip, half-open probe recovers); exact
+    decision ledger; token/probe/pool contracts hold on any host.
+  - `tests/ledger_settlement.rs`: ledger-kit + outbox-kit +
+    idempotency-kit — settlement post → `OutboxJournal` durable mirror
+    (envelope id == posting id) → `DuplicatePosting`/`InvalidPosting`
+    retry semantics → dispatcher delivers once → `restore` replays the
+    undelivered tail into a fresh ledger → genesis-aware chain verify;
+    `RejectNegative` refuses an overdraw before anything records.
+  - `tests/policy_gateway.rs`: policy-kit + fetch-kit — a
+    `fetch_kit::middleware::Middleware` evaluates a Rego bundle over the
+    request document; violations short-circuit before `Next::run` (no
+    network, no retry budget), poisoned engines fail closed; verdicts
+    attributed per rule; null-safety asserted.
+  - `tests/chaos_worker.rs`: chaos-kit + worker-kit — a supervisor job
+    whose work unit is a tower service under a seeded `ChaosLayer`
+    (latency every call, two consecutive scripted outages): the failure
+    budget trips the degradation latch (observed live — see findings),
+    the worker survives and drains < 2 s, and the same seed reproduces
+    the identical fault sequence across two sessions; recorder counts
+    exact.
+  - `tests/config_tenant.rs`: config-kit per-tenant resolution — base +
+    tenant override files, deep merge (one nested knob overridden,
+    siblings kept), per-tenant differences, secrets redacted through the
+    merged load, `load_strict` naming the typo.
+  - `tests/telemetry_pipeline.rs`: telemetry-init + metrics-kit +
+    percentile-kit — init → register → record into both the histogram
+    and the tracker → 0.0.4-valid scrape (inline parser, histogram
+    aggregates consistent with the tracker) → budget PASS + outlier
+    FAIL → idempotent shutdown flush.
+  - `tests/outbox_dispatch_metrics.rs`: outbox-kit + metrics-kit +
+    breaker — dispatch with a metric per attempt
+    (`outbox_dispatch_total{outcome}`, `outbox_pending`) through a
+    breaker-wrapped sender under failure injection; the open circuit's
+    sheds appear as `paused` in the parsed render and the transitions in
+    the dispatch report, and the two views count the same attempts.
+- Round-5 integration findings (README): fetch-kit 0.2.0's middleware
+  stack rides reqwest 0.13 against the estate's 0.12 (hosts implementing
+  the trait need a renamed second reqwest); policy-kit's regorus
+  unconditionally pulls the date-stamped `vstd` Verus pre-release;
+  clock-kit's process-wide mono floor fights per-clock calibrations
+  (zero-interval flattening); worker-kit's degradation latch clears on
+  the next success and is invisible in `RunReport`; outbox-kit cannot
+  express "paused" from a sender-level gate (attempt burn during
+  open-circuit windows); hw-kit `CpuId`/`CoreId` round-trip friction;
+  uring-kit's accept retrieve/re-arm wrinkle.
+
+### Changed
 - Round-4 dogfooding suites for the 2026-09-25 wave:
   - `tests/telemetry_bootstrap.rs`: telemetry-init one-call bootstrap
     with a metrics budget → register counter/gauge/histogram through
@@ -63,6 +130,13 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
   breaker's `timeout` feature graph-wide and breaks outbox-kit 0.1.0's
   compile; see the README round-4 findings), shutdown-kit 0.3.0;
   metrics-kit 0.1.0 was already pinned.
+- Round 5 adds (exact-pinned estate kits, versions verified via the
+  crates.io API): clock-kit 0.1.0 (`tsc` feature), book-kit 0.1.0,
+  wire-kit 0.1.0, hw-kit 0.1.0 (`libc` feature), uring-kit 0.1.0,
+  ledger-kit 0.1.0 (default: audit+outbox), policy-kit 0.1.0 (default:
+  json), fetch-kit 0.2.0 (default: json+rustls-tls+retry — hermetic);
+  plus `http` 1 and a renamed `reqwest-edge` (=0.13) dependency for the
+  fetch-kit middleware seam (see the README round-5 findings).
 
 ## [0.1.0] - 2026-09-12
 

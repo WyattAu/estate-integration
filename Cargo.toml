@@ -59,6 +59,25 @@ telemetry-init = "=0.1.0"                    # tests/telemetry_bootstrap.rs (def
 worker-kit = { version = "=0.1.0", default-features = false, features = ["leader"] } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
 shutdown-kit = "=0.3.0"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
 
+# --- round 5: estate-integration composition round ---------------------------
+clock-kit = { version = "=0.1.0", features = ["tsc"] }  # tests/clock_precision.rs, tests/hw_pinned_hotpath.rs (`tsc`: hardware-counter reads behind calibration)
+book-kit = "=0.1.0"                          # tests/book_feed.rs
+wire-kit = "=0.1.0"                          # tests/book_feed.rs
+hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
+uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
+ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (default: audit+outbox)
+policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
+fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
+# tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
+# built on reqwest 0.13, while the workspace's other reqwest consumers
+# (axum-stack-era suites, wiremock hosts) stay on 0.12 — the two majors
+# coexist in this graph and do NOT unify. The suite implements
+# `fetch_kit::middleware::Middleware`, so it must name reqwest 0.13's
+# types; the rename keeps the two versions legible at the use sites.
+# (README round-5 finding.)
+reqwest-edge = { package = "reqwest", version = "=0.13", default-features = false }
+http = "1"                                   # `http::Extensions` in fetch-kit's Middleware trait
+
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

@@ -98,6 +98,36 @@ real running system (`tests/` proves it, `examples/` shows it).
             │                  │  seeds, same                      │
             │                  │  first-fire windows               │
             └──────────────────┴───────────────────────────────────┘
+ ┌────────────┬───────────────┬──────────────┬──────────────────────┐
+ │ clock-     │ book-feed     │ uring-proxy  │ ledger-settlement    │
+ │ precision  │               │              │                      │
+ │ calibrated │ FIX 35=X:     │ io_uring     │ post → OutboxJournal │
+ │ clock →    │ encode →      │ accept →     │ → idempotent retry   │
+ │ LatencyRing│ parse →       │ ReadFixed →  │ → dispatch → tail    │
+ │ == tracker │ Command map   │ breaker +    │ replay → verify_chain│
+ │ (nearest-  │ → replay →    │ GCRA gate →  │ (genesis-aware);     │
+ │ rank both) │ depth +       │ echo/close   │ RejectNegative       │
+ │ → budget   │ checksum      │ → exact      │ refuses before       │
+ │ PASS/FAIL  │ determinism   │ decision     │ recording            │
+ │            │               │ ledger       │                      │
+ ├────────────┼───────────────┼──────────────┼──────────────────────┤
+ │ hw-pinned- │ policy-       │ chaos-worker │ telemetry-pipeline   │
+ │ hotpath    │ gateway       │              │                      │
+ │ pin core → │ Rego over the │ supervisor   │ init → metrics →     │
+ │ calibrated │ request doc → │ job under    │ scrape (0.0.4        │
+ │ hot loop → │ compliant     │ seeded chaos │ parser) → percentile │
+ │ tolerance- │ proceeds to   │ → degradation│ budget → outlier     │
+ │ bounded    │ wiremock,     │ latch (live) │ FAIL → shutdown      │
+ │ stability  │ violations    │ → survives → │ flush                │
+ │ → restore  │ shed before   │ seed-reproduced
+ │ affinity   │ the network   │ across runs  │ + dispatch metrics:  │
+ │            │               │              │ paused/delivered/    │
+ │ + config-  │               │              │ failed in the render │
+ │ tenant:    │               │              │ == the dispatch      │
+ │ base ⊕     │               │              │ report               │
+ │ tenant,    │               │              │                      │
+ │ deep merge │               │              │                      │
+ └────────────┴───────────────┴──────────────┴──────────────────────┘
 
 Hermetic CI: tempdirs, wiremock, in-process SQLite. No cloud credentials,
 no external network.
@@ -120,6 +150,16 @@ no external network.
 | `tests/metrics_scrape.rs` | healthkit checks drive a metrics-kit registry (per-method counter, inflight gauge, duration histogram); rendered registry validated as Prometheus 0.0.4 by an inline parser: TYPE lines, cumulative buckets, `+Inf` == `_count`, `_sum` consistent | metrics-kit 0.1.0, healthkit 1.2.0 |
 | `tests/telemetry_bootstrap.rs` | one-call bootstrap: the configured metrics budget caps registration through `Telemetry::metrics()`; labeled counter + gauge + histogram render a valid Prometheus 0.0.4 exposition (inline parser); double init is the typed `AlreadyInitialized`, `shutdown` is idempotent, and `RUST_LOG` overrides the configured directive (asserted via `build_subscriber` + `max_level_hint`) | telemetry-init 0.1.0, metrics-kit 0.1.0 |
 | `tests/worker_supervisor_drain.rs` | three jobs (fast-succeeding; slow-overrun that coalesces instead of stacking; always-failing rollup that turns `Degraded` at its failure budget and keeps running) run on the shared shutdown-kit `ShutdownGuard`, drain < 2 s, and the name-ordered `RunReport` is exact; default no-lease leadership fires (`MemoryLease` always wins) while a never-winning host lease records skips — never failures; same-seed jitter windows identical across supervisors | worker-kit 0.1.0 (no default features — see round-4 findings), shutdown-kit 0.3.0 |
+| `tests/clock_precision.rs` | calibrated clock reads are monotonic and typed (TSC where the host offers an invariant counter, `Instant` fallback where it does not); one measured workload into BOTH a clock-kit `LatencyRing` and a percentile-kit `PercentileTracker` — every statistic identical (nearest-rank agreement across the L1/L2 boundary); observed quantiles gated by a committed-style budget (PASS) and an inflated window rejected with the typed `BudgetExceeded` naming the metric | clock-kit 0.1.0 (`tsc`), percentile-kit 0.1.0 |
+| `tests/book_feed.rs` | FIX 4.4 market-data feed: `FixBuilder` encode → `FixMessage::parse` + checksum verify → typed mapping to book-kit `Command`s (`AddBid`/`AddAsk`/`Execute`) → `replay` under `GapPolicy::Fail` → depth exactness after partial and full fills, checksum-identical to direct application; truncation, body corruption, and journal gaps are all typed failures | wire-kit 0.1.0, book-kit 0.1.0 |
+| `tests/hw_pinned_hotpath.rs` | pin to the current core (`pin_current_core`, fail-closed mask read-back), measure a fixed hot loop with the calibrated clock into a `LatencyRing`, assert tolerance-bounded stability (P99 ≤ 10× median, max ≤ 40×, no half-to-half drift — never exact equality on shared CI), cross-check the calibrated p50 against `Instant`, restore and verify the original affinity; typed failures (empty mask, out-of-range core) and `CpuSet` round-trips | hw-kit 0.1.0 (`libc`), clock-kit 0.1.0 (`tsc`) |
+| `uring_proxy.rs` | a real echo proxy on an `io_uring` engine thread (listener → completion-driven accept → `ReadFixed` → gate → `WriteFixed` → close): breaker-first admission answers `CIRCUIT_OPEN` before capacity is spent, an exhausted GCRA budget answers `THROTTLED retry_after_ms=<n>`, two scripted backend failures trip the circuit, the half-open probe recovers; exact decision ledger + breaker counters; token/probe/pool contracts hold on any host (ring creation may be denied by the kernel/seccomp — the flagship test reports the skip) | uring-kit 0.1.0, breaker 2.0.1, throttle-kit 1.1.1 |
+| `tests/ledger_settlement.rs` | full settlement flow: double-entry post (debit A, credit B) mirrored through `OutboxJournal` into an outbox-kit store (envelope id == posting id); idempotency-gated retry (`DuplicatePosting` with the original id; key reuse with a fresh request → `InvalidPosting`); dispatcher delivers exactly once; crash recovery replays the undelivered tail into a fresh ledger; `RejectNegative` refuses an overdraw before anything records; audit chain verifies (genesis-aware) with hash-linked entries | ledger-kit 0.1.0, outbox-kit 0.1.0, idempotency-kit 0.1.0 |
+| `tests/policy_gateway.rs` | policy-gated HTTP: a `fetch_kit::middleware::Middleware` evaluates a Rego bundle over the request document (method/path/headers) — compliant requests proceed to a wiremock upstream, violating ones short-circuit before `Next::run` (no network, no retry budget spent), evaluation errors and a poisoned engine reject fail-closed; verdicts are attributed per rule; null-safety of the input document | policy-kit 0.1.0, fetch-kit 0.2.0 (+ reqwest 0.13 — see round-5 findings) |
+| `tests/chaos_worker.rs` | a worker-kit supervisor job whose work unit is a tower service under `ChaosLayer` (seeded 5 ms latency on every call, scripted errors at two consecutive indexes): the failure budget trips the degradation latch — observed live, because a post-outage success clears the flag (round-5 finding) — the worker keeps firing past degradation and drains < 2 s; the same seed reproduces the identical fault sequence across two independent sessions; recorder counts are exact | chaos-kit 0.1.0, worker-kit 0.1.0 (no default features) |
+| `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.0 |
+| `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.0, metrics-kit 0.1.0, percentile-kit 0.1.0 |
+| `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (sender-level breaker burn bounded; round-5 finding) | outbox-kit 0.1.0, metrics-kit 0.1.0, breaker 2.0.1 |
 
 ## Run
 
@@ -145,6 +185,15 @@ format parser — no new network dependencies beyond the estate kits.
 Round-4 suites add: telemetry bootstraps validated at the exposition
 level, and a supervisor flow reported exactly (fires/failures/`Degraded`)
 with a sub-2-second drain — leadership exercised in-process, no Redis.
+Round-5 suites add: hardware-timing measurement gated by percentile
+budgets, a wire→book FIX pipeline with typed corruption failures, a
+real `io_uring` echo proxy under breaker+GCRA admission, the full
+settlement flow (post → durable mirror → idempotent retry → dispatch →
+tail-replay recovery → chain verify), policy-gated HTTP that sheds
+before the network, chaos-driven supervisor degradation observed live
+and reproduced across sessions, per-tenant deep-merged config, the
+end-to-end telemetry pipeline, and dispatch metrics that agree with the
+dispatch report attempt-for-attempt.
 
 ## Integration findings
 
@@ -243,3 +292,66 @@ Round-4 notes (the 2026-09-25 wave — telemetry-init, worker-kit):
   exactly this reason). Hosts match by hand. A light newtype around
   the boxed subscriber with a `Debug` impl would keep the typed-error
   ergonomics the crate promises elsewhere.
+
+Round-5 notes (the estate-integration composition round — clock-kit,
+book-kit, wire-kit, hw-kit, uring-kit, ledger-kit, policy-kit,
+fetch-kit):
+
+- **fetch-kit 0.2.0's native middleware stack rides reqwest 0.13 while
+  the rest of the estate sits on reqwest 0.12.** The two majors coexist
+  in one Cargo graph and do NOT unify, so a host implementing
+  `fetch_kit::middleware::Middleware` must add a *second* reqwest —
+  renamed at the manifest (`reqwest-edge = { package = "reqwest",
+  version = "=0.13" }`) — merely to name `Request`/`Response` in the
+  trait signature (this repo does exactly that). Ask: re-export the
+  reqwest/http types the trait needs (`fetch_kit::http`,
+  `fetch_kit::Request`) so hosts can implement the seam without a
+  direct reqwest dependency, or hold the estate on one reqwest major.
+- **policy-kit 0.1.0's Rego engine (regorus 0.12) unconditionally
+  depends on `vstd`** — the Verus standard library, a date-stamped
+  `0.0.0-2026-08-23-0033` pre-release from crates.io. Every policy-kit
+  consumer inherits a moving 0.0.0 nightly pin (supply-chain and
+  reproducibility exposure), and the audit backlog balloons
+  (vstd/verus_* alone are six figures of lines in `cargo vet` terms).
+  Ask: regorus should feature-gate the verus-backed components, or
+  policy-kit should select a feature set that excludes them.
+- **clock-kit's monotonic floor is process-wide but calibrations are
+  per-clock.** Two independently calibrated `CalibratedClock`s in one
+  process fight over the floor: the clock whose ns-per-tick factor came
+  out smaller reads below the floor the other set, and its intervals
+  flatten to zero (`tests/clock_precision.rs` reproduced this
+  systematically before sharing one calibration). Ask: scope the floor
+  to the calibration (or expose a shared-calibration registry) so
+  multiple clocks in one process compose.
+- **worker-kit's degradation latch is transient and invisible in the
+  report.** The failure budget counts *consecutive* failures and the
+  next success clears `degraded` (`src/runner.rs`); a chaos-style
+  intermittently-failing job is degraded only inside the failure
+  window, so the end-of-run `RunReport` says `degraded: false` even
+  though the budget tripped — the suite had to watch live status on a
+  2 ms poll to catch it. Ask: a `degradations` (times-tripped or
+  high-water) counter in `JobRunSummary`, complementing the round-4
+  skip/pause finding.
+- **outbox-kit cannot express "paused" from a sender-level gate.**
+  `DispatchError::Delivery` is the only failure outcome, so a host that
+  wraps its sender in its own breaker turns every open-circuit shed
+  into a failed delivery — each poll during the outage burns an attempt
+  (bounded by `max_attempts`; the dispatcher's *built-in* breaker pauses
+  without burning, round 3). `tests/outbox_dispatch_metrics.rs` bounds
+  the burn instead of asserting a tidy per-event story. Ask: a
+  `DispatchError::Paused`-style outcome (or an attempt-exempt error
+  class) so sender-level admission control can say "not attempted".
+- hw-kit 0.1.0's `current_set().iter()` yields `CpuId` while the pin
+  entry points take `CoreId` (`pin_current_core`), and the round-trip is
+  manual (`CoreId::new(u16::try_from(cpu.0)...)`) — a `CoreId: TryFrom<
+  CpuId>` impl (or a `current_core()` helper returning the core the
+  thread last ran on) would smooth the pin-to-where-you-already-are
+  path. Minor; everything else about the affinity API is fail-closed
+  and pleasant.
+- uring-kit 0.1.0 is low-level by design and the completion loop is
+  fully drivable from host code (the suite builds a working echo proxy
+  on it), but the accept path has a wrinkle: accept completions land in
+  an internal map and are retrieved by calling `accept()` again, which
+  *also* re-arms implicitly inside `poll` — hosts must know not to
+  re-arm per call (the docs say so, but an explicit `rearm`/`retrieve`
+  split would make the contract unmissable).
