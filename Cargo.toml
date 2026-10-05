@@ -78,6 +78,21 @@ fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default:
 reqwest-edge = { package = "reqwest", version = "=0.13", default-features = false }
 http = "1"                                   # `http::Extensions` in fetch-kit's Middleware trait
 
+# --- round 6: the product-phase substrate wave -----------------------------
+# The automotive calibration pipeline: A2L description + DBC bit layout +
+# CAN wire + XCP protocol, composed in tests/calibration_stack.rs.
+a2l-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
+dbc-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
+can-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std, zero deps)
+xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; can-core + thiserror)
+# The spreadsheet engine, dogfooded end-to-end in tests/spreadsheet_engine.rs.
+# sheet-engine re-exports the parts' value types, so the suite talks to the
+# engine through its own API and names the parts only for the codec layer.
+sheet-engine = "=0.1.0"                      # tests/spreadsheet_engine.rs
+# Direct dep for the volatile-predicate assertions: the suite checks the
+# engine's volatile set against formula-lang's own is_volatile predicate.
+formula-lang = "=0.1.1"
+
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
