@@ -345,11 +345,11 @@ version = "0.4.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.core-foundation]]
-version = "0.9.4"
+version = "0.10.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.core-foundation]]
-version = "0.10.1"
+version = "0.9.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.core-foundation-sys]]
@@ -977,11 +977,11 @@ version = "0.49.9"
 criteria = "safe-to-deploy"
 
 [[exemptions.jsonwebtoken]]
-version = "9.3.1"
+version = "11.0.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.jsonwebtoken]]
-version = "11.0.0"
+version = "9.3.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.kamadak-exif]]
@@ -1465,15 +1465,15 @@ version = "6.0.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand]]
+version = "0.10.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.rand]]
 version = "0.8.8"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand]]
 version = "0.9.5"
-criteria = "safe-to-deploy"
-
-[[exemptions.rand]]
-version = "0.10.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand_chacha]]
@@ -1485,15 +1485,15 @@ version = "0.9.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand_core]]
+version = "0.10.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.rand_core]]
 version = "0.6.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand_core]]
 version = "0.9.5"
-criteria = "safe-to-deploy"
-
-[[exemptions.rand_core]]
-version = "0.10.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand_pcg]]
@@ -1817,11 +1817,11 @@ version = "0.6.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.spin]]
-version = "0.9.9"
+version = "0.12.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.spin]]
-version = "0.12.3"
+version = "0.9.9"
 criteria = "safe-to-deploy"
 
 [[exemptions.spki]]
