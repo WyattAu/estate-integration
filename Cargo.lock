@@ -32,14 +32,15 @@ dependencies = [
 
 [[package]]
 name = "actor-kit"
-version = "0.2.3"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfaa49393554ede0201458dc423b87fabd263adcaa88e1bc8fda7e3d6847c856"
+checksum = "0179d4e7dee19e5729ada57621df416a4490fadb7b268662eab3f549da2bbe5b"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-queue",
  "dashmap",
  "futures",
+ "loom",
  "parking_lot 0.12.5",
  "thiserror 2.0.21",
  "tokio",
@@ -5689,9 +5690,9 @@ dependencies = [
 
 [[package]]
 name = "shared-state"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3580ed2612012eac4d72115a4f7a6b0aa2f8bc0aa298e8e2417679fcd2d49948"
+checksum = "0ffd96462eb99c4d0ff04faf778f25818611c8c0969aab276af78728d222e866"
 dependencies = [
  "dashmap",
  "loom",

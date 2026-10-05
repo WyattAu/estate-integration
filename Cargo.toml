@@ -117,9 +117,9 @@ docs-pipeline = "=0.1.4"                   # tests/collab_docs.rs (render + sani
 # --- round 10: the single-binary service substrate ------------------------
 # Four crates that everything else in the estate assumes compose, and that
 # had no composed suite until now.
-actor-kit = "=0.2.3"                      # tests/systems_substrate.rs (work-stealing actors)
+actor-kit = "=0.2.5"                      # tests/systems_substrate.rs (work-stealing actors)
 slab-pool = "=0.1.0"                      # tests/systems_substrate.rs (borrow-checked pool guards)
-shared-state = "=0.1.1"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
+shared-state = "=0.1.2"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
 shm-rings = "=0.2.1"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
 
 # --- round 11: the API surface layer ---------------------------------------

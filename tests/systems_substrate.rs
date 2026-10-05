@@ -29,12 +29,24 @@
 //! Findings this round are filed in the README. Three of them are bugs rather
 //! than sharp edges, and all three are invisible to per-crate tests:
 //!
-//! 1. **A suspended actor can never be resumed or stopped.** The worker's
-//!    dispatch re-queues every message while an actor is `Suspended`,
-//!    including the `Resume` and `Stop` signals — so the only arm that could
-//!    lift the suspension never runs. Two documented handle methods
-//!    (`pause`, `resume`) dead-lock an actor permanently, and only dropping
-//!    the scheduler releases it.
+//! 1. **`pause()` was a permanent deadlock, and then messages were stranded.**
+//!    Both halves are now fixed, in `actor-kit 0.2.4` and `0.2.5`, and both are
+//!    pinned below.
+//!
+//!    First: the worker's dispatch re-queued *every* message while an actor was
+//!    `Suspended`, including the `Resume` and `Stop` signals — so the only arm
+//!    that could lift the suspension never ran, and two documented handle
+//!    methods dead-locked an actor permanently.
+//!
+//!    Then, with that fixed, the next layer showed through: the suspended arm
+//!    re-queues the *message* into the mailbox but drops the *task* it popped,
+//!    and each `send` enqueues exactly one task with no re-enqueue on that
+//!    path. A resumed actor therefore had no pending work item, so work queued
+//!    during the suspension ran only if some unrelated later send happened to
+//!    schedule the actor again — while `send` had returned `Ok` throughout. A
+//!    message accepted and then silently never processed is worse than a
+//!    rejection, so the fix drains the mailbox inline when a control signal
+//!    ends the suspension.
 //! 2. **A shared-memory ring stalls permanently on an unconsumed reader
 //!    slot.** `try_push` refuses when `write_idx - slowest_read_idx >=
 //!    capacity`, and `slowest_read_idx` folds over *every* provisioned
@@ -52,6 +64,14 @@
 //!    gates on `is_running()` immediately after `start()` reads `Creating`,
 //!    and there is no `await transition` primitive to use instead.
 //!
+//! 4. **`shared-state` did not re-export `TtlCache` from the crate root** —
+//!    fixed in `0.1.2`. It was fully implemented behind `pub mod ttl` while
+//!    `lib.rs` re-exported only `ReadyGate`, so the obvious
+//!    `use shared_state::TtlCache` failed with an unresolved import that
+//!    pointed nowhere near the real path. This suite now imports it from the
+//!    root, which fails to compile against `0.1.1` — that is the regression
+//!    test for a missing `pub use`.
+//!
 //! Plus the integration trap: the scheduler's workers are OS threads that
 //! need a Tokio runtime context, so a `#[tokio::test]` harness hangs where
 //! `actor_kit::rt().block_on` works.
@@ -60,12 +80,9 @@ use actor_kit::{
     ActorBuilder, ActorScheduler, MessagePayload, Priority, SchedulerConfig, SchedulerStats,
 };
 use shared_state::ReadyGate;
-// `shared-state` declares `pub mod ttl` but re-exports only `ReadyGate`, so
-// `TtlCache` is reachable through the module path and *not* through the
-// crate root — a host writing `use shared_state::TtlCache` gets an
-// unresolved-import error with nothing pointing at the real path. Round-10
-// finding; the crate root should re-export it like `ReadyGate`.
-use shared_state::ttl::TtlCache;
+// Imported from the crate root on purpose: `0.1.1` and below fail to compile
+// here, which is the regression test for the missing re-export.
+use shared_state::TtlCache;
 use slab_pool::SlabPool;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -461,48 +478,67 @@ async fn actor_lifecycle() {
 
     // Lifecycle transitions are observable through the handle, which is what
     // a supervisor needs to decide whether to restart a child.
-    // -- Round-10 finding, and the worst one in this round: **a suspended
-    // actor can never be resumed or stopped.**
+    // -- Round-10 finding, now fixed in actor-kit 0.2.4: **a suspended actor
+    // could never be resumed or stopped.**
     //
-    // `worker_loop`'s dispatch has three arms: `Running | Creating` processes
-    // the message and calls `handle_state_change_for` (which is what applies
-    // Pause / Resume / Stop); `Suspended` *re-queues* whatever it is handed;
-    // and `_ => {}` drops everything. So a suspended worker never processes
-    // the `Resume` signal that would lift the suspension — it re-queues it
-    // instead. The only arm that can leave `Suspended` is unreachable while
-    // suspended.
+    // `worker_loop`'s dispatch re-queued *every* message while an actor was
+    // `Suspended`, including the `Resume` and `Stop` signals. Since the
+    // `Running | Creating` arm is the only path that calls
+    // `handle_state_change_for`, the signal that would lift the suspension was
+    // itself queued behind the suspension — `pause()` was a permanent deadlock
+    // reachable from two documented `ActorHandle` methods, while the mailbox
+    // went on accepting messages that were never processed.
     //
-    // Reproduced: pause, then resume — `resume().await` returns Ok, the state
-    // stays `Suspended` indefinitely, `stop().await` also returns Ok and the
-    // actor is still not stopped, and the mailbox keeps accepting messages
-    // that will never be processed.
+    // Control signals are now processed in place while suspended and
+    // ordinary messages still queue in order, so the lifecycle is a lifecycle
+    // again. These assertions pin the repaired behaviour: they fail against
+    // 0.2.3 and below, and they fail here if the re-queue ever comes back.
     producer.pause().await.expect("pause is accepted");
     wait_for(|| producer.is_suspended()).await;
     assert!(producer.is_suspended());
 
+    // Ordinary work is still held while suspended — the fix must not have
+    // turned suspension into "runs anyway".
     let processed_before = producer.processed_count();
-    producer.resume().await.expect("resume is accepted");
     producer
         .send(MessagePayload::Empty)
         .await
-        .expect("and still accepts");
-    tokio::time::sleep(Duration::from_millis(150)).await;
+        .expect("a suspended actor still accepts");
+    tokio::time::sleep(Duration::from_millis(120)).await;
     assert!(
         producer.is_suspended(),
-        "the Resume signal is re-queued, not processed — a paused actor is \
-         permanently paused (reproduced after {}ms)",
-        150
+        "still suspended while ordinary work queues"
     );
+    assert_eq!(
+        producer.processed_count(),
+        processed_before,
+        "and no ordinary message is processed while suspended — the queued \
+         message keeps its place rather than being dropped"
+    );
+
+    // Resume lifts the suspension, and the message queued during it is then
+    // processed in order rather than discarded.
+    producer.resume().await.expect("resume is accepted");
+    wait_for(|| !producer.is_suspended()).await;
+    assert!(
+        !producer.is_suspended(),
+        "**Resume still does not lift the suspension** — a paused actor is \
+         permanently paused"
+    );
+    wait_for(|| producer.processed_count() > processed_before).await;
+    assert!(
+        producer.processed_count() > processed_before,
+        "the message queued during the suspension is processed after the resume, \
+         in order"
+    );
+
+    // And Stop is reachable too, which it was not before.
     producer.stop().await.expect("stop is accepted");
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    wait_for(|| producer.is_stopped()).await;
     assert!(
-        !producer.is_stopped(),
-        "and Stop is no more effective than Resume, for the same reason"
-    );
-    assert!(
-        producer.processed_count() == processed_before,
-        "nothing is processed while suspended, and messages pile up in the \
-         mailbox instead of being refused"
+        producer.is_stopped(),
+        "Stop now reaches a suspended or resumed actor; before 0.2.4 neither \
+         control signal had any effect"
     );
     // The scheduler's own statistics are the substrate's observability: a
     // host asserts on these rather than instrumenting every actor.
@@ -514,9 +550,6 @@ async fn actor_lifecycle() {
     );
 
     scheduler.stop();
-    // The scheduler's stop does reach the workers (it clears the running
-    // flag), which is the only way the suspended actor above is ever
-    // released — the handle-level API cannot do it.
 }
 
 /// Poll a state predicate until it holds. The scheduler has no
