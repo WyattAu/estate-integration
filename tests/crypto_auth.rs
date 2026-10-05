@@ -1,6 +1,5 @@
 #![forbid(unsafe_code)]
-#![allow(clippy::expect_used)]
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Round 13, suite 7 — `crypto_auth`.
 //!
 //! cryptkit, webauthn-kit, oauth-toolkit, multi-chain-wallet.
@@ -51,28 +50,34 @@
 //!    repaired behaviour, and the one 24-word-only test that remains pins the
 //!    negative case that must *keep* failing.
 //!
-//! 1. **`webauthn-kit`'s `check_sign_count` accepted an *equal* count** — now
-//!    fixed. The rule was `new < current`, so `new == current` passed, and a
-//!    replayed assertion carries the counter the authenticator last wrote.
-//!    WebAuthn §7.2 makes the clone signal a count *not greater than* the
-//!    stored one, so the check is `<=`; a clone that replays in order rather
-//!    than resetting was invisible.
+//! 1. **`webauthn-kit`'s `check_sign_count` accepted an *equal* count** — fixed
+//!    in `0.3.6`, then *refined* in `0.3.7`. The rule was `new < current`, so
+//!    `new == current` passed, and a replayed assertion carries the counter the
+//!    authenticator last wrote.
 //!
-//!    The crate documented the gap as "many hardware keys only increment the
-//!    counter occasionally and this must not lock users out", which conflates
-//!    an unchanged counter with a *zero* counter. §7.2 skips the check when
-//!    either side is zero, and zero is how an authenticator says it has no
-//!    counter — the old code refused a *reported* zero as a decrease, locking
-//!    out exactly the counter-less keys the exemption exists for.
+//!    **0.3.7 corrects that fix.** WebAuthn L3 (a W3C Recommendation, 2026-08-25)
+//!    §7.2 step 18 calls a non-increasing counter *"a signal, but not proof"* and
+//!    names a benign cause: *"a race condition where the Relying Party is
+//!    processing assertion responses in an order other than the order they were
+//!    generated."* So 0.3.6's unconditional refusal is right for a sequential
+//!    verifier and wrong for a concurrent one, which would lock out legitimate
+//!    users. `classify_sign_count` now returns a verdict that never fails, and
+//!    `SignCountPolicy` lets a host choose `Reject` (the default) or `Signal`.
+//!    The assertions below pin both, including the out-of-order scenario itself.
 //!
-//!    **Fixed in `webauthn-kit 0.3.6`**: `<=`, with both zero exemptions
-//!    explicit and the error naming which relation tripped. The assertions
-//!    below now pin the §7.2 rule, so a regression fails here.
+//! 2. **`oauth-toolkit`'s PKCE verifier took the method as a `&str`** — fixed in
+//!    `0.3.0`. A near-miss like `"s256"` returned a bare `false`, which is
+//!    indistinguishable from a wrong verifier: one is a client bug to report,
+//!    the other a possible attack to refuse silently.
 //!
-//! 2. **`oauth-toolkit`'s PKCE verifier takes the method as a `&str`.** RFC
-//!    7636 defines exactly two values, `plain` and `S256`; a typo'd method
-//!    compares false rather than erroring, and is indistinguishable from a
-//!    wrong verifier — which needs a different response.
+//!    **And 0.3.0 also forbids `plain` by default.** OAuth 2.1
+//!    (`draft-ietf-oauth-v2-1-16`) §7.5.2 forbids the method outright: its
+//!    historical justification was clients incapable of SHA-256, and OAuth 2.1
+//!    requires TLS 1.2+, which mandates SHA-256 — *"any device capable of
+//!    implementing OAuth 2.1 necessarily supports SHA-256."* RFC 7636 still
+//!    permits it, so the sources disagree and the newest governs the default;
+//!    `PkcePolicy::allow_plain` restores it as an explicit decision.
+//!
 //! 3. **A challenge's replay window is the caller's, not the store's.**
 //!    `consume_registration_challenge(id, timeout_secs)` compares the entry's
 //!    `created_at` against *now + timeout*, so the same stored challenge is
@@ -82,8 +87,10 @@
 
 use cryptkit::hmac::{constant_time_eq, hmac_sign, hmac_verify};
 use multi_chain_wallet::{btc, eth, mnemonic};
-use oauth_toolkit::csrf::MemoryCsrfStore;
-use oauth_toolkit::pkce::{generate_pkce_pair, verify_pkce};
+use oauth_toolkit::pkce::{
+    generate_pkce_pair, validate_verifier, verify, verify_with_default_policy, PkceError,
+    PkceMethod, PkcePolicy,
+};
 use webauthn_kit::challenge::{check_sign_count, ChallengeStore};
 use webauthn_kit::crypto::{
     base64_decode_urlsafe, base64_encode_urlsafe, generate_challenge_bytes,
@@ -384,151 +391,185 @@ fn a_sign_count_that_does_not_increase_is_refused() {
 fn pkce_generation_and_verification_round_trip() {
     // RFC 7636: the client generates a verifier, sends
     // `code_challenge = BASE64URL(SHA256(verifier))`, and the server checks
-    // them together. The suite checks the *hash* half too, because a pair
-    // that only agrees with itself proves nothing.
+    // them together. The suite checks the *hash* half too, because a pair that
+    // only agrees with itself proves nothing.
     let (verifier, challenge) = generate_pkce_pair();
-    assert!(!verifier.is_empty(), "the verifier is non-empty");
     assert_ne!(
         verifier, challenge,
         "the verifier is not the challenge — that is the whole point of PKCE"
     );
+    // A generated verifier satisfies the syntax RFC 7636 §4.1 requires, which
+    // 0.2.x never checked.
+    validate_verifier(&verifier).expect("a generated verifier is well formed");
+    assert_eq!(
+        verifier.chars().count(),
+        43,
+        "43 characters, the RFC minimum"
+    );
+
     assert!(
-        verify_pkce(&verifier, &challenge, "S256"),
+        verify_with_default_policy(&verifier, &challenge, PkceMethod::S256).is_ok(),
         "a matching pair verifies under S256"
     );
-    assert!(
-        !verify_pkce(&verifier, &challenge, "plain"),
-        "and fails under `plain` — the method is part of the contract"
-    );
-    assert!(!verify_pkce("wrong-verifier", &challenge, "S256"));
 
     // Two generated pairs differ, so a replayed verifier is not valid for a
     // second authorization.
     let (other_verifier, other_challenge) = generate_pkce_pair();
-    assert_ne!(verifier, other_verifier);
-    assert_ne!(challenge, other_challenge);
-    assert!(!verify_pkce(&verifier, &other_challenge, "S256"));
-
-    // The challenge really is the SHA-256 of the verifier, base64url'd —
-    // verified with cryptkit's hash rather than the crate's own, so the two
-    // halves of the estate agree on the encoding.
-    let digest = cryptkit::hash::sha256(verifier.as_bytes());
     assert_eq!(
-        challenge,
-        base64_encode_urlsafe(&digest),
-        "challenge == BASE64URL(SHA256(verifier)) — the RFC's S256 method, \\
-         computed with cryptkit so the two crates are checked against each \\
-         other rather than against themselves"
+        verify_with_default_policy(&verifier, &other_challenge, PkceMethod::S256),
+        Err(PkceError::Mismatch),
+        "and a verifier from another authorization does not"
+    );
+    assert_eq!(
+        verify_with_default_policy(&other_verifier, &challenge, PkceMethod::S256),
+        Err(PkceError::Mismatch)
     );
 }
 
-/// **Round-13 finding: `verify_pkce` takes the method as a `&str` and a
-/// typo'd or unsupported method compares false rather than erroring.**
-///
-/// RFC 7636 defines exactly two methods, `plain` and `S256`. `S256` is
-/// required for public clients; `plain` exists only for clients that cannot
-/// do SHA-256. A `&str` parameter means a host that writes `"s256"`, or
-/// `"SHA256"`, gets `false` — indistinguishable from a genuine mismatch, so
-/// the symptom is a login that fails for a reason nothing reports. And since
-/// the comparison is a string compare rather than a parse, `plain` is
-/// accepted with no check that a verifier was actually sent.
+/// The RFC 7636 Appendix B vector, verbatim. Published test data, so it cannot
+/// drift with our own implementation.
 #[test]
-fn a_misspelled_pkce_method_is_indistinguishable_from_a_mismatch() {
+fn pkce_matches_the_rfc_7636_appendix_b_vector() {
+    assert!(verify_with_default_policy(
+        "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+        "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+        PkceMethod::S256
+    )
+    .is_ok());
+}
+
+/// **Round-13 finding, now fixed in `oauth-toolkit 0.3.0`: the method was a
+/// `&str` and a near-miss was silently *false*.**
+///
+/// `"s256"`, `"S-256"` and `"SHA256"` used to return `false` — the same answer
+/// as a wrong verifier. A typo is a client bug to report; a mismatch is a
+/// possible attack to refuse without detail. The method is now a type parsed
+/// once, and the failure says which kind of failure it was.
+#[test]
+fn a_misspelled_pkce_method_is_a_client_bug_not_a_mismatch() {
+    for typo in ["s256", "S-256", "S256 ", "SHA256", "S512", ""] {
+        assert_eq!(
+            PkceMethod::parse(typo),
+            Err(PkceError::UnknownMethod(typo.to_string())),
+            "{typo:?} must not parse"
+        );
+    }
+    assert_eq!(PkceMethod::parse("S256"), Ok(PkceMethod::S256));
+    assert_eq!(PkceMethod::parse("plain"), Ok(PkceMethod::Plain));
+}
+
+/// **OAuth 2.1 `draft-ietf-oauth-v2-1-16` §7.5.2 forbids PKCE `plain`**, on the
+/// grounds that its historical justification was clients incapable of SHA-256,
+/// and OAuth 2.1 requires TLS 1.2+, which mandates SHA-256. 0.3.0's default
+/// policy refuses it even when the verifier and challenge are identical — which
+/// is exactly what `0.2.2` returned `true` for.
+#[test]
+fn pkce_plain_is_refused_by_default_and_available_only_on_request() {
     let (verifier, challenge) = generate_pkce_pair();
-    // The only two values RFC 7636 defines.
-    assert!(verify_pkce(&verifier, &challenge, "S256"));
-    // Everything else is a silent `false` — no error, no diagnostic.
-    assert!(
-        !verify_pkce(&verifier, &challenge, "s256"),
-        "lowercase is not S256"
-    );
-    assert!(
-        !verify_pkce(&verifier, &challenge, "SHA256"),
-        "nor is SHA256"
-    );
-    assert!(!verify_pkce(&verifier, &challenge, "S512"), "nor S512");
-    assert!(
-        !verify_pkce(&verifier, &challenge, ""),
-        "nor the empty string"
-    );
-    // So a host cannot tell "the client used a method I do not implement"
-    // from "the client sent the wrong verifier" — the two failures need
-    // different responses (one is a client bug, one may be an attack) and
-    // both arrive as `false`.
+
     assert_eq!(
-        verify_pkce(&verifier, &challenge, "s256"),
-        verify_pkce("attacker-verifier", &challenge, "s256"),
-        "a typo'd method and a wrong verifier produce the same answer"
+        verify_with_default_policy(&verifier, &challenge, PkceMethod::Plain),
+        Err(PkceError::MethodNotPermitted {
+            method: PkceMethod::Plain
+        }),
+        "the default policy is S256-only"
+    );
+    // Even the degenerate case, where plain would match trivially.
+    assert_eq!(
+        verify_with_default_policy(&verifier, &verifier, PkceMethod::Plain),
+        Err(PkceError::MethodNotPermitted {
+            method: PkceMethod::Plain
+        }),
+        "and refusing is not conditional on it failing to match"
+    );
+
+    // A deployment with a client that genuinely cannot do SHA-256 says so
+    // explicitly.
+    assert!(
+        verify(
+            &verifier,
+            &verifier,
+            PkceMethod::Plain,
+            &PkcePolicy::allow_plain()
+        )
+        .is_ok(),
+        "the old behaviour is still available, as a named decision"
     );
 }
 
-// -- 6. the CSRF store, on the same expiry contract -----------------------
+/// RFC 7636 §4.1: `code_verifier` is 43-128 unreserved characters. 0.3.0 checks
+/// it before hashing, so a verifier that cannot have come from a conforming
+/// client is refused as malformed rather than compared.
+#[test]
+fn a_pkce_verifier_that_cannot_be_well_formed_is_refused_before_hashing() {
+    let (_, challenge) = generate_pkce_pair();
+    assert!(
+        matches!(
+            verify_with_default_policy("short", &challenge, PkceMethod::S256),
+            Err(PkceError::MalformedVerifier(_))
+        ),
+        "too short"
+    );
+    assert!(matches!(
+        validate_verifier(&"a".repeat(129)),
+        Err(PkceError::MalformedVerifier(_))
+    ));
+    // 43 characters of the unreserved set, including every punctuation character
+    // base64url can emit (`-` and `_`) and the two it cannot (`.` and `~`, which
+    // RFC 7636 allows and base64url never produces).
+    let valid = "a-b._~".repeat(7) + "a"; // 6*7 + 1 = 43
+    assert_eq!(valid.chars().count(), 43);
+    assert!(validate_verifier(&valid).is_ok());
+    // And one character outside the set is refused.
+    assert!(matches!(
+        validate_verifier(&format!("{}+", &valid[..42])),
+        Err(PkceError::MalformedVerifier(_))
+    ));
+}
 
+/// The CSRF store is keyed by session and is single-use: `retrieve_and_consume`
+/// calls `TtlCache::take_fresh`, which removes the entry and refuses an expired
+/// one. That is the property that makes it a defence — a replayed `state` finds
+/// nothing.
 #[tokio::test]
-async fn a_csrf_state_nonce_is_single_use_and_carries_its_redirect() {
-    // The CSRF store is the same shape of guard as the WebAuthn challenge
-    // store — single-use, expiring, session-bound — from a different crate
-    // with a different API. Composing them here is the check that a host gets
-    // the same guarantees from both, which is the property that matters: a
-    // state nonce reusable across a flow is a vulnerability, exactly as a
-    // reusable challenge is.
-    use oauth_toolkit::csrf::CsrfStore;
+async fn a_csrf_state_is_single_use_session_scoped_and_expiring() {
+    use oauth_toolkit::csrf::{CsrfStore, CsrfStoreType};
 
-    let store = MemoryCsrfStore::new();
-    assert!(
-        store
-            .store("session-1", "nonce-abc", Some("/books/2026".to_owned()))
-            .await,
-        "a state nonce is stored"
-    );
+    // A short TTL so expiry is observable rather than asserted.
+    let store = CsrfStoreType::Memory(oauth_toolkit::csrf::MemoryCsrfStore::with_ttl(
+        std::time::Duration::from_millis(50),
+    ));
 
-    let retrieved = store.retrieve_and_consume("session-1").await;
-    let (nonce, redirect) = retrieved.expect("the nonce is there");
-    assert_eq!(nonce, "nonce-abc", "and comes back verbatim");
+    // Two states for the same session must differ: a nonce that is a function of
+    // the session id is not a nonce.
+    store.store("session-a", "nonce-one", None).await;
+    store.store("session-a", "nonce-two", None).await;
     assert_eq!(
-        redirect.as_deref(),
-        Some("/books/2026"),
-        "carrying the redirect the authorization request asked for"
+        store.retrieve_and_consume("session-a").await,
+        Some(("nonce-two".to_string(), None)),
+        "the most recent state is the one a redirect will carry"
     );
 
-    // Single-use: the second retrieval finds nothing, which is what makes it a
-    // replay guard rather than a cookie.
-    assert!(
-        store.retrieve_and_consume("session-1").await.is_none(),
-        "and it cannot be replayed"
-    );
-    // Per-session: another session's key does not resolve this nonce.
-    store.store("session-2", "nonce-def", None).await;
+    // Single use.
     assert_eq!(
-        store
-            .retrieve_and_consume("session-2")
-            .await
-            .map(|(n, _)| n)
-            .as_deref(),
-        Some("nonce-def"),
-        "a different session has its own nonce"
-    );
-    assert!(
-        store
-            .retrieve_and_consume("unknown-session")
-            .await
-            .is_none(),
-        "and an unknown session resolves nothing"
+        store.retrieve_and_consume("session-a").await,
+        None,
+        "and it is consumed by that retrieval, so a replay finds nothing"
     );
 
-    // A TTL of zero expires between store and retrieve, which is the knob a
-    // host uses to bound the window.
-    let expiring = MemoryCsrfStore::with_ttl(std::time::Duration::from_millis(0));
-    expiring.store("k", "n", None).await;
-    std::thread::sleep(std::time::Duration::from_millis(5));
-    assert!(
-        expiring.retrieve_and_consume("k").await.is_none(),
-        "a nonce past its TTL does not validate"
+    // Scoped: another session's key holds nothing.
+    store.store("session-b", "nonce-b", None).await;
+    assert_eq!(store.retrieve_and_consume("session-a").await, None);
+
+    // Expiring.
+    store.store("session-c", "nonce-c", None).await;
+    tokio::time::sleep(std::time::Duration::from_millis(80)).await;
+    assert_eq!(
+        store.retrieve_and_consume("session-c").await,
+        None,
+        "an expired state is refused rather than redeemed"
     );
-    expiring.cleanup_expired().await;
 }
-
-// -- 7. key derivation, in the one shape a service actually needs ---------
 
 /// **Round-13's headline finding, now fixed: the estate's BIP-39 path refused
 /// every phrase shorter than 24 words.**

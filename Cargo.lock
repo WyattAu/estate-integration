@@ -3914,9 +3914,9 @@ dependencies = [
 
 [[package]]
 name = "oauth-toolkit"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d9f6c0221aa367918e57e7eecc6abc0e1cb9f9f945d85f755773cb24f7bb824"
+checksum = "d197e2fbd35ab2a1fc3eaba43d4629e9e9b8f1eef1a68f4b6715a820ba8eeec7"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -7189,9 +7189,9 @@ dependencies = [
 
 [[package]]
 name = "webauthn-kit"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9832f5924aa172c6f50e6434de5a69b5228ba939da71fb2f8d4db20e4bc4c2a"
+checksum = "50b1797fb519219a6629c590b648cad3608753206fc3b8321983fc68c96e3ab4"
 dependencies = [
  "base64 0.22.1",
  "ciborium",

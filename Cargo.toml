@@ -153,8 +153,8 @@ envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer p
 # published vector (RFC 4231, RFC 7636, RFC 4648) or against the *other*
 # crate, never against itself.
 cryptkit = "=0.1.0"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
-webauthn-kit = "=0.3.6"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
-oauth-toolkit = "=0.2.2"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
+webauthn-kit = "=0.3.7"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
+oauth-toolkit = "=0.3.0"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
 multi-chain-wallet = "=0.2.2"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)

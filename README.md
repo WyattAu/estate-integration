@@ -176,7 +176,7 @@ no external network.
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.5, slab-pool 0.1.0, shared-state 0.1.2, shm-rings 0.2.1 |
 | `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
 | `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
-| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.1, oauth-toolkit 0.2.2, multi-chain-wallet 0.2.2 |
+| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.7, oauth-toolkit 0.3.0, multi-chain-wallet 0.2.2 |
 | `tests/accounting_core.rs` | the new accounting core against the estate: append-only journals, balanced posting, period close, and reversal by counter-entry, plus the point at which two ledger crates in this workspace stop agreeing | double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
 
 ## Run
@@ -941,12 +941,33 @@ the most serious defect found in the estate to date, and it is now fixed.
   wrong fixtures. `0.3.6` adds the specification's published
   `credentialPublicKey` bytes as a vector, since published bytes are the one
   interop check that cannot drift.
-- **`oauth-toolkit`'s PKCE verifier takes the method as a `&str`.** RFC 7636
-  defines exactly two values, `plain` and `S256`, and `S256` is required for
-  public clients. A typo'd method compares `false` rather than erroring, and
-  is indistinguishable from a wrong verifier — two failures that need
-  different responses (a client bug versus a possible attack) arriving as the
-  same boolean.
+- **`oauth-toolkit`'s PKCE verifier took the method as a `&str`** — fixed in
+  `0.3.0`. A near-miss like `"s256"` returned a bare `false`, indistinguishable
+  from a wrong verifier: one is a client bug to report, the other a possible
+  attack to refuse silently. The method is now a type parsed once, and failures
+  come back as a `PkceError` naming which kind of failure it was.
+
+  **`0.3.0` also forbids `plain` by default.** OAuth 2.1
+  (`draft-ietf-oauth-v2-1-16`) §7.5.2 forbids the method outright — its
+  historical justification was clients incapable of SHA-256, and OAuth 2.1
+  requires TLS 1.2+, which mandates SHA-256. RFC 7636 still permits it, so the
+  sources disagree and the newest governs the default;
+  `PkcePolicy::allow_plain` restores it as a named decision. `0.3.0` also
+  enforces RFC 7636 §4.1 verifier syntax (43–128 unreserved characters) *before*
+  hashing, and pins the RFC 7636 Appendix B vector verbatim.
+
+  **And `webauthn-kit 0.3.7` refines its own 0.3.6 fix.** WebAuthn L3 (a W3C
+  Recommendation, 2026-08-25) §7.2 step 18 calls a non-increasing counter *"a
+  signal, but not proof"* and names a benign cause: the RP processing assertions
+  out of the order they were generated. So 0.3.6's unconditional refusal is right
+  for a sequential verifier and wrong for a concurrent one, which would lock out
+  legitimate users. `classify_sign_count` now returns a verdict that never
+  fails; `SignCountPolicy` chooses `Reject` (the default) or `Signal`;
+  `DeferredSignCountUpdate` implements L3's instruction to defer state updates
+  until additional security checks succeed, and never stores a proposed zero,
+  which would erase a real baseline. 0.3.7 also rejects duplicate CBOR map
+  labels, which L3 §2.4 requires — a duplicate is a parser differential where
+  one decoder verifies a key another refuses.
 - **A challenge's replay window is the caller's, not the store's.**
   `consume_registration_challenge(id, timeout_secs)` compares the entry's
   `created_at` against *now + timeout*, so the same stored challenge is
