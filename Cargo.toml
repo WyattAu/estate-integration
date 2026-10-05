@@ -16,9 +16,9 @@ exclude = ["target/"]
 # Pinned to exact published versions: these tests verify that the released
 # artifacts interoperate, so every failure is attributable to a real drift
 # between crates, not to a moving dependency.
-salting = "=1.2.1"
-tokenkit = { version = "=0.4.0", features = ["revocation", "rotation"] }
-validkit = "=1.3.0"
+salting = "=2.0.0"
+tokenkit = { version = "=0.4.1", features = ["revocation", "rotation"] }
+validkit = "=1.3.1"
 barbican = "=0.2.1"
 # 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
 # NOTE: the `timeout` feature is deliberately OFF — see tests/outbox_dispatch.rs
@@ -26,38 +26,52 @@ barbican = "=0.2.1"
 # `CircuitBreakerError` has no `Timeout` arm, so enabling breaker's additive
 # `timeout` feature anywhere in the graph breaks outbox-kit's build.
 breaker = { version = "=2.0.1", features = ["tower"] }
-healthkit = { version = "=1.2.0", features = ["axum"] }
-throttle-kit = { version = "=1.1.1", features = ["in-memory", "tower"] }
-otelkit = "=2.0.2"
-mailkit = { version = "=0.3.0", features = ["resend", "sendgrid"] }
+healthkit = { version = "=1.3.1", features = ["axum"] }
+throttle-kit = { version = "=2.0.0", features = ["in-memory", "tower"] }
+otelkit = "=2.0.3"
+mailkit = { version = "=0.3.1", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.1"
 media-kit = "=0.2.1"
-blobkit = { version = "=0.4.1", features = ["memory", "std", "serde"] }
+blobkit = { version = "=0.4.2", features = ["memory", "std", "serde"] }
 cas-kit = { version = "=0.2.1", features = ["tokio"] }
-mail-sync-kit = "=0.1.0"
+mail-sync-kit = "=0.1.1"
 eventbus-kit = { version = "=0.3.5", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
-retry-backoff = "=0.2.0"
+# NOTE: `retry-backoff` was pinned here from round 1 and never used by any
+# suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
+# downloads) — not this account's `loop-retry` (published by the
+# `retry-backoff` repo, which names itself differently). So the manifest
+# claimed coverage of a crate the estate does not own, while the crate it
+# does own went uncomposed. Dropped the phantom; loop-retry is exercised
+# transitively through fetch-kit's retry feature and is a Round-6 target
+# for a direct suite.
+loop-retry = "=0.1.1"                          # round 6 (transitive via fetch-kit retry)
 
 # --- round 3: dogfooding the 2026-09-16 kit wave -----------------------------
 # Each pin names the suite that exercises it (tests/).
-config-kit = "=0.1.0"                        # tests/config_secrets.rs
+config-kit = "=0.1.1"                        # tests/config_secrets.rs
 idempotency-kit = "=0.1.0"                   # tests/idempotent_webhook.rs (default: memory)
+# HELD at =0.1.0, not =0.2.0: ledger-kit 0.1.0 declares `outbox-kit = "^0.1"`,
+# and outbox-kit 0.2.0's `OutboxStore` is a different trait (adaptive
+# FetchBatch replaced `DispatcherConfig::batch_size`). Pinning 0.2.0 here
+# would put two majors of outbox-kit in one graph and fail the ledger suite
+# on trait-object mismatch. Blocking issue: ledger-kit must ship an
+# outbox-kit 0.2 consumer before this pin moves. See README findings.
 outbox-kit = "=0.1.0"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
 percentile-kit = "=0.1.0"                    # tests/percentile_report.rs (default: tracker+report)
-chaos-kit = "=0.1.0"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
-metrics-kit = "=0.1.0"                       # tests/metrics_scrape.rs
-webhookkit = "=2.0.0"                        # tests/idempotent_webhook.rs
+chaos-kit = "=0.1.1"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
+metrics-kit = "=0.2.0"                       # tests/metrics_scrape.rs
+webhookkit = "=2.2.0"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
-telemetry-init = "=0.1.0"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
+telemetry-init = "=0.1.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
 # NOTE: default-features = false. worker-kit's default `breaker` feature pins
 # breaker with `features = ["timeout"]`, which unifies graph-wide and breaks
 # outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
 # E0004, verified). Same regression class as the round-3 finding; see the
 # README integration findings for the details and the ask.
-worker-kit = { version = "=0.1.0", default-features = false, features = ["leader"] } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
-shutdown-kit = "=0.3.0"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
+worker-kit = { version = "=0.3.0", default-features = false, features = ["leader"]  } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
+shutdown-kit = "=0.3.2"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
 
 # --- round 5: estate-integration composition round ---------------------------
 clock-kit = { version = "=0.1.0", features = ["tsc"] }  # tests/clock_precision.rs, tests/hw_pinned_hotpath.rs (`tsc`: hardware-counter reads behind calibration)
@@ -65,7 +79,20 @@ book-kit = "=0.1.0"                          # tests/book_feed.rs
 wire-kit = "=0.1.0"                          # tests/book_feed.rs
 hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
 uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
-ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (default: audit+outbox)
+ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
+
+# --- round 6: the accounting core -------------------------------------------
+# decimal-money is ledger-kit's own money type (re-exported as
+# `MonetaryAmount`), and billing-kit re-exports the same crate — so these
+# three pins are one type in three places, which is the point the suite
+# asserts rather than assumes.
+decimal-money = "=1.1.1"                      # tests/money_stack.rs
+billing-kit = "=0.1.1"                        # tests/money_stack.rs (default: serde)
+sheet-engine = "=0.1.0"                       # tests/money_stack.rs (formula-driven report), tests/spreadsheet_engine.rs (engine + recalc)
+sheet-core = "=0.1.0"                         # tests/money_stack.rs (cell vocabulary)
+formula-lang = "=0.1.1"                       # tests/money_stack.rs (Value), tests/spreadsheet_engine.rs (is_volatile predicate)
+rust_decimal = "1"                            # tests/money_stack.rs (dec! / Decimal)
+rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
@@ -85,13 +112,6 @@ a2l-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_st
 dbc-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
 can-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std, zero deps)
 xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; can-core + thiserror)
-# The spreadsheet engine, dogfooded end-to-end in tests/spreadsheet_engine.rs.
-# sheet-engine re-exports the parts' value types, so the suite talks to the
-# engine through its own API and names the parts only for the codec layer.
-sheet-engine = "=0.1.0"                      # tests/spreadsheet_engine.rs
-# Direct dep for the volatile-predicate assertions: the suite checks the
-# engine's volatile set against formula-lang's own is_volatile predicate.
-formula-lang = "=0.1.1"
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
@@ -107,7 +127,6 @@ tracing = "0.1"
 reqwest = { version = "0.12", features = ["json"] }
 uuid = { version = "1", features = ["v7"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
-
 [dev-dependencies]
 wiremock = "0.6"
 tempfile = "3"

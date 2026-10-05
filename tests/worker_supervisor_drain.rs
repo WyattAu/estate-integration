@@ -179,6 +179,16 @@ async fn three_jobs_run_drain_under_two_seconds_and_report_exactly() {
             closure: boxed(|_ctx| async { Err(JobError::msg("rollup backend down")) }),
             failure_budget: 3,
             leader: false,
+            // worker-kit 0.2.0 → 0.3.0 added four fields. Defaults keep
+            // this suite's semantics: no immediate first fire, no
+            // shutdown-time drain pass (the drain assertions below watch
+            // the loop's own exit, not an extra fire), the per-job breaker
+            // stays on, and degradation is observed by polling status
+            // rather than a hook.
+            fire_at_start: false,
+            drain_pass: false,
+            use_breaker: true,
+            on_degraded: None,
         })
         .expect("valid name");
 
@@ -291,6 +301,16 @@ async fn leadership_memory_lease_wins_and_denied_leases_skip_without_failing() {
             closure: boxed(|_ctx| async { Ok::<(), JobError>(()) }),
             failure_budget: 5,
             leader: true,
+            // worker-kit 0.2.0 → 0.3.0 added four fields. Defaults keep
+            // this suite's semantics: no immediate first fire, no
+            // shutdown-time drain pass (the drain assertions below watch
+            // the loop's own exit, not an extra fire), the per-job breaker
+            // stays on, and degradation is observed by polling status
+            // rather than a hook.
+            fire_at_start: false,
+            drain_pass: false,
+            use_breaker: true,
+            on_degraded: None,
         })
         .expect("valid name");
     let supervisor_a = Arc::new(supervisor_a);
@@ -319,6 +339,16 @@ async fn leadership_memory_lease_wins_and_denied_leases_skip_without_failing() {
         closure: boxed(|_ctx| async { Ok::<(), JobError>(()) }),
         failure_budget: 5,
         leader,
+        // worker-kit 0.2.0 → 0.3.0 added four fields. Defaults keep
+        // this suite's semantics: no immediate first fire, no
+        // shutdown-time drain pass (the drain assertions below watch
+        // the loop's own exit, not an extra fire), the per-job breaker
+        // stays on, and degradation is observed by polling status
+        // rather than a hook.
+        fire_at_start: false,
+        drain_pass: false,
+        use_breaker: true,
+        on_degraded: None,
     };
     supervisor_b
         .register(spec("denied-crowned", true))
