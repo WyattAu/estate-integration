@@ -135,6 +135,17 @@ api-types = "=0.1.1"                      # tests/api_errors.rs (ApiResponse, Pa
 api-paginate = "=0.1.1"                   # tests/api_errors.rs (offset + cursor pagination)
 json-envelope = "=0.1.0"                  # tests/api_errors.rs (the parallel envelope)
 uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typed ids wrap UUIDv7)
+
+# --- round 12: the operational shell ---------------------------------------
+# Four crates every binary sets up at startup: feature flags, process
+# ownership, the telemetry facade, and layered configuration.
+# `chrono` gates `FlagChange::now`; without it a change record has to be
+# built with an explicit timestamp, so the suite takes the feature to pin the
+# clock-stamping path.
+flag-kit = { version = "=0.2.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
+pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
+otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
+envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer precedence)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
@@ -174,6 +185,7 @@ wiremock = "0.6"
 # tests/api_errors.rs: a service error type to drive the derive, and the
 # `TypedId` derive's `#[serde(transparent)]` attribute needs serde in scope.
 thiserror = "2"
+async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 # tests/idempotent_webhook.rs: locally compute the HMAC-SHA256 signatures

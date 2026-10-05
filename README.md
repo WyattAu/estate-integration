@@ -175,6 +175,7 @@ no external network.
 | `tests/collab_docs.rs` | collaborative documents end to end: three replicas authored independently converge on byte-identical text under four delivery orders (each fragment present exactly once, none lost or duplicated); concurrent delete + insert converge in either causal order; replayed deletes are no-ops while replayed inserts **duplicate**; out-of-order delivery visibly diverges; presence join/leave/re-join; a `BroadcastHub` fans each publication to every subscriber once and *refuses* a broadcast with no receivers; i18n fallback chains (`fr-CA` → `fr` → `en`), plural-rule selectors, and locale parsing; markdown renders from collaboratively edited text with `<script>` stripped; the convergence ships as a typed event envelope | crdts-kit 0.1.0, i18n-kit 0.1.3, eventbus-kit 0.3.5 (`typed_eventbus`), docs-pipeline 0.1.4, ws-kit 0.4.2 |
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.3, slab-pool 0.1.0, shared-state 0.1.1, shm-rings 0.2.1 |
 | `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
+| `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
 
 ## Run
 
@@ -814,3 +815,63 @@ kept as an alias for `http-errors` compatibility; and the typed-id derive
 produces UUID newtypes whose `Display`/`parse` round-trip and whose
 `parse` returns an `Option`, so a caller cannot use a value without deciding
 whether it was valid.
+
+
+Round-12 notes (the operational shell — `tests/flags_and_lifecycle.rs`):
+
+What every binary in the estate sets up at startup: which features are on,
+whether this process owns the resource, what the telemetry pipeline looks
+like, and how configuration arrives. Four crates, first composition, three
+findings.
+
+- **`FlagStore::delete` has a default body that always errors.** A host
+  implementing the trait minimally inherits
+  `Err("delete not implemented")`, and nothing in the trait signals that the
+  method is optional — so a host that does not notice cannot retire a flag
+  through the trait at all, and the only available route is writing
+  `enabled = false`, which leaves the flag in `list()` forever. `MemoryFlagStore`
+  *does* override it, so the crate's own tests never see the trap. The suite
+  implements a minimal store to pin the difference: the inherited default
+  errors, the reference store removes and reports whether it existed.
+- **`bucket` and `FlagName::new` disagree about what a flag name is.** Names
+  are validated against `^[a-z][a-z0-9_]*$` (via validkit), but
+  `bucket(flag_name, user_id)` takes a `&str` and hashes it with no
+  validation — so a host that spells a flag with a dash, which is the natural
+  choice, gets a stable, correct rollout for a flag that can never be stored,
+  and the only symptom is `enabled()` answering `false` forever. Ask: `bucket`
+  should take a `&FlagName`, or at least share the validator.
+- **`envstack`'s layers fold keys on different terms.** Env keys are
+  lowercased and split on `__`; `with_default` keeps case and splits on `.`.
+  So `get("LEDGER_BACKEND")` and `get("ledger_backend")` are *two live keys
+  with two different values* — and the env layer's only wins because it was
+  pushed first. A host that reads the original spelling gets the default and
+  silently ignores the operator's override, which is the worst possible
+  failure mode for configuration. Values are, to their credit, forgiving: a
+  bare word that is not valid JSON falls back to a string rather than
+  vanishing. Ask: fold keys uniformly across layers, and document the
+  separator.
+
+Properties the suite now protects:
+
+- A percentage rollout is deterministic: the same user lands in the same
+  bucket across 1,000 calls, and org-scoped bucketing is a *different* bucket
+  — so "10% of users" is 10% **per org** when scoping is on, which is worth
+  stating out loud rather than discovering in production.
+- `percentage` is a ceiling, not the decision: a flag at 0% serves nobody, at
+  100% serves everybody, and `enabled = false` beats both — so a rollback is
+  one store write rather than a redeploy. Percentages outside `0..=100` are
+  refused rather than clamped, so a typo'd 150% does not silently serve
+  everyone while the operator believes it is a partial rollout.
+- `evaluator.enabled_for_all(user, org)` evaluates **every** flag in the store
+  for one subject — not one flag for a cohort. With no flags the answer is
+  empty rather than vacuously permissive, so a host cannot read an
+  unconfigured store as consent.
+- The daemon guard claims a lock, refuses a second claim rather than stealing
+  it, releases on drop, reclaims a lock whose pid is dead (the case that
+  wedges a naive implementation forever), and removes only its own lock — so
+  a slow shutdown cannot delete a replacement process's lock.
+- `otel-stack` is a facade over `otelkit`, and its safe default is reached by
+  two coincidences: `endpoint: None` *and* `ExporterConfig::Otlp`. There is
+  no `enabled` flag, and `sample_rate` defaults to 1.0 — so a host that sets
+  only an endpoint gets 100% sampling with OTLP export. Both defaults are
+  asserted explicitly so a change to either fails here.
