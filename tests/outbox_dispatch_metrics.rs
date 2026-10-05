@@ -22,7 +22,9 @@
 //! off graph-wide (see tests/outbox_dispatch.rs and the README).
 
 use metrics_kit::Registry;
-use outbox_kit::{BackoffPolicy, DispatchError, DispatchSender, Dispatcher, DispatcherConfig};
+use outbox_kit::{
+    BackoffPolicy, DispatchError, DispatchSender, Dispatcher, DispatcherConfig, FetchBatch,
+};
 use outbox_kit::{MemoryStore, OutboxEvent, OutboxStore};
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -147,6 +149,14 @@ fn make_sender(
                 Err(breaker::CircuitBreakerError::CircuitOpen) => {
                     Err(DispatchError::Delivery("circuit open".into()))
                 }
+                // `Timeout` arrives with breaker's additive `timeout` feature,
+                // which outbox-kit 0.2.0's manifest now enables graph-wide —
+                // the round-3 finding resurfacing through a dependency. A
+                // timeout is not a delivery failure, but outbox-kit has only
+                // `Delivery`, so it is reported as one; see the README.
+                Err(breaker::CircuitBreakerError::Timeout) => {
+                    Err(DispatchError::Delivery("delivery timed out".into()))
+                }
             }
         })
     })
@@ -189,7 +199,15 @@ async fn breaker_pauses_surface_in_metrics_and_dispatch_report() {
     // breaker under test wraps the sender, not the dispatcher.
     let config = DispatcherConfig {
         poll_interval: Duration::from_millis(10),
-        batch_size: 10,
+        // outbox-kit 0.2.0: `batch_size` became an adaptive `FetchBatch`
+        // (min/max/idle-park). The suites keep a fixed window per poll, which
+        // is the old `batch_size: 10` expressed as min == max with no idle
+        // parking.
+        fetch_batch: FetchBatch {
+            min: 10,
+            max: 10,
+            park_after: 60,
+        },
         concurrency: 1, // sequential dispatch → deterministic fault order
         backoff: BackoffPolicy {
             base: Duration::from_millis(10),

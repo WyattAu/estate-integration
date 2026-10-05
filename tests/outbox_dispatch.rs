@@ -17,7 +17,9 @@
 //! - all five events end up dispatched exactly once with per-event
 //!   attempts recorded, and a graceful shutdown completes inside 2 s.
 
-use outbox_kit::{BackoffPolicy, DispatchError, DispatchSender, Dispatcher, DispatcherConfig};
+use outbox_kit::{
+    BackoffPolicy, DispatchError, DispatchSender, Dispatcher, DispatcherConfig, FetchBatch,
+};
 use outbox_kit::{MemoryStore, OutboxEvent, OutboxStore};
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -83,7 +85,15 @@ async fn flaky_sender_trips_breaker_then_all_events_dispatch() {
     // fixed 150 ms wait, admit one probe, close after one success.
     let config = DispatcherConfig {
         poll_interval: Duration::from_millis(15),
-        batch_size: 10,
+        // outbox-kit 0.2.0: `batch_size` became an adaptive `FetchBatch`
+        // (min/max/idle-park). The suites keep a fixed window per poll, which
+        // is the old `batch_size: 10` expressed as min == max with no idle
+        // parking.
+        fetch_batch: FetchBatch {
+            min: 10,
+            max: 10,
+            park_after: 60,
+        },
         concurrency: 1, // sequential dispatch → deterministic fault order
         backoff: BackoffPolicy {
             base: Duration::from_millis(10),
@@ -210,7 +220,15 @@ async fn open_breaker_pauses_dispatch_without_burning_attempts() {
     // circuit in the same tick.
     let config = DispatcherConfig {
         poll_interval: Duration::from_millis(10),
-        batch_size: 10,
+        // outbox-kit 0.2.0: `batch_size` became an adaptive `FetchBatch`
+        // (min/max/idle-park). The suites keep a fixed window per poll, which
+        // is the old `batch_size: 10` expressed as min == max with no idle
+        // parking.
+        fetch_batch: FetchBatch {
+            min: 10,
+            max: 10,
+            park_after: 60,
+        },
         concurrency: 1,
         backoff: BackoffPolicy {
             base: Duration::from_millis(5),

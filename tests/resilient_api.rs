@@ -269,9 +269,20 @@ async fn breaker_tower_layer_opens_against_failing_upstream() {
     let mut opens = 0;
     for _ in 0..8 {
         let result = svc.ready().await.expect("ready").call(()).await;
+        // `Timeout` is in the graph as of outbox-kit 0.2.0, whose manifest
+        // enables breaker's additive `timeout` feature — which is exactly the
+        // round-3 finding ("outbox-kit cannot coexist with breaker `timeout`")
+        // coming back through a dependency's manifest rather than the host's.
+        // Matched explicitly with a wildcard-free arm list so the next new
+        // variant fails to compile here instead of silently counting as a
+        // rejection.
         match result {
             Err(CircuitBreakerError::CircuitOpen) => opens += 1,
-            Err(CircuitBreakerError::Failure(_) | CircuitBreakerError::Rejected) => {}
+            Err(
+                CircuitBreakerError::Failure(_)
+                | CircuitBreakerError::Rejected
+                | CircuitBreakerError::Timeout,
+            ) => {}
             Ok(_) => panic!("upstream always 500s"),
         }
     }

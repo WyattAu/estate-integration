@@ -147,7 +147,14 @@ async fn settlement_posts_mirrors_retries_recovers_and_verifies() {
     };
     let config = DispatcherConfig {
         poll_interval: Duration::from_millis(10),
-        batch_size: 10,
+        // outbox-kit 0.2.0 replaced `batch_size` with an adaptive
+        // `FetchBatch`; a fixed window of 10 with no idle parking is the
+        // direct translation.
+        fetch_batch: outbox_kit::FetchBatch {
+            min: 10,
+            max: 10,
+            park_after: 60,
+        },
         concurrency: 1,
         backoff: outbox_kit::BackoffPolicy {
             base: Duration::from_millis(5),
