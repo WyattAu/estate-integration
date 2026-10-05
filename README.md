@@ -162,6 +162,7 @@ no external network.
 | `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (the sender-level breaker burn is bounded by each event's derived `max_attempts + 1` ceiling, and the gauge watcher is awaited before the render is read, so neither assertion races the runner; round-5 + round-6 notes) | outbox-kit 0.1.0, metrics-kit 0.2.0, breaker 2.0.1 |
 | `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. Asserts largest-remainder allocation sums exactly, FX conversion is explicit, cross-currency addition is refused, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.1.1, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
 | `tests/auth_provision.rs` | the provisioning + session stack: a SCIM user serializes to RFC 7644 shape (`userName` on the wire, never `user_name`) and round-trips; filters select from a provisioned set on SCIM attribute names; a list response reports `totalResults` independently of page size; accessctl's hardcoded role hierarchy and its Cedar policy set reach the same verdicts; ws-barbican extracts a token from header, registered query key and cookie with header precedence, refusing an unregistered key; and every action lands in a hash-linked audit chain that verifies | accessctl 0.1.0 (`cedar`), scim-kit 0.1.0, tamper-audit 0.2.0, ws-kit 0.4.2, ws-barbican 0.1.2 |
+| `tests/collab_docs.rs` | collaborative documents end to end: three replicas authored independently converge on byte-identical text under four delivery orders (each fragment present exactly once, none lost or duplicated); concurrent delete + insert converge in either causal order; replayed deletes are no-ops while replayed inserts **duplicate**; out-of-order delivery visibly diverges; presence join/leave/re-join; a `BroadcastHub` fans each publication to every subscriber once and *refuses* a broadcast with no receivers; i18n fallback chains (`fr-CA` → `fr` → `en`), plural-rule selectors, and locale parsing; markdown renders from collaboratively edited text with `<script>` stripped; the convergence ships as a typed event envelope | crdts-kit 0.1.0, i18n-kit 0.1.3, eventbus-kit 0.3.5 (`typed_eventbus`), docs-pipeline 0.1.4, ws-kit 0.4.2 |
 
 ## Run
 
@@ -541,3 +542,55 @@ Composition facts worth keeping:
   cookie, and an *unregistered* query key is ignored rather than honoured —
   so a link-crafted `?token=` cannot inject a credential. That is the right
   default and worth having pinned.
+
+
+Round-9 notes (the collaborative-document stack — `tests/collab_docs.rs`):
+
+Shared documents with real-time sync, per-locale rendering, and publication.
+Five crates composed for the first time. Four findings, and one contract that
+cost this suite a debugging round:
+
+- **`RgaString::apply` does not deduplicate, so any at-least-once transport
+  corrupts the document silently.** A replayed `Insert` op appends its
+  character again under the *same* `OperationId`; only `Delete` is
+  replay-safe, because it sets a tombstone flag on an existing node. This is
+  documented — `TextOperation` is described as "commutative and
+  idempotent-free by design" — but the consequence deserves more than a
+  doc comment: a WebSocket sync protocol must keep its own seen-set of
+  operation ids, and `TextOperation` exposes no accessor for the id, so a
+  host has to match on the variant shape (`Insert { id, .. }` /
+  `Delete { id, .. }`) to deduplicate at all. The suite pins both halves:
+  replaying a delete changes nothing, replaying an insert adds exactly one
+  character per op. Ask: an `OperationId` accessor, or an `apply_all` that
+  takes a seen-set.
+- **Causal delivery is a hard precondition**, stated correctly in
+  `apply`'s rustdoc: an operation may only be delivered after the operations
+  that created its `origin_left`/`origin_right`. The suite pins both
+  directions — causally ordered delivery converges under every interleaving,
+  and reversing the order visibly diverges. This is standard RGA behaviour
+  and correct, but it means the *transport* owes the CRDT an ordering
+  guarantee (per-site sequence numbers, or a reorder buffer), and nothing in
+  the types says so.
+- **The published package `eventbus-kit` has a lib target named
+  `typed_eventbus`.** The `use` statement is `use typed_eventbus::…` while
+  the dependency is `eventbus-kit`, and docs.rs shows only the package name,
+  so the mismatch surfaces as "unresolved import" with nothing pointing at
+  the cause. Ask: align the two names.
+- **i18n-kit never selects a plural key.** `translate` returns whatever the
+  plain key resolves to, so `translate("en", "invoice.items", count=4)`
+  yields "4 item". `PluralRule::as_key_suffix()` exists and is correct
+  (`for_count` for English rules, `with_zero` for Arabic/Latvian), but
+  `translate` does not consult it, and nothing reconciles the rule's
+  vocabulary ("other") with a catalog's key naming ("plural"). A host that
+  renders "4 items" as "4 item" ships a bug that no i18n-kit test can catch,
+  because the rule is available and unused. Ask: `translate_count(key, n)`,
+  or document the host obligation at `PluralRule`.
+
+The contract that bit this suite: `CrdtDocument::insert_text` and
+`delete_text` apply the edit **locally before returning the operations to
+broadcast**. Authoring two replicas' concurrent edits on those replicas
+themselves and then applying the returned op sets double-counts them — which
+looks exactly like the missing-dedup bug above, and cost a round of
+debugging before the authoring fixture was moved to separate replicas. It is
+the easiest way to misuse the crate and deserves an explicit note in its
+rustdoc.
