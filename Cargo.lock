@@ -1583,6 +1583,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "double-entry"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "355ca88958b55a3230acd963d42ab389528e529e084e2077c661b10858041019"
+
+[[package]]
 name = "dtoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1838,6 +1844,7 @@ dependencies = [
  "dbc-parse",
  "decimal-money",
  "docs-pipeline",
+ "double-entry",
  "envstack",
  "error-classify",
  "error-codes",

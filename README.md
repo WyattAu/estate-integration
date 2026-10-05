@@ -177,6 +177,7 @@ no external network.
 | `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
 | `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
 | `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.1, oauth-toolkit 0.2.2, multi-chain-wallet 0.2.2 |
+| `tests/accounting_core.rs` | the new accounting core against the estate: append-only journals, balanced posting, period close, and reversal by counter-entry, plus the point at which two ledger crates in this workspace stop agreeing | double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
 
 ## Run
 
@@ -963,3 +964,46 @@ registration and authentication namespaces do not cross; `constant_time_eq`
 agrees with slice equality including on length; and EIP-55 mixed-case
 addresses mean a lowercased address is a *different* address, so hosts must not
 normalise them for storage.
+
+Round-14 notes (the accounting core — `tests/accounting_core.rs`):
+
+`double-entry 0.1.0` is new: the immutable double-entry core for an SME ledger.
+It was published, and added to this suite in the same loop, so it has never
+existed without a consumer composing it.
+
+**The finding: two ledger crates in this workspace model a journal entry
+differently, and neither can express the other's.**
+
+- `ledger-kit 0.1.1`'s `Posting` is **one debit account, one credit account and a
+  strictly positive amount** — a transfer. `double-entry`'s `JournalEntry` is
+  **N legs**, each a side and a magnitude.
+- An invoice with two cost lines, revenue and tax is **one entry** in the
+  accounting core and **four postings** in ledger-kit. That is representable,
+  but the two crates disagree about the unit of work, and nothing in either type
+  system stops a product choosing per call site. The failure mode is a journal
+  that balances in one model and not the other.
+- The money types differ too, and the difference is not cosmetic:
+  `ledger_kit::MonetaryAmount` is a decimal **value**; `double_entry::Amount` is
+  an exact **integer count of minor units**. The same integer — 1000 — is
+  $10.00 in USD and ¥1000 in JPY, so the currency's exponent has to travel with
+  the number. A bare `i64` loses that, which is why `Amount` refuses to assume a
+  scale and refuses to post a sub-minor remainder.
+
+**What is now protected, and what a product can rely on:** a posting is a count
+of minor units or it does not post; a rounding mode is an explicit argument with
+no default, because IEEE 754 and ISO 80000-1 say half-even while ZATCA
+E-Invoicing vF §10 says half-up; successive rounding is *refused* rather than
+merely discouraged (ISO 2 §3.3, GB/T 8170-2008 §3.3.1 — `97.46 → 97.5 → 98` is
+not `97.5`); `minor_unit` is an `Option`, so ISO 4217's `n.a.` for XAU/XDR/XUA is
+not confused with JPY's zero; and **MRO and MGA are refused outright** — both
+are 1/5-scaled but ISO 4217 codes them as exponent 2, so an integer count of
+minor units is off by a fifth on remittance with no error anywhere.
+
+Both crates refuse the same unbalanced fact, and that shared invariant is pinned
+from both sides so a change to either has to keep them agreeing.
+
+Three bugs in `double-entry` itself were caught by its tests before publication:
+a reversal that negated the amount *as well as* flipping the side (a double
+negation that reverses nothing at all), an `Amount::minor` constructor that
+multiplied by a scale its representation did not call for, and a `quantize`
+whose tie-break took the wrong neighbour.

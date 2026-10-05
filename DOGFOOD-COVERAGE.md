@@ -6,8 +6,8 @@ after any publish or pin change; this file is the human view of that report.
 
 The 161 crates published under the account divide three ways:
 
-- **70 composed** — pulled by a suite here and exercised against their
-  neighbours, in 32 suites.
+- **71 composed** — pulled by a suite here and exercised against their
+  neighbours, in 33 suites.
 - **75 exempt** — product monorepos, UI components and dormant families that
   carry their own tests (listed below).
 - **16 debt** — published, working, and never proven to work alongside
@@ -21,7 +21,7 @@ The 161 crates published under the account divide three ways:
 > forever, and a BIP-39 implementation that rejects every published test
 > vector are all findings only a composing suite can produce.
 
-## Composed (70)
+## Composed (71)
 
 | area | crates |
 |---|---|
@@ -29,7 +29,7 @@ The 161 crates published under the account divide three ways:
 | auth | `accessctl`, `barbican`, `cryptkit`, `multi-chain-wallet`, `oauth-toolkit`, `salting`, `scim-kit`, `tamper-audit`, `tokenkit`, `webauthn-kit` |
 | conc | `actor-kit`, `book-kit`, `clock-kit`, `hw-kit`, `shared-state`, `shm-rings`, `slab-pool`, `uring-kit` |
 | data | `a2l-parse`, `api-paginate`, `api-types`, `blobkit`, `can-core`, `cas-kit`, `crdts-kit`, `dbc-parse`, `docs-pipeline`, `error-classify`, `error-codes`, `eventbus-kit`, `http-errors`, `i18n-kit`, `json-envelope`, `media-kit`, `typed-id-derive`, `typed-id-new`, `validkit`, `xcp-core` |
-| money | `billing-kit`, `decimal-money`, `formula-lang`, `ledger-kit`, `sheet-core`, `sheet-engine` |
+| money | `billing-kit`, `decimal-money`, `double-entry`, `formula-lang`, `ledger-kit`, `sheet-core`, `sheet-engine` |
 | net | `breaker`, `fetch-kit`, `idempotency-kit`, `mail-sync-kit`, `mailkit`, `outbox-kit`, `resilient-fetch`, `sieve-kit`, `throttle-kit`, `webhookkit`, `wire-kit`, `ws-barbican`, `ws-kit` |
 | obsv | `chaos-kit`, `config-kit`, `envstack`, `flag-kit`, `healthkit`, `metrics-kit`, `otel-stack`, `otelkit`, `percentile-kit`, `pid-manager`, `shutdown-kit`, `telemetry-init`, `worker-kit` |
 
@@ -67,8 +67,9 @@ Each round adds suites and closes debt. Counts are crates newly composed:
 | 11 | `calibration_stack`, `spreadsheet_engine` (product-layer round) | 12 |
 | 12 | `api_errors` + `flags_and_lifecycle` — error envelope and process ownership | 12 |
 | 13 | `crypto_auth` — HMAC + WebAuthn + PKCE + CSRF + wallet | 4 |
+| 14 | `accounting_core` — the new immutable double-entry ledger, composed against `ledger-kit` | 1 |
 
-Debt fell **53 → 32 → 24 → 20 → 16** over rounds 7–13.
+Debt fell **53 → 32 → 24 → 20 → 16** over rounds 7–14.
 
 ## Exempt by design (75)
 
