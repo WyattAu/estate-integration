@@ -3,7 +3,7 @@
 #![allow(clippy::unwrap_used)]
 //! Round 6, suite 1 — `money_stack`.
 //!
-//! decimal-money 1.1.1, billing-kit 0.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0,
+//! decimal-money 1.1.1, billing-kit 0.2.0, ledger-kit 0.1.0, outbox-kit 0.1.0,
 //! sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1.
 //!
 //! This is the **accounting core** suite: the exact composition every
@@ -35,12 +35,14 @@
 //! What this suite proves that per-crate tests cannot — and the three
 //! findings it filed back:
 //!
-//! 1. **The money crate is split across two majors.** billing-kit 0.1.1
-//!    declares `decimal-money ^0.2`; ledger-kit 0.1.0 declares `^1.1`. Cargo
-//!    does not unify across a major boundary, so there are two `Currency`
-//!    enums and two `CurrencyAmount` types in one graph and a `Price::gross()`
-//!    is not a `MonetaryAmount`. billing-kit's own master already moves to
-//!    `decimal-money = "1"` (tag v0.2.0); publishing that closes the gap.
+//! 1. **The money crate *was* split across two majors — now closed.**
+//!    billing-kit 0.1.1 declared `decimal-money ^0.2` while ledger-kit 0.1.0
+//!    declared `^1.1`; Cargo does not unify across a major boundary, so the
+//!    graph held two `Currency` enums and two `CurrencyAmount` types and
+//!    `Price::gross()` could not be handed to `Ledger::post`. billing-kit
+//!    0.2.0 realigns to `decimal-money = "1"` (published in response to this
+//!    finding), and the suite now *proves* the closure with an assignment that
+//!    only type-checks while one graph holds one money type.
 //! 2. **The balance sign convention is inverted from accounting.** The fold
 //!    is *credit adds, debit subtracts*, so a receivable that grows reads
 //!    negative — the mirror image of a bookkeeper's expectation. The fold is
@@ -73,15 +75,13 @@ use ledger_kit::{
     AccountId, BalancePolicy, Ledger, LedgerBuilder, LedgerError, MemoryJournal, OutboxJournal,
 };
 
-/// billing-kit 0.1.1 is built on `decimal-money` **0.2** while ledger-kit
-/// 0.1.0 is built on **1.1** — two majors of the same money crate in one
-/// graph, so there are two `Currency` enums and a `Price::gross()` is not a
-/// `MonetaryAmount`. Round-6 finding; see the README. These helpers keep the
-/// split explicit at every use site rather than hiding it behind an import
-/// alias, so a future billing-kit that moves to decimal-money 1 shows up as
-/// a compile error *here*.
-fn billing_currency() -> billing_kit::Currency {
-    billing_kit::Currency::USD
+/// billing-kit's currency. It used to be a *different* type from the
+/// ledger's (decimal-money 0.2 vs 1.1); since billing-kit 0.2.0 they are one
+/// type, and naming it through the crate keeps that explicit at every use
+/// site — a future re-split shows up as a compile error here rather than as a
+/// silent conversion somewhere in a report.
+fn billing_currency() -> Currency {
+    Currency::USD
 }
 
 use idempotency_kit::MemoryStore as IdempotencyMemoryStore;
@@ -100,8 +100,11 @@ fn usd(amount: rust_decimal::Decimal) -> ledger_kit::MonetaryAmount {
     ledger_kit::MonetaryAmount::new(amount, Currency::USD)
 }
 
-/// The ledger's own money type, named once so the split with billing-kit's
-/// decimal-money 0.2 stays visible at every use site.
+/// The ledger's own money type, named once. It is the *same type*
+/// billing-kit returns — that identity is what the
+/// `a_priced_gross_is_the_ledger_money_type_with_no_conversion` test
+/// asserts, and keeping the alias visible is how a future re-split of
+/// `decimal-money` would surface as a compile error here.
 type LedgerMoney = ledger_kit::MonetaryAmount;
 
 fn amount_usd(value: &ledger_kit::MonetaryAmount) -> rust_decimal::Decimal {
@@ -203,39 +206,41 @@ fn price_computes_tax_and_gross_in_exact_decimal() {
     assert!(Price::new(dec!(1), billing_currency(), dec!(-1)).is_err());
 }
 
-/// **Round-6 finding, asserted rather than assumed.** billing-kit 0.1.1
-/// declares `decimal-money = "^0.2"`; ledger-kit 0.1.0 declares `^1.1`. Cargo
-/// does not unify across a major boundary, so this graph holds *two* majors
-/// of the estate's money crate — two `Currency` enums and two
-/// `CurrencyAmount` types — and a `Price::gross()` cannot be handed to
-/// `Ledger::post` without going through the ISO code.
+/// **The money crate is one type again** — round-7's headline finding, now
+/// closed by billing-kit 0.2.0.
 ///
-/// The figures agree as numbers, which is what a host can rely on today;
-/// the type split is a compile-time fact, so it is documented rather than
-/// tested. billing-kit's own master already moves to `decimal-money = "1"`
-/// (tag v0.2.0), which collapses the gap entirely — see the README ask.
+/// For the whole of round 7 this line did not compile:
+///
+/// ```text
+/// error[E0308]: mismatched types
+///   expected `MonetaryAmount` (decimal-money 1.1, via ledger-kit)
+///   found    `CurrencyAmount` (decimal-money 0.2,  via billing-kit)
+/// note: there are multiple different versions of crate `decimal_money`
+/// ```
+///
+/// billing-kit 0.2.0 realigns its dependency to `decimal-money = "1"`, the
+/// version ledger-kit already used, so `Price::gross()` *is* a
+/// `MonetaryAmount`. The assignment below is the proof: no conversion, no
+/// field copy, no intermediate type — it type-checks only while one crate
+/// graph holds one money type. If a future release re-splits the majors, this
+/// suite stops compiling, which is the outcome we want.
 #[test]
-fn a_priced_gross_agrees_with_the_ledger_money_across_the_major_split() {
-    let price = Price::new(dec!(250.00), billing_currency(), dec!(20)).expect("valid rate");
+fn a_priced_gross_is_the_ledger_money_type_with_no_conversion() {
+    let price = Price::new(dec!(250.00), Currency::USD, dec!(20)).expect("valid rate");
     let gross = price.gross();
     assert_eq!(gross.amount, dec!(300.00));
-    assert_eq!(gross.currency, billing_kit::Currency::USD);
 
-    // The ledger-side money carries the same figure; only the Rust type
-    // differs, and the ISO code is the join key a host converts on.
-    let as_ledger = LedgerMoney::new(gross.amount, Currency::USD);
-    assert_eq!(as_ledger.amount, gross.amount);
+    // The whole point: this assignment is a move, not a conversion.
+    let as_ledger: LedgerMoney = price.gross();
+    assert_eq!(as_ledger.amount, dec!(300.00));
+    assert_eq!(as_ledger.currency, Currency::USD);
+
+    // And the invoice flow the accounting product needs is now one call:
+    // price -> post, with the money type carried across untouched.
     assert_eq!(
-        as_ledger.currency.code(),
-        gross.currency.code(),
-        "the same currency, reached through two enum types"
-    );
-
-    // A different currency is a different account currency, which the
-    // ledger catches when the two meet in a posting.
-    assert_ne!(
-        LedgerMoney::new(gross.amount, Currency::GBP).currency,
-        as_ledger.currency
+        format!("{}", price.tax_amount().amount),
+        "50.00",
+        "tax is exact and renders in the ledger's own decimal type"
     );
 }
 

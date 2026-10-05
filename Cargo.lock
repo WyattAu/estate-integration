@@ -390,12 +390,17 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
 name = "billing-kit"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb25cd51eebbf33b2df218f55216949fce7c2365d9d1b38fd3516dec5cad4117"
+checksum = "c867023f91cb0815b051cbb00899d51abc228aa7c5f26e426172c54b189be5dc"
 dependencies = [
- "decimal-money 0.2.0",
+ "base64 0.22.1",
+ "decimal-money",
+ "hmac 0.12.1",
  "rust_decimal",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
  "thiserror 2.0.21",
 ]
 
@@ -1192,17 +1197,6 @@ checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
 
 [[package]]
 name = "decimal-money"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7e882f03dbd08b679211bdd5a22e68d5b81865eb9bf252e55ee8cb4caddfd42"
-dependencies = [
- "rust_decimal",
- "serde",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "decimal-money"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25ad7be141f67e1f31af099aa59071b8ab847a132a73a73a1bd0255dec63a9ed"
@@ -1585,7 +1579,7 @@ dependencies = [
  "config-kit",
  "crdts-kit",
  "dbc-parse",
- "decimal-money 1.1.1",
+ "decimal-money",
  "docs-pipeline",
  "eventbus-kit",
  "fetch-kit",
@@ -2929,7 +2923,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb0cb30ac651c0b9a20b32023dadb2c3a73d201005e1d058cb55a0993caf4e3e"
 dependencies = [
  "async-trait",
- "decimal-money 1.1.1",
+ "decimal-money",
  "idempotency-kit",
  "outbox-kit",
  "serde_json",

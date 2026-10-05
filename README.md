@@ -170,7 +170,7 @@ no external network.
 | `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.1 |
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
 | `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (the sender-level breaker burn is bounded by each event's derived `max_attempts + 1` ceiling, and the gauge watcher is awaited before the render is read, so neither assertion races the runner; round-5 + round-6 notes) | outbox-kit 0.1.0, metrics-kit 0.2.0, breaker 2.0.1 |
-| `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. Asserts largest-remainder allocation sums exactly, FX conversion is explicit, cross-currency addition is refused, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.1.1, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
+| `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. A `Price::gross()` posts with *no conversion* (same money type), largest-remainder allocation sums exactly, FX conversion is explicit, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.2.0, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
 | `tests/auth_provision.rs` | the provisioning + session stack: a SCIM user serializes to RFC 7644 shape (`userName` on the wire, never `user_name`) and round-trips; filters select from a provisioned set on SCIM attribute names; a list response reports `totalResults` independently of page size; accessctl's hardcoded role hierarchy and its Cedar policy set reach the same verdicts; ws-barbican extracts a token from header, registered query key and cookie with header precedence, refusing an unregistered key; and every action lands in a hash-linked audit chain that verifies | accessctl 0.1.0 (`cedar`), scim-kit 0.1.0, tamper-audit 0.2.0, ws-kit 0.4.2, ws-barbican 0.1.2 |
 | `tests/collab_docs.rs` | collaborative documents end to end: three replicas authored independently converge on byte-identical text under four delivery orders (each fragment present exactly once, none lost or duplicated); concurrent delete + insert converge in either causal order; replayed deletes are no-ops while replayed inserts **duplicate**; out-of-order delivery visibly diverges; presence join/leave/re-join; a `BroadcastHub` fans each publication to every subscriber once and *refuses* a broadcast with no receivers; i18n fallback chains (`fr-CA` → `fr` → `en`), plural-rule selectors, and locale parsing; markdown renders from collaboratively edited text with `<script>` stripped; the convergence ships as a typed event envelope | crdts-kit 0.1.0, i18n-kit 0.1.3, eventbus-kit 0.3.5 (`typed_eventbus`), docs-pipeline 0.1.4, ws-kit 0.4.2 |
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.3, slab-pool 0.1.0, shared-state 0.1.1, shm-rings 0.2.1 |
@@ -508,17 +508,20 @@ suite the planned accounting product depends on. Seven crates, one flow:
 crash replay → the same figures in a formula-driven workbook → XLSX export.
 Three findings, in descending order of how much they matter to a product:
 
-- **The estate's money crate is split across two majors, so a price cannot
-  be posted.** billing-kit 0.1.1 declares `decimal-money = "^0.2"` while
-  ledger-kit 0.1.0 declares `^1.1`. Cargo does not unify across a major
-  boundary, so one graph now holds two `Currency` enums and two
-  `CurrencyAmount` types — `Price::gross()` is not a `MonetaryAmount`, and
-  the accounting product's central flow (invoice → posting) needs a
-  hand-written conversion between them. Reproduced by the suite; the fix is
-  already written on billing-kit's own master (`decimal-money = "1"`, tag
-  `v0.2.0`) and only needs publishing. **This is the single highest-value
-  unblock in the estate**: without it, every accounting consumer pays for the
-  split.
+- **The estate's money crate was split across two majors, so a price could
+  not be posted. — FIXED.** billing-kit 0.1.1 declared `decimal-money = "^0.2"`
+  while ledger-kit 0.1.0 declares `^1.1`. Cargo does not unify across a major
+  boundary, so one graph held two `Currency` enums and two `CurrencyAmount`
+  types — `Price::gross()` was not a `MonetaryAmount`, and the accounting
+  product's central flow (invoice → posting) needed a hand-written conversion
+  between them.
+
+  **billing-kit 0.2.0 was published in response to this finding** (from this
+  repo's own master, which already aligned on `decimal-money = "1"`). The
+  suite now pins the closure rather than the defect:
+  `let as_ledger: MonetaryAmount = price.gross();` is a move, not a
+  conversion, and it stops compiling if the majors ever split again. That was
+  the single highest-value unblock in the estate, and it is closed.
 - **ledger-kit's balance signs are inverted from the accounting
   convention.** The fold is *credit adds, debit subtracts*, so a customer
   receivable that grows reads **negative** — where an accountant expects an
@@ -689,17 +692,24 @@ none is visible to a per-crate test:
   signals distinct from ordinary messages. This is the most severe finding
   in the estate so far — it is reachable from two documented handle methods
   and it is a permanent deadlock.
-- **One stalled reader wedges a shared-memory ring forever.** `try_push`
-  refuses when `write_idx - slowest_read_idx >= capacity`, and
-  `slowest_read_idx` folds over *every* registered reader with `u64::MIN`. A
-  consumer that is merely slow — paused, or not yet reading — pins its cursor
-  at 0 and the producer is refused permanently. Reproduced exactly: capacity
-  64, two readers, reader 0 drains all 64 values, `try_push` still returns
-  `false`. With a single reader the identical sequence recovers, which is why
-  a one-consumer test never sees it. Ask: a ring cannot distinguish "no
-  reader" from "stalled reader" without a heartbeat or an explicit
-  unregister; `Drop` for the reader handle that clears its cursor would fix
-  the common case.
+- **A shared-memory ring stalls permanently on an unconsumed reader slot.**
+  `try_push` refuses when `write_idx - slowest_read_idx >= capacity`, and
+  `slowest_read_idx` folds over *every* provisioned cursor with `u64::MIN`.
+  A consumer that is merely slow — paused, not yet reading, or crashed —
+  pins its cursor at 0 and the producer is refused for good. Reproduced
+  exactly: capacity 64, two provisioned readers, reader 0 drains all 64
+  values, `try_push` still returns `false`; the same sequence with a
+  fully-drained single reader recovers.
+
+  This one is the crate's **documented contract** ("an unused reader slot is
+  a permanently slow reader"), so it is not a bug — the suite now pins both
+  halves as behaviour rather than as a defect. What the docs do *not* say is
+  the failure mode a host must design around: there is no reader timeout, no
+  reclaim, and no `Drop` on the reader handle, so a crashed consumer wedges
+  the producer until the ring is destroyed and recreated. A supervisor
+  handling a ring should know that. Ask: a `Drop` that releases the cursor,
+  or an explicit `unregister_reader`, would turn "destroy the ring" into
+  "restart the reader".
 - **Lifecycle transitions are asynchronous with no completion signal.**
   `start().await` returning `Ok` means the message was *accepted*; the
   registry only flips to `Running` when a worker dequeues it. A host that

@@ -87,7 +87,11 @@ ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (defau
 # three pins are one type in three places, which is the point the suite
 # asserts rather than assumes.
 decimal-money = "=1.1.1"                      # tests/money_stack.rs
-billing-kit = "=0.1.1"                        # tests/money_stack.rs (default: serde)
+# 0.2.0 (published 2026-10-05 by this loop): realigns decimal-money from
+# ^0.2 to ^1, which is the version ledger-kit uses. Until this release the
+# graph held two majors of the estate's money crate and `Price::gross()`
+# could not be handed to `Ledger::post` — see the README round-7 finding.
+billing-kit = "=0.2.0"                        # tests/money_stack.rs (default: serde)
 sheet-engine = "=0.1.0"                       # tests/money_stack.rs (formula-driven report), tests/spreadsheet_engine.rs (engine + recalc)
 sheet-core = "=0.1.0"                         # tests/money_stack.rs (cell vocabulary)
 formula-lang = "=0.1.1"                       # tests/money_stack.rs (Value), tests/spreadsheet_engine.rs (is_volatile predicate)

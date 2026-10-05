@@ -35,12 +35,17 @@
 //!    lift the suspension never runs. Two documented handle methods
 //!    (`pause`, `resume`) dead-lock an actor permanently, and only dropping
 //!    the scheduler releases it.
-//! 2. **One stalled reader wedges a shared-memory ring forever.**
-//!    `try_push` refuses when `write_idx - slowest_read_idx >= capacity`, and
-//!    `slowest_read_idx` folds over *every* registered reader — so a consumer
-//!    that is merely slow (paused, not yet reading) pins the cursor at 0 and
-//!    the producer is refused permanently. A single-reader ring recovers, so
-//!    the bug is invisible in a one-consumer test.
+//! 2. **A shared-memory ring stalls permanently on an unconsumed reader
+//!    slot.** `try_push` refuses when `write_idx - slowest_read_idx >=
+//!    capacity`, and `slowest_read_idx` folds over *every* provisioned
+//!    cursor — so a consumer that is merely slow, paused, or crashed pins the
+//!    cursor at 0 and the producer is refused for good. This one is the
+//!    crate's *documented* contract ("an unused reader slot is a permanently
+//!    slow reader"), and the suite pins both halves: a fully-drained reader
+//!    lets the producer resume, and an unconsumed slot never does. What the
+//!    documentation does not say is that there is no timeout, no reclaim, and
+//!    no `Drop` on the reader handle — so a crashed consumer wedges the
+//!    producer until the ring is destroyed.
 //! 3. **Lifecycle transitions are asynchronous with no completion signal.**
 //!    `start().await` returning `Ok` means the message was *accepted*; the
 //!    registry only flips to `Running` when a worker dequeues it. A host that
@@ -209,8 +214,16 @@ fn a_slab_pool_recycles_slots_and_reports_its_free_list() {
 /// no writable temp dir, or a kernel without the mapping support), the test
 /// reports the skip rather than failing — which is the convention the
 /// `uring_proxy` suite already uses for a denied ring.
+///
+/// **The reader count is part of the contract.** Backpressure is computed
+/// against the *slowest participating* reader, and `create_new` provisions
+/// every cursor up front — so a reader slot that is never drained pins the
+/// ring exactly as a slow consumer would. The crate documents this
+/// ("an unused reader slot is a permanently slow reader"), and this suite
+/// pins the behaviour rather than fighting it: a ring is provisioned for
+/// exactly the consumers that will actually read it.
 #[test]
-fn a_shared_memory_ring_carries_values_from_one_producer_to_many_readers() {
+fn a_shared_memory_ring_carries_values_from_one_producer_to_its_readers() {
     let dir = std::env::temp_dir().join(format!(
         "estate-ring-{}-{}",
         std::process::id(),
@@ -219,8 +232,97 @@ fn a_shared_memory_ring_carries_values_from_one_producer_to_many_readers() {
     std::fs::create_dir_all(&dir).expect("a writable temp dir");
 
     let path = dir.join("events.ring");
-    // One producer, two readers: the API is single-producer by construction
-    // (`try_push` takes `&mut self`), so the shape is enforced by the types.
+    // One producer, one reader — provisioned for exactly the consumers that
+    // will run. The API is single-producer by construction (`try_push` takes
+    // `&mut self`), so that half is enforced by the types.
+    let mut producer =
+        match shm_rings::SpmcRingBuffer::<u64>::create_new_with_readers(&path, CAPACITY, 1) {
+            Ok(ring) => ring,
+            Err(err) => {
+                eprintln!("skipping: shared-memory ring unavailable on this host: {err}");
+                let _ = std::fs::remove_dir_all(&dir);
+                return;
+            }
+        };
+    let reader = shm_rings::SpmcRingBuffer::<u64>::open_existing(&path)
+        .expect("a second handle opens the same mapping");
+    assert_eq!(
+        reader.reader_count(),
+        1,
+        "exactly one consumer is provisioned"
+    );
+
+    assert!(
+        producer.try_push(&42),
+        "the producer pushes into an empty ring"
+    );
+    assert_eq!(
+        reader.try_pop(0).expect("reader 0 pops"),
+        Some(42),
+        "the reader receives the value"
+    );
+    assert_eq!(
+        reader.try_pop(0).expect("reader 0 pops again"),
+        None,
+        "and only once"
+    );
+
+    // Capacity is respected: a full ring refuses rather than overwriting
+    // unread data, which is the only flow-control mode the crate offers.
+    // The ring now holds one value (42) and the reader's cursor has consumed
+    // it, so it can take `capacity` more before refusing.
+    let capacity = u64::try_from(CAPACITY).expect("capacity fits u64");
+    let mut pushed = 0_u64;
+    while producer.try_push(&pushed) {
+        pushed += 1;
+    }
+    assert_eq!(pushed, capacity, "the ring filled to capacity");
+    assert!(
+        !producer.try_push(&999),
+        "a full ring refuses the push instead of overwriting unread data"
+    );
+    assert_eq!(reader.len(0).expect("length"), capacity);
+    assert!(!reader.is_empty(0).expect("emptiness"));
+
+    // Drain, and the producer recovers — which is the property a stalled
+    // consumer breaks. Pinned here with a fully-drained consumer.
+    let mut drained = 0_u64;
+    while let Ok(Some(_)) = reader.try_pop(0) {
+        drained += 1;
+    }
+    assert_eq!(drained, capacity, "every value drained");
+    assert!(reader.is_empty(0).expect("emptiness"));
+    assert!(
+        producer.try_push(&1),
+        "a fully-drained reader lets the producer resume"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// The documented sharp edge, pinned as behaviour: a provisioned reader that
+/// never consumes stalls the producer **permanently** — the ring does not
+/// time a reader out or reclaim its slot. Reproduced: capacity 64 with two
+/// provisioned readers, reader 0 drains all 64 values, and `try_push` still
+/// refuses because reader 1's cursor never moved.
+///
+/// This is the crate's stated contract, not a bug — the docs warn that "an
+/// unused reader slot is a permanently slow reader". What the suite adds is
+/// the failure *mode* a host must design around: there is no
+/// `unregister_reader`, no heartbeat, and no `Drop` on the reader handle, so
+/// a consumer that crashes or is paused wedges the producer until the ring is
+/// destroyed and recreated. Worth an explicit note wherever a ring is handed
+/// to a supervisor.
+#[test]
+fn an_unconsumed_reader_slot_stalls_the_producer_permanently() {
+    let dir = std::env::temp_dir().join(format!(
+        "estate-ring-stall-{}-{}",
+        std::process::id(),
+        Instant::now().elapsed().as_nanos()
+    ));
+    std::fs::create_dir_all(&dir).expect("a writable temp dir");
+    let path = dir.join("stalled.ring");
+
     let mut producer =
         match shm_rings::SpmcRingBuffer::<u64>::create_new_with_readers(&path, CAPACITY, 2) {
             Ok(ring) => ring,
@@ -230,93 +332,29 @@ fn a_shared_memory_ring_carries_values_from_one_producer_to_many_readers() {
                 return;
             }
         };
-    let reader_a = shm_rings::SpmcRingBuffer::<u64>::open_existing(&path)
-        .expect("a second handle opens the same mapping");
-    let reader_b = shm_rings::SpmcRingBuffer::<u64>::open_existing(&path)
-        .expect("a third handle opens the same mapping");
-    assert_eq!(reader_a.reader_count(), 2, "both readers are registered");
+    let reader =
+        shm_rings::SpmcRingBuffer::<u64>::open_existing(&path).expect("the consumer handle opens");
+    assert_eq!(reader.reader_count(), 2);
 
-    // The reader that popped a value consumed it; the other did not — that is
-    // what "broadcast semantics with per-reader cursors" means, and getting
-    // it wrong would double-count in an accounting ledger.
-    assert!(
-        producer.try_push(&42),
-        "the producer pushes into an empty ring"
-    );
-    assert_eq!(
-        reader_a.try_pop(0).expect("reader 0 pops"),
-        Some(42),
-        "reader 0 receives the value"
-    );
-    assert_eq!(
-        reader_b
-            .try_pop(0)
-            .expect("reader 0 pops on the other handle"),
-        None,
-        "the value was already consumed by reader 0's cursor — a single \
-         shared queue would have raced here"
-    );
-
-    // Capacity is respected: a full ring refuses rather than overwriting
-    // unread data, which is the only flow control the crate offers.
-    let mut pushed = 1_u64; // the value reader 0 already consumed
-    while pushed < u64::try_from(CAPACITY).expect("capacity fits u64") {
-        if !producer.try_push(&pushed) {
-            break;
-        }
+    let capacity = u64::try_from(CAPACITY).expect("capacity fits u64");
+    let mut pushed = 0_u64;
+    while producer.try_push(&pushed) {
         pushed += 1;
     }
-    assert!(
-        !producer.try_push(&999),
-        "a full ring refuses the push instead of overwriting unread data"
-    );
+    assert_eq!(pushed, capacity, "the ring filled");
 
-    // Drain reader 0 completely, then push again. **This is where
-    // multi-reader rings wedge** — see the finding below.
+    // Reader 0 drains everything it can.
     let mut drained = 0_u64;
-    while let Ok(Some(_)) = reader_a.try_pop(0) {
+    while let Ok(Some(_)) = reader.try_pop(0) {
         drained += 1;
     }
-    assert_eq!(drained, pushed - 1, "reader 0 drained everything it had");
-    assert!(reader_a.is_empty(0).expect("emptiness"));
+    assert_eq!(drained, capacity, "reader 0 drained the whole stream");
+    assert!(reader.is_empty(0).expect("reader 0 is empty"));
 
-    // -- Round-10 finding: a *stalled* reader wedges the producer forever.
-    //
-    // `try_push` refuses when `write_idx - slowest_read_idx >= capacity`,
-    // and `slowest_read_idx` folds over **every** registered reader with
-    // `u64::MIN`. Reader 1 never popped (it is a second consumer that is
-    // slow, paused, or simply not reading yet), so its cursor stays at 0
-    // and the producer is refused for good once the write index has wrapped
-    // the capacity — even though reader 0 has drained everything.
-    //
-    // Reproduced exactly: capacity 64, two readers, reader 0 drains all 64
-    // values, and `try_push` still returns false. With a single reader the
-    // same sequence recovers, which is why the bug is invisible in a
-    // single-consumer test.
-    let stalled_reader_blocks = !producer.try_push(&1);
     assert!(
-        stalled_reader_blocks,
-        "a stalled reader permanently refuses pushes once the write index \
-         wraps — reproduced with capacity {CAPACITY} and 2 readers"
-    );
-    // The single-reader ring does recover, which isolates the cause to the
-    // slowest-reader fold rather than to cursor arithmetic.
-    let single_path = dir.join("single.ring");
-    let mut solo =
-        shm_rings::SpmcRingBuffer::<u64>::create_new_with_readers(&single_path, CAPACITY, 1)
-            .expect("a one-reader ring");
-    let solo_reader =
-        shm_rings::SpmcRingBuffer::<u64>::open_existing(&single_path).expect("it opens");
-    let mut count = 0_u64;
-    while solo.try_push(&count) {
-        count += 1;
-    }
-    assert!(count > 0, "the solo ring filled up");
-    while let Ok(Some(_)) = solo_reader.try_pop(0) {}
-    assert!(
-        solo.try_push(&1),
-        "with one reader that drains, the ring recovers — so the wedge is \
-         the slowest-reader fold over a stalled cursor, not cursor arithmetic"
+        !producer.try_push(&1),
+        "and the producer is still refused, because reader 1's cursor never \
+         moved — the stall is permanent, with no timeout or reclaim"
     );
 
     let _ = std::fs::remove_dir_all(&dir);
