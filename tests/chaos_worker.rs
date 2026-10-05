@@ -190,6 +190,17 @@ async fn run_session() -> (
             }),
             failure_budget: FAILURE_BUDGET,
             leader: false,
+            // worker-kit 0.2.0 → 0.3.0 added these four. The suite's
+            // behaviour is unchanged: fires start on the first tick
+            // (no fire_at_start), shutdown needs no final flush (no
+            // drain_pass), and the breaker pause is wanted (use_breaker
+            // stays true so clustered failures park the job). The
+            // degradation transition is polled by the watch below rather
+            // than pushed through a hook, so no hook is installed.
+            fire_at_start: false,
+            drain_pass: false,
+            use_breaker: true,
+            on_degraded: None,
         })
         .expect("valid job name");
 
