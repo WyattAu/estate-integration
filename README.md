@@ -167,6 +167,7 @@ no external network.
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
 | `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (the sender-level breaker burn is bounded by each event's derived `max_attempts + 1` ceiling, and the gauge watcher is awaited before the render is read, so neither assertion races the runner; round-5 + round-6 notes) | outbox-kit 0.1.0, metrics-kit 0.2.0, breaker 2.0.1 |
 | `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. Asserts largest-remainder allocation sums exactly, FX conversion is explicit, cross-currency addition is refused, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.1.1, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
+| `tests/auth_provision.rs` | the provisioning + session stack: a SCIM user serializes to RFC 7644 shape (`userName` on the wire, never `user_name`) and round-trips; filters select from a provisioned set on SCIM attribute names; a list response reports `totalResults` independently of page size; accessctl's hardcoded role hierarchy and its Cedar policy set reach the same verdicts; ws-barbican extracts a token from header, registered query key and cookie with header precedence, refusing an unregistered key; and every action lands in a hash-linked audit chain that verifies | accessctl 0.1.0 (`cedar`), scim-kit 0.1.0, tamper-audit 0.2.0, ws-kit 0.4.2, ws-barbican 0.1.2 |
 
 ## Run
 
@@ -550,3 +551,59 @@ One documentation gap worth noting: sheet-engine's public API is 0-based
 crate documents in its own rustdoc but a consumer wiring a generated report
 meets immediately. It cost this suite a round of off-by-one errors, so the
 cross-reference is here for the next one.
+
+
+Round-8 notes (the provisioning + session stack — `tests/auth_provision.rs`):
+
+The multi-tenant story an accounting firm needs on day one: an IdP pushes
+users in over SCIM, accessctl binds each to a role, ws-barbican authenticates
+the live transport, and tamper-audit records what happened. Seven crates
+composed for the first time. Four findings:
+
+- **tamper-audit made `AuditLog` async in a patch release.** 0.1.0's
+  `append`/`query`/`verify_chain` are synchronous; 0.2.0's are `async`.
+  Consumers written against 0.1.0 do not fail to compile in a way that
+  points at the cause — they fail on `.await` on a non-future, or silently
+  block a runtime thread. The suite pins 0.2.0. Ask: the next breaking
+  change to this API wants a 0.3.0, since the ecosystem read 0.2.0 as a
+  patch.
+- **The audit chain is seeded with a genesis `log.created` entry.** So
+  `len()`, `total_entries` and any pagination are one higher than the host
+  appended, and — the sharper edge — the *first host entry* chains from the
+  genesis hash rather than from 64 zeros. An independent verifier that
+  assumes "first entry chains from zero" rejects every log the crate
+  produces, which is the kind of bug that only shows up in an audit export
+  months later. Ask: expose `is_genesis()` (or the genesis entry) on
+  `AuditEntry` so verifiers can anchor correctly, and document the
+  off-by-one in `len()`.
+- **`VerificationResult` carries no boolean verdict.** Validity is
+  `broken_at.is_none()` plus `valid_entries == total_entries`, with the
+  reason only in `error: Option<String>`. A host that checks
+  `result.valid` — the obvious spelling — does not compile, which is fine;
+  but the crate's own docs invite the wrong shape. An
+  `is_valid()` accessor would make the intent unmissable.
+- **accessctl has two independent authorization mechanisms.** The
+  hardcoded `RoleHierarchy::check_permission` match and the Cedar
+  `PolicySet` (behind the `cedar` feature, which is on by default) are not
+  tied together. An operator editing policies and a host calling
+  `check_permission` can reach opposite verdicts on the same question, and
+  nothing in the crate's surface says so. The suite asserts they agree on
+  the default hierarchy — that agreement is currently a coincidence of
+  design, not an invariant. Ask: either generate the hardcoded table *from*
+  the policy set, or document that they are alternative backends a host
+  picks between.
+
+Composition facts worth keeping:
+
+- scim-kit's serde renames are correct and complete: `userName`,
+  `externalId`, `totalResults`, `startIndex`, `itemsPerPage` on the wire,
+  never the snake_case field names. Filters match on the SCIM attribute
+  names, so `active eq false` survives the rename — the property an IdP
+  actually depends on.
+- `ScimListResponse::total_results` is genuinely independent of
+  `resources.len()`, which is the RFC 7644 §3.4.2 contract; confusing the
+  two is the classic SCIM pagination bug.
+- ws-barbican's extraction precedence is header > registered query key >
+  cookie, and an *unregistered* query key is ignored rather than honoured —
+  so a link-crafted `?token=` cannot inject a credential. That is the right
+  default and worth having pinned.
