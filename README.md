@@ -156,6 +156,12 @@ no external network.
 | `uring_proxy.rs` | a real echo proxy on an `io_uring` engine thread (listener → completion-driven accept → `ReadFixed` → gate → `WriteFixed` → close): breaker-first admission answers `CIRCUIT_OPEN` before capacity is spent, an exhausted GCRA budget answers `THROTTLED retry_after_ms=<n>`, two scripted backend failures trip the circuit, the half-open probe recovers; exact decision ledger + breaker counters; token/probe/pool contracts hold on any host (ring creation may be denied by the kernel/seccomp — the flagship test reports the skip) | uring-kit 0.1.0, breaker 2.0.1, throttle-kit 2.0.0 |
 | `tests/ledger_settlement.rs` | full settlement flow: double-entry post (debit A, credit B) mirrored through `OutboxJournal` into an outbox-kit store (envelope id == posting id); idempotency-gated retry (`DuplicatePosting` with the original id; key reuse with a fresh request → `InvalidPosting`); dispatcher delivers exactly once; crash recovery replays the undelivered tail into a fresh ledger; `RejectNegative` refuses an overdraw before anything records; audit chain verifies (genesis-aware) with hash-linked entries | ledger-kit 0.1.0, outbox-kit 0.1.0, idempotency-kit 0.1.0 |
 | `tests/policy_gateway.rs` | policy-gated HTTP: a `fetch_kit::middleware::Middleware` evaluates a Rego bundle over the request document (method/path/headers) — compliant requests proceed to a wiremock upstream, violating ones short-circuit before `Next::run` (no network, no retry budget spent), evaluation errors and a poisoned engine reject fail-closed; verdicts are attributed per rule; null-safety of the input document | policy-kit 0.1.0, fetch-kit 0.2.0 (+ reqwest 0.13 — see round-5 findings) |
+| `tests/chaos_worker.rs` | a worker-kit supervisor job whose work unit is a tower service under `ChaosLayer` (seeded 5 ms latency on every call, scripted errors at two consecutive indexes): the failure budget trips the degradation latch — observed live, because a post-outage success clears the flag (round-5 finding) — the worker keeps firing past degradation and drains < 2 s; the same seed reproduces the identical fault sequence across two independent sessions; recorder counts are exact | chaos-kit 0.1.0, worker-kit 0.1.0 (no default features) |
+| `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.0 |
+| `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.0, metrics-kit 0.1.0, percentile-kit 0.1.0 |
+| `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (sender-level breaker burn bounded; round-5 finding) | outbox-kit 0.1.0, metrics-kit 0.1.0, breaker 2.0.1 |
+| `tests/calibration_stack.rs` | the whole automotive calibration pipeline: A2L description (addresses, datatypes, limits, `COMPU_METHOD` coefficients) + DBC bit layout (`start_bit`/`bit_length`/`byte_order`/`scale`) bound host-side; XCP `CONNECT` negotiates the byte order and `MAX_CTO`, which then parameterises every `SET_MTA`/`UPLOAD`/DAQ frame built at the A2L addresses; a DAQ DTO crosses `can_core` in both directions (command → SocketCAN bytes → `CanFrame` → packet) and back out through `dbc-parse` `decode_raw` and the A2L conversion; the write path frames a limit-checked value for `DOWNLOAD`; the slave `ERR` taxonomy, truncated buffers, and an oversized packet are all typed failures | a2l-parse 0.1.0, dbc-parse 0.1.0, can-core 0.1.0, xcp-core 0.1.0 |
+| `tests/spreadsheet_engine.rs` | the product layer end to end: literals and formulas, a quarterly model (SUM over ranges, IF, margin ratios), a 200-cell dependency chain and a 4,000-formula cone — each edit asserted through the invariant that **`recalculate_incremental` and `recalculate` agree cell-for-cell**; cross-sheet and quoted-sheet references (including a dangling sheet that heals when the sheet appears), formula→literal edge removal, error-value propagation, cycle detection with members, volatile tracking, XLSX round-trip that preserves a *live* dependency graph, and `VLOOKUP` over 100 rows | sheet-engine 0.1.0, formula-lang 0.1.1 |
 | `tests/chaos_worker.rs` | a worker-kit supervisor job whose work unit is a tower service under `ChaosLayer` (seeded 5 ms latency on every call, scripted errors at two consecutive indexes): the failure budget trips the degradation latch — observed live, because a post-outage success clears the flag (round-5 finding) — the worker keeps firing past degradation and drains < 2 s; the same seed reproduces the identical fault sequence across two independent sessions; recorder counts are exact | chaos-kit 0.1.1, worker-kit 0.3.0 (no default features) |
 | `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.1 |
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
@@ -196,7 +202,11 @@ tail-replay recovery → chain verify), policy-gated HTTP that sheds
 before the network, chaos-driven supervisor degradation observed live
 and reproduced across sessions, per-tenant deep-merged config, the
 end-to-end telemetry pipeline, and dispatch metrics that agree with the
-dispatch report attempt-for-attempt.
+dispatch report attempt-for-attempt. Round-6 suites add: the first
+*product*-level dogfooding — a four-crate automotive pipeline bound
+host-side (A2L × DBC × XCP × CAN) and a spreadsheet engine whose every
+edit is judged by an incremental-vs-full-recalculation equivalence
+invariant rather than by an expected value alone.
 
 ## Integration findings
 
@@ -358,6 +368,62 @@ fetch-kit):
   *also* re-arms implicitly inside `poll` — hosts must know not to
   re-arm per call (the docs say so, but an explicit `rearm`/`retrieve`
   split would make the contract unmissable).
+- **a2l-parse 0.1.0 and dbc-parse 0.1.0 cannot be combined without a
+  host-side factor inversion, and the A2L file can hide the whole
+  scaling.** `dbc_parse::Signal::decode_raw` already returns the
+  *scaled* (engineering) value — the method name says "raw", but the
+  scale/offset are applied inside — while an A2L `COMPU_METHOD` is
+  defined against raw counts. So the host must invert the DBC factor to
+  feed the A2L method. Worse, an `IDENTICAL` `COMPU_METHOD` (the natural
+  spelling for a pass-through) applies *no* scaling at all: the suite's
+  `engine_speed` is 1/16-per-count in the DBC and `IDENTICAL` in the
+  A2L, so a host that trusted the A2L description alone reports 51200
+  "rpm". Neither crate is wrong and neither can know about the other,
+  but the failure mode is silent. Ask: an `A2lError`/lint-free
+  `a2l_parse::CompuMethod::is_identity()` plus doc-level guidance that
+  an `IDENTICAL` method means "the DBC owns the scaling", so hosts can
+  assert the arrangement instead of discovering it in the field.
+- **A2L hex literals take no `_` digit separators.** `0x7200_0000`
+  lexes as the number `0x7200` followed by the identifier `_0000`
+  (`_` is an ident byte in `a2l-parse`'s lexer), which surfaces much
+  later as a confusing `UnexpectedToken` — in the suite, `expected:
+  "MAX_DIFF"` three blocks downstream. The estate's own Rust fixtures
+  write `0x7200_0000` everywhere, so this is an easy mistake to make.
+  Not a bug (A2L has no such syntax) but worth a line in the crate
+  docs' error examples.
+- **xcp-core 0.1.0's `ERR` PID is `0xFE`, and `Expect` must not
+  shadow it.** An ERR packet is `[0xFE, code]`; a positive response is
+  `[0xFF, …]`. `parse_response_with` checks the ERR PID before
+  dispatching on `Expect`, which is right — a host that pattern-matched
+  `bytes[0] == 0xFF` as "a response" would misread the error code as
+  CONNECT payload. Pinned by a test that runs the same ERR buffer
+  through three different `Expect` values and gets the same typed
+  error every time.
+- **sheet-engine 0.1.0 cannot report a cycle it is not re-evaluating.**
+  `recalculate` clears the dirty set even when it returns
+  `CircularReference`, so a subsequent `recalculate_incremental(&[])`
+  has an empty work set and returns `Ok` — the cycle is still in the
+  workbook but is silent. An edit *inside* the cycle is still reported,
+  so the practical rule is: a host that only drives the incremental path
+  must run one full `recalculate` after loading a workbook. Ask: a
+  `has_circular_reference()` predicate, or retaining the cycle members
+  so the incremental path re-reports them.
+- **formula-lang 0.1.1 has no `RAND`/`RANDBETWEEN`, and its volatile
+  set is exactly `TODAY`, `NOW`, `OFFSET`.** `=RAND()` evaluates to an
+  error *value*, not a random number, and is (correctly) not volatile —
+  there is no value to refresh. Excel treats both as volatile, so a host
+  that offers a RAND button will show `#VALUE!` and no host that reads
+  the crate docs alone will expect that. The suite pins the real
+  boundary with `formula_lang::is_volatile` over five volatile and four
+  non-volatile expressions, and asserts the unimplemented functions
+  surface as typed error values.
+- **sheet-engine 0.1.0 stores an empty input string as empty *text*,
+  not as `Empty`.** `set_cell(s, r, c, "")` yields
+  `Some(Value::Text(String::new()))`, which does not compare equal to
+  `Value::Empty`. A host that wants to distinguish "written blank" from
+  "never written" must use `get_value(..) == None` for the latter. Not
+  wrong — but the `Empty` variant invites the assumption that it is what
+  a blank cell holds.
 
 Round-6 notes (pin refresh to the 2026-10 estate — 17 exact pins moved,
 all suites green after the fixes below):
