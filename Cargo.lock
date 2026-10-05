@@ -31,6 +31,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "actor-kit"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfaa49393554ede0201458dc423b87fabd263adcaa88e1bc8fda7e3d6847c856"
+dependencies = [
+ "crossbeam-deque",
+ "crossbeam-queue",
+ "dashmap",
+ "futures",
+ "parking_lot 0.12.5",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -968,6 +985,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-queue"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03e8bd762f7479489c70ed6c768ddca99d7296857de437a68dcb2a94365b3fae"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-utils"
 version = "0.8.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1542,6 +1568,7 @@ version = "0.1.0"
 dependencies = [
  "a2l-parse",
  "accessctl",
+ "actor-kit",
  "async-trait",
  "axum",
  "barbican",
@@ -1591,10 +1618,13 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.9",
+ "shared-state",
  "sheet-core",
  "sheet-engine",
+ "shm-rings",
  "shutdown-kit",
  "sieve-kit",
+ "slab-pool",
  "tamper-audit",
  "telemetry-init",
  "tempfile",
@@ -3177,6 +3207,15 @@ name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
+
+[[package]]
+name = "memmap2"
+version = "0.9.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1219ed1b7f229ee7104d281dd01d6802fe28bb6e95d292942c4daacdeb798c0"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "metrics-kit"
@@ -4956,6 +4995,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "shared-state"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3580ed2612012eac4d72115a4f7a6b0aa2f8bc0aa298e8e2417679fcd2d49948"
+dependencies = [
+ "dashmap",
+ "loom",
+ "tokio",
+]
+
+[[package]]
 name = "sheet-core"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4988,6 +5038,17 @@ name = "shlex"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
+
+[[package]]
+name = "shm-rings"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc3f645f496ac65c170fbc503ab1db10db525b8b77e7be8f499dad4b3dea9232"
+dependencies = [
+ "memmap2",
+ "thiserror 2.0.21",
+ "zerocopy",
+]
 
 [[package]]
 name = "shutdown-kit"
@@ -5076,6 +5137,15 @@ name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
+
+[[package]]
+name = "slab-pool"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc64d989e4c609452da794175b29987139c3f0053d40f0f44974d8e91f1382f3"
+dependencies = [
+ "thiserror 2.0.21",
+]
 
 [[package]]
 name = "smallvec"

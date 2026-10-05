@@ -169,6 +169,7 @@ no external network.
 | `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. Asserts largest-remainder allocation sums exactly, FX conversion is explicit, cross-currency addition is refused, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.1.1, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
 | `tests/auth_provision.rs` | the provisioning + session stack: a SCIM user serializes to RFC 7644 shape (`userName` on the wire, never `user_name`) and round-trips; filters select from a provisioned set on SCIM attribute names; a list response reports `totalResults` independently of page size; accessctl's hardcoded role hierarchy and its Cedar policy set reach the same verdicts; ws-barbican extracts a token from header, registered query key and cookie with header precedence, refusing an unregistered key; and every action lands in a hash-linked audit chain that verifies | accessctl 0.1.0 (`cedar`), scim-kit 0.1.0, tamper-audit 0.2.0, ws-kit 0.4.2, ws-barbican 0.1.2 |
 | `tests/collab_docs.rs` | collaborative documents end to end: three replicas authored independently converge on byte-identical text under four delivery orders (each fragment present exactly once, none lost or duplicated); concurrent delete + insert converge in either causal order; replayed deletes are no-ops while replayed inserts **duplicate**; out-of-order delivery visibly diverges; presence join/leave/re-join; a `BroadcastHub` fans each publication to every subscriber once and *refuses* a broadcast with no receivers; i18n fallback chains (`fr-CA` → `fr` → `en`), plural-rule selectors, and locale parsing; markdown renders from collaboratively edited text with `<script>` stripped; the convergence ships as a typed event envelope | crdts-kit 0.1.0, i18n-kit 0.1.3, eventbus-kit 0.3.5 (`typed_eventbus`), docs-pipeline 0.1.4, ws-kit 0.4.2 |
+| `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.3, slab-pool 0.1.0, shared-state 0.1.1, shm-rings 0.2.1 |
 
 ## Run
 
@@ -660,3 +661,75 @@ looks exactly like the missing-dedup bug above, and cost a round of
 debugging before the authoring fixture was moved to separate replicas. It is
 the easiest way to misuse the crate and deserves an explicit note in its
 rustdoc.
+
+
+Round-10 notes (the single-binary service substrate — `tests/systems_substrate.rs`):
+
+The layer everything else in the estate assumes composes: actors on a
+work-stealing scheduler, a lock-free pool for hot-path buffers, a
+shared-memory ring between processes, and a TTL cache in front. Four crates,
+first composition. **Three of the findings are bugs, not sharp edges**, and
+none is visible to a per-crate test:
+
+- **A suspended actor can never be resumed or stopped.** `worker_loop`'s
+  dispatch has three arms: `Running | Creating` processes the message and
+  calls `handle_state_change_for` (which is what applies Pause / Resume /
+  Stop), `Suspended` **re-queues** whatever it is handed, and `_ => {}` drops
+  everything. So a suspended worker never processes the `Resume` signal that
+  would lift the suspension — it re-queues it instead, and the only arm that
+  can leave `Suspended` is unreachable while suspended. `resume().await` and
+  `stop().await` both return `Ok` and change nothing; the mailbox keeps
+  accepting messages that are never processed. Only dropping the scheduler
+  (which clears the running flag) releases the actor. Ask: the `Suspended`
+  arm must let control signals through, or `Suspended` needs a mailbox for
+  signals distinct from ordinary messages. This is the most severe finding
+  in the estate so far — it is reachable from two documented handle methods
+  and it is a permanent deadlock.
+- **One stalled reader wedges a shared-memory ring forever.** `try_push`
+  refuses when `write_idx - slowest_read_idx >= capacity`, and
+  `slowest_read_idx` folds over *every* registered reader with `u64::MIN`. A
+  consumer that is merely slow — paused, or not yet reading — pins its cursor
+  at 0 and the producer is refused permanently. Reproduced exactly: capacity
+  64, two readers, reader 0 drains all 64 values, `try_push` still returns
+  `false`. With a single reader the identical sequence recovers, which is why
+  a one-consumer test never sees it. Ask: a ring cannot distinguish "no
+  reader" from "stalled reader" without a heartbeat or an explicit
+  unregister; `Drop` for the reader handle that clears its cursor would fix
+  the common case.
+- **Lifecycle transitions are asynchronous with no completion signal.**
+  `start().await` returning `Ok` means the message was *accepted*; the
+  registry only flips to `Running` when a worker dequeues it. A host that
+  gates on `is_running()` right after `start()` reads `Creating`, and there
+  is no `await transition` primitive to reach for. Ask: a `wait_for_state`
+  on the handle, or make the lifecycle calls synchronous with the registry.
+- **`shared-state` never re-exports `TtlCache`.** The module is `pub mod
+  ttl` with a full implementation, but `lib.rs` re-exports only `ReadyGate`,
+  so `use shared_state::TtlCache` fails with an unresolved import that points
+  nowhere near the real path (`shared_state::ttl::TtlCache`). Ask: re-export
+  it, since it is the crate's most obviously useful type.
+
+Composition facts worth keeping:
+
+- `SlabPool::alloc` returns a guard whose lifetime is tied to the pool
+  borrow, so the borrow checker — not a runtime check — is what makes a
+  lock-free pool sound. Exhaustion is a typed `None`, a zero-capacity pool is
+  refused at construction, and dropping the guards returns every slot.
+- `TtlCache` measures expiry from insertion, so a hot key still expires.
+  That is the safe default (a sliding window would hide a stale entry under
+  constant reads), and `take_fresh` is the atomic read-and-remove a
+  single-consumer queue needs — doing it with `get` + `remove` would hand the
+  same job to two workers.
+- `ReadyGate` is not `Clone`, so a host holding it in both a health endpoint
+  and a shutdown hook needs an `Arc` around it. Readiness latches, and
+  revocation is always deliberate — which is what you want in front of a load
+  balancer.
+- `ActorBuilder::spawn` takes `&Arc<ActorScheduler>`, so the scheduler is
+  shareable and usable from a Tokio service.
+
+Integration trap worth recording: the scheduler's workers are OS threads that
+each need a Tokio runtime context to poll actor futures. Under
+`#[tokio::test]` (a current-thread runtime) the workers never get one, the
+actors stay in `Creating`, and the test *hangs* rather than failing
+informatively. `actor_kit::rt().block_on(..)` on a plain `#[test]` is the
+shape that works — and the crate ships `rt()` for exactly this, but the
+requirement is invisible until a suite trips over it.

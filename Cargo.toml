@@ -111,6 +111,14 @@ i18n-kit = "=0.1.3"                        # tests/collab_docs.rs (fallback chai
 # NOTE: eventbus-kit is the *package* name published from the `eventbus` repo;
 # the pin above already carries it, so no second dependency is needed here.
 docs-pipeline = "=0.1.4"                   # tests/collab_docs.rs (render + sanitisation boundary)
+
+# --- round 10: the single-binary service substrate ------------------------
+# Four crates that everything else in the estate assumes compose, and that
+# had no composed suite until now.
+actor-kit = "=0.2.3"                      # tests/systems_substrate.rs (work-stealing actors)
+slab-pool = "=0.1.0"                      # tests/systems_substrate.rs (borrow-checked pool guards)
+shared-state = "=0.1.1"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
+shm-rings = "=0.2.1"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
