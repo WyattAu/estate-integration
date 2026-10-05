@@ -176,7 +176,7 @@ no external network.
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.3, slab-pool 0.1.0, shared-state 0.1.1, shm-rings 0.2.1 |
 | `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
 | `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
-| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.1, oauth-toolkit 0.2.2, multi-chain-wallet 0.2.1 |
+| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.1, oauth-toolkit 0.2.2, multi-chain-wallet 0.2.2 |
 
 ## Run
 
@@ -881,36 +881,42 @@ Properties the suite now protects:
 Round-13 notes (the authentication stack — `tests/crypto_auth.rs`):
 
 Four Tier A security crates, composed for the first time. Every primitive is
-checked against a *published* vector (RFC 4231, RFC 7636, RFC 4648) or against
-the **other** crate — never against itself, because a self-consistent but
-wrong implementation passes round-trip tests. Four findings, and the first is
-the most serious defect found in the estate to date.
+checked against a *published* vector (RFC 4231, RFC 7636, RFC 4648, BIP-39) or
+against the **other** crate — never against itself, because a self-consistent
+but wrong implementation passes round-trip tests. Four findings; the first was
+the most serious defect found in the estate to date, and it is now fixed.
 
-- **The estate's BIP-39 path rejects every published test vector.**
-  `multi_chain_wallet::mnemonic::mnemonic_to_seed` fails on all three canonical
-  BIP-39 phrases — the "abandon … about" vector, the "legal winner … yellow"
-  vector, and the deliberately wrong-checksum one — while a bare `bip39 = "2"`
-  accepts all three. Root cause isolated to the transitive **`bip32 0.5`
-  crate's `bip39` feature**, which multi-chain-wallet delegates to. A
-  *self-generated* 24-word phrase round-trips, which is exactly why the
-  crate's own tests are green and the defect survived: nothing in the estate
-  ever parsed a phrase it did not mint itself.
+- **A recovery phrase shorter than 24 words could not restore a wallet.**
+  `multi_chain_wallet::mnemonic_to_seed` delegated parsing to `bip32 0.5.3`'s
+  `bip39` feature, whose `Mnemonic::new` requires `entropy.len() == KEY_SIZE + 1`
+  with `KEY_SIZE = 32` — exactly 33 bytes, that is, exactly 24 words. Anything
+  shorter came back `Err(Bip39)`. Verified in this suite's own dependency graph:
+  24 words parsed, 12 and 18 did not.
 
-  The consequence is concrete and severe. **Every address derived from a
-  mnemonic a user actually wrote down, restored from a password manager, or
-  imported from another wallet is unreachable.** The failure is
-  `InvalidMnemonic("bip39 error")`, which gives a user no way to distinguish a
-  typo from a broken implementation — and a wallet whose recovery phrase does
-  not restore is not a wallet. Generation is additionally 24-word only, where
-  BIP-39 permits 12/15/18/21/24, and the crate documents that as a `bip32`
-  limitation.
+  So **for the most common phrase length, the recovery phrase did not restore
+  the wallet.** Both canonical 12-word vectors in the BIP-39 specification were
+  refused, as was any phrase from an 12/15/18/21-word generator or import, and
+  the error a user saw (`InvalidMnemonic("bip39 error")`) is indistinguishable
+  from a typo. A wallet whose phrase does not restore is not a wallet.
 
-  Ask: depend on `bip39` directly for phrase parsing (it parses the vectors
-  correctly) and keep `bip32` for the derivation arithmetic, or wait for
-  `bip32` to fix its `bip39` feature. The suite asserts both halves — the
-  vectors fail, so a future fix fails this test loudly — and that a
-  generated phrase round-trips, so the rest of the suite has something to
-  work with.
+  It survived a green suite because the crate only ever round-tripped phrases
+  it had generated itself — every one of which was 24 words, because generation
+  could only make 24 — and two of its own suites asserted that limitation as
+  intended behaviour (`generate_mnemonic_always_24_words`, and a config matrix
+  asserting that 12/15/18/21 *must* fail). A test suite can be evidence of a
+  bug when it encodes the bug as the contract.
+
+  **Fixed in `multi-chain-wallet 0.2.2`** (published and pinned here): parsing
+  goes through `bip39` directly, which validates every published vector, and
+  generation honours all five BIP-39 lengths at exactly the requested count;
+  `bip32` is kept for the BIP-32 derivation arithmetic, which never saw a
+  phrase. The suite now pins the repaired behaviour — vectors parse, vector 1's
+  seed is the specification's own value, a bad checksum is still refused, and
+  every length is generated as asked.
+
+  One trap worth recording: the obvious negative vector, "zoo … wrong", is
+  *valid*. It is the specification's phrase for all-ff entropy. A negative test
+  built on it would have asserted that valid phrases are refused.
 - **`webauthn-kit`'s `check_sign_count` accepts an *equal* count.** It refuses
   a decrease (`new < current`) and exempts a stored `0`, but `new == current`
   passes. A replayed assertion carries the counter the authenticator last

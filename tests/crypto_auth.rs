@@ -22,23 +22,34 @@
 //! is checked against an independent reference (RFC test vectors, a second
 //! implementation, or a hand-computed value), never against itself.
 //!
-//! Four findings this round, three of them security-relevant. The first is
-//! the most serious defect found in the estate so far:
+//! Four findings this round, three of them security-relevant. The first was
+//! the most serious defect found in the estate so far — and it is now fixed.
 //!
-//! 0. **The BIP-39 path rejects every published test vector.**
-//!    `multi_chain_wallet::mnemonic::mnemonic_to_seed` fails on all three
-//!    canonical BIP-39 phrases — the "abandon … about" vector, the "legal
-//!    winner … yellow" vector, and the deliberately wrong-checksum one —
-//!    while a bare `bip39 = "2"` accepts them. Root cause isolated to the
-//!    transitive `bip32 0.5` crate's `bip39` feature, which
-//!    multi-chain-wallet delegates to. A *self-generated* 24-word phrase
-//!    round-trips, which is why the crate's own tests are green.
+//! 0. **A recovery phrase shorter than 24 words could not restore a wallet.**
+//!    `multi_chain_wallet::mnemonic::mnemonic_to_seed` delegated parsing to
+//!    `bip32 0.5.3`'s `bip39` feature, whose `Mnemonic::new` requires
+//!    `entropy.len() == KEY_SIZE + 1` with `KEY_SIZE = 32` — exactly 33
+//!    bytes, exactly 24 words. Anything shorter returned `Err(Bip39)`, so both
+//!    canonical 12-word vectors in the BIP-39 specification were refused, as
+//!    was any phrase from an 12/15/18/21-word generator or import. Verified in
+//!    this suite's own dependency graph: 24 words parsed, 12 and 18 did not.
 //!
-//!    The consequence: **every address derived from a mnemonic a user wrote
-//!    down, restored from a password manager, or imported from another wallet
-//!    is unreachable**, and the error (`InvalidMnemonic("bip39 error")`) gives
-//!    a user no way to distinguish a typo from a broken implementation.
-//!    Generation is also 24-word only, where BIP-39 permits 12/15/18/21/24.
+//!    The consequence: **for the most common phrase length, the recovery
+//!    phrase did not restore the wallet.** The error a user saw
+//!    (`InvalidMnemonic("bip39 error")`) is indistinguishable from a typo,
+//!    and a wallet whose phrase does not restore is not a wallet.
+//!
+//!    It survived because the crate only ever round-tripped phrases it had
+//!    generated itself — every one of which was 24 words, because generation
+//!    could only make 24 — and two of its own suites asserted that limitation
+//!    as intended behaviour.
+//!
+//!    **Fixed in `multi-chain-wallet 0.2.2`**: parsing goes through `bip39`
+//!    directly, which validates every published vector, and generation
+//!    honours all five BIP-39 lengths. `bip32` is kept for the derivation
+//!    arithmetic, which never saw a phrase. The assertions below now pin the
+//!    repaired behaviour, and the one 24-word-only test that remains pins the
+//!    negative case that must *keep* failing.
 //!
 //! 1. **`webauthn-kit`'s `check_sign_count` accepts an *equal* count.** It
 //!    refuses a decrease (`new < current`) and treats a stored `0` as
@@ -513,61 +524,80 @@ async fn a_csrf_state_nonce_is_single_use_and_carries_its_redirect() {
 
 // -- 7. key derivation, in the one shape a service actually needs ---------
 
-/// **Round-13's headline finding: the estate's BIP-39 path rejects every
-/// published test vector.**
+/// **Round-13's headline finding, now fixed: the estate's BIP-39 path refused
+/// every phrase shorter than 24 words.**
 ///
-/// BIP-39 specifies three canonical vectors (the "abandon … about" phrase, the
-/// "legal winner … yellow" phrase, and a deliberately wrong-checksum one).
-/// `multi_chain_wallet::mnemonic::mnemonic_to_seed` rejects all three — while
-/// a bare `bip39 = "2"` accepts them. Root cause isolated to the transitive
-/// `bip32 0.5` crate's `bip39` feature, which `multi-chain-wallet` delegates
-/// to; a self-generated 24-word phrase round-trips, which is why the crate's
-/// own tests pass and the bug went unnoticed.
+/// BIP-39 specifies three canonical phrases, all of them 12 words. With
+/// `multi-chain-wallet 0.2.1` and below, `mnemonic_to_seed` rejected every one
+/// of them while accepting a 24-word phrase, because `bip32 0.5.3`'s parser
+/// requires exactly 33 bytes of entropy-plus-checksum. So a phrase a user
+/// wrote down, restored from a password manager, or imported from another
+/// wallet did not parse, and every address derived from it was unreachable.
 ///
-/// The consequence is severe and concrete: **every address the estate derives
-/// from a mnemonic a user actually wrote down is unreachable.** A phrase the
-/// wallet itself generated restores; a phrase restored from paper, from a
-/// password manager, or imported from another wallet does not parse at all —
-/// and the failure is `InvalidMnemonic("bip39 error")`, which gives a user no
-/// way to tell a typo from a broken implementation.
-///
-/// The test asserts both halves: the vectors fail (the bug, pinned so it fails
-/// loudly when `bip32` is fixed), and a self-generated phrase round-trips (so
-/// the rest of the derivation suite has something to work with).
+/// These assertions pin the *repaired* behaviour: the specification's vectors
+/// parse, the seed for vector 1 is the specification's own value, a phrase
+/// whose checksum does not match is still refused, and every word count BIP-39
+/// defines is generated at exactly the requested length. If a future release
+/// regresses any of it, this test fails.
 #[test]
-fn bip39_rejects_every_published_test_vector() {
+fn bip39_parses_the_published_vectors_and_refuses_a_bad_checksum() {
     // BIP-39's own vectors, from the specification's test cases.
     for vector in [
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
         "legal winner thank year wave sausage worth useful legal winner thank yellow",
-        "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong", // deliberately wrong checksum
+        "letter advice cage absurd amount doctor acoustic avoid letter advice cage above",
+        // All-ff entropy. The final word is "wrong", which reads like a
+        // deliberately corrupted phrase and is in fact the specification's
+        // own valid vector for this entropy — the most convincing argument
+        // for checking vectors against the wordlist rather than by eye.
+        "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong",
     ] {
-        let parsed = mnemonic::mnemonic_to_seed(vector, "");
         assert!(
-            parsed.is_err(),
-            "**bip32 0.5's bip39 feature now parses {:?}** — if this assertion \
-             fails, re-check the finding below: the estate's mnemonic support \
-             is fixed and this suite's other expectations may need revisiting.",
-            &vector[..24.min(vector.len())]
+            mnemonic::mnemonic_to_seed(vector, "").is_ok(),
+            "BIP-39 vector refused: {vector}"
         );
     }
 
-    // A phrase the wallet generated itself round-trips, which is why the
-    // crate's own test suite is green and the defect survived.
-    let generated = mnemonic::generate_mnemonic(24).expect("24 words are supported");
-    assert_eq!(generated.split_whitespace().count(), 24);
-    assert!(
-        mnemonic::mnemonic_to_seed(&generated, "").is_ok(),
-        "a self-generated phrase validates"
+    // Pin the derived seed itself, not merely that parsing succeeded: this
+    // covers the checksum, the wordlist indices and the PBKDF2 passphrase
+    // handling at once, and it is fixed by the specification.
+    let seed = mnemonic::mnemonic_to_seed(
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+        "TREZOR",
+    )
+    .expect("vector 1 parses");
+    assert_eq!(
+        seed[..8],
+        [0xc5, 0x52, 0x57, 0xc3, 0x60, 0xc0, 0x7c, 0x72],
+        "BIP-39 vector 1 seed prefix"
     );
 
-    // And generation is 24-word only, by the crate's own documented
-    // limitation — BIP-39 permits 12, 15, 18, 21 and 24.
-    for count in [12_u8, 15, 18, 21] {
+    // A phrase whose checksum does not match its entropy is still refused —
+    // "abandon" x12 decodes to zero entropy, whose checksum is 0011, not the
+    // 0000 the final word carries. The obvious candidate for this test,
+    // "zoo ... wrong", is itself a specification vector — all-ff entropy — so
+    // using it would have asserted that valid phrases are refused.
+    assert!(
+        mnemonic::mnemonic_to_seed(
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon",
+            ""
+        )
+        .is_err(),
+        "a phrase whose checksum does not match its entropy is refused"
+    );
+
+    // Generation honours the request. 0.2.1 could only mint 24 words and
+    // rejected the other four BIP-39 lengths outright.
+    for count in [12_u8, 15, 18, 21, 24] {
+        let phrase = mnemonic::generate_mnemonic(count).expect("a BIP-39 word count");
+        assert_eq!(
+            phrase.split_whitespace().count(),
+            count as usize,
+            "generate({count}) mints exactly {count} words"
+        );
         assert!(
-            mnemonic::generate_mnemonic(count).is_err(),
-            "{count}-word mnemonics are valid BIP-39 and are refused: the \
-             underlying crate fixes entropy at 32 bytes"
+            mnemonic::mnemonic_to_seed(&phrase, "").is_ok(),
+            "and a generated {count}-word phrase round-trips"
         );
     }
 }
@@ -580,10 +610,13 @@ fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
     // different address). Together those are what make a recovery path
     // meaningful years later.
     //
-    // Built from a *generated* phrase, because of the finding above: no
-    // standard vector parses.
-    let phrase = mnemonic::generate_mnemonic(24).expect("24 words are supported");
-    let seed = mnemonic::mnemonic_to_seed(&phrase, "").expect("the generated phrase parses");
+    // Built from the canonical 12-word vector, which is what a real user's
+    // phrase looks like — 0.2.1 could not parse this at all.
+    let seed = mnemonic::mnemonic_to_seed(
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+        "",
+    )
+    .expect("the canonical 12-word vector parses as of 0.2.2");
 
     // Same seed, same account/index: same address on every replica.
     let first = eth::derive_eth_address(&seed, 0, 0).expect("derives");
@@ -635,7 +668,11 @@ fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
     // The passphrase is part of the seed, with nothing to detect a typo: a
     // mistyped passphrase yields a valid seed and entirely unreachable
     // accounts. A host that stores only the phrase cannot restore those.
-    let with_passphrase = mnemonic::mnemonic_to_seed(&phrase, "not empty").expect("valid");
+    let with_passphrase = mnemonic::mnemonic_to_seed(
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+        "not empty",
+    )
+    .expect("valid");
     assert_ne!(with_passphrase, seed, "a passphrase changes the seed...");
     assert_ne!(
         eth::derive_eth_address(&with_passphrase, 0, 0).expect("derives"),
