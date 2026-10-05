@@ -10,6 +10,10 @@ real running system (`tests/` proves it, `examples/` shows it).
 > This repo stays GitHub-only by design: integration suites are bins/examples,
 > not a library, and are never published to crates.io.
 
+Coverage of the published estate, and what is still unproven, is tracked
+in [DOGFOOD-COVERAGE.md](DOGFOOD-COVERAGE.md) — 56 of 161 published crates
+composed across 30 suites, 32 in debt.
+
 ## Architecture
 
 ```text
