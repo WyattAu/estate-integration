@@ -146,6 +146,15 @@ flag-kit = { version = "=0.2.0", features = ["chrono"] }  # tests/flags_and_life
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
 otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
 envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer precedence)
+
+# --- round 13: the authentication stack -------------------------------------
+# Four Tier A security crates. Every primitive here is checked against a
+# published vector (RFC 4231, RFC 7636, RFC 4648) or against the *other*
+# crate, never against itself.
+cryptkit = "=0.1.0"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
+webauthn-kit = "=0.3.1"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
+oauth-toolkit = "=0.2.2"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
+multi-chain-wallet = "=0.2.1"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
