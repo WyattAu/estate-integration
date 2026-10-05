@@ -37,7 +37,15 @@ cas-kit = { version = "=0.2.1", features = ["tokio"] }
 mail-sync-kit = "=0.1.1"
 eventbus-kit = { version = "=0.3.5", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
-retry-backoff = "=0.2.0"
+# NOTE: `retry-backoff` was pinned here from round 1 and never used by any
+# suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
+# downloads) — not this account's `loop-retry` (published by the
+# `retry-backoff` repo, which names itself differently). So the manifest
+# claimed coverage of a crate the estate does not own, while the crate it
+# does own went uncomposed. Dropped the phantom; loop-retry is exercised
+# transitively through fetch-kit's retry feature and is a Round-6 target
+# for a direct suite.
+loop-retry = "=0.1.1"                          # round 6 (transitive via fetch-kit retry)
 
 # --- round 3: dogfooding the 2026-09-16 kit wave -----------------------------
 # Each pin names the suite that exercises it (tests/).
@@ -71,7 +79,20 @@ book-kit = "=0.1.0"                          # tests/book_feed.rs
 wire-kit = "=0.1.0"                          # tests/book_feed.rs
 hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
 uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
-ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (default: audit+outbox)
+ledger-kit = "=0.1.0"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
+
+# --- round 6: the accounting core -------------------------------------------
+# decimal-money is ledger-kit's own money type (re-exported as
+# `MonetaryAmount`), and billing-kit re-exports the same crate — so these
+# three pins are one type in three places, which is the point the suite
+# asserts rather than assumes.
+decimal-money = "=1.1.1"                      # tests/money_stack.rs
+billing-kit = "=0.1.1"                        # tests/money_stack.rs (default: serde)
+sheet-engine = "=0.1.0"                       # tests/money_stack.rs (formula-driven report)
+sheet-core = "=0.1.0"                         # tests/money_stack.rs (cell vocabulary)
+formula-lang = "=0.1.1"                       # tests/money_stack.rs (Value)
+rust_decimal = "1"                            # tests/money_stack.rs (dec! / Decimal)
+rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is

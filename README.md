@@ -160,6 +160,7 @@ no external network.
 | `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.1 |
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
 | `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (the sender-level breaker burn is bounded by each event's derived `max_attempts + 1` ceiling, and the gauge watcher is awaited before the render is read, so neither assertion races the runner; round-5 + round-6 notes) | outbox-kit 0.1.0, metrics-kit 0.2.0, breaker 2.0.1 |
+| `tests/money_stack.rs` | the **accounting core**: billing-kit `Price` → exact tax/gross → double-entry posting into ledger-kit → outbox-mirrored durable journal → replay into a fresh ledger → the same figures written into a formula-driven spreadsheet workbook and exported to XLSX. Asserts largest-remainder allocation sums exactly, FX conversion is explicit, cross-currency addition is refused, an idempotent replay changes nothing, and the exported statement agrees with the books | billing-kit 0.1.1, decimal-money 1.1.1, ledger-kit 0.1.0, outbox-kit 0.1.0, sheet-engine 0.1.0, sheet-core 0.1.0, formula-lang 0.1.1 |
 
 ## Run
 
@@ -425,3 +426,61 @@ prove:
   outbox-kit parks an event at `NEVER` once its budget is spent — and the
   watcher handle is awaited before the render is read. 60 consecutive runs
   green afterwards.
+
+Round-7 notes (the accounting core — `tests/money_stack.rs`):
+
+This is the first composition of the estate's money half, and it is the
+suite the planned accounting product depends on. Seven crates, one flow:
+`Price` → exact tax → double-entry posting → outbox-mirrored journal →
+crash replay → the same figures in a formula-driven workbook → XLSX export.
+Three findings, in descending order of how much they matter to a product:
+
+- **The estate's money crate is split across two majors, so a price cannot
+  be posted.** billing-kit 0.1.1 declares `decimal-money = "^0.2"` while
+  ledger-kit 0.1.0 declares `^1.1`. Cargo does not unify across a major
+  boundary, so one graph now holds two `Currency` enums and two
+  `CurrencyAmount` types — `Price::gross()` is not a `MonetaryAmount`, and
+  the accounting product's central flow (invoice → posting) needs a
+  hand-written conversion between them. Reproduced by the suite; the fix is
+  already written on billing-kit's own master (`decimal-money = "1"`, tag
+  `v0.2.0`) and only needs publishing. **This is the single highest-value
+  unblock in the estate**: without it, every accounting consumer pays for the
+  split.
+- **ledger-kit's balance signs are inverted from the accounting
+  convention.** The fold is *credit adds, debit subtracts*, so a customer
+  receivable that grows reads **negative** — where an accountant expects an
+  asset debit to increase it. The fold itself is total, derivable and
+  auditable, which is the part that matters; but every statement, trial
+  balance and P&L in the product needs a chart-of-accounts mapping table
+  (assets/expenses negative, liabilities/equity/revenue positive) as host
+  logic. Ask: a `normal_balance(AccountClass)` helper or a documented
+  `debit_is_credit()` on the crate would put the convention in one place
+  instead of every consumer's.
+- **`BalancePolicy::RejectNegative` cannot open a book.** The policy
+  projects the *debited* side, and a debit subtracts, so on a chart whose
+  accounts all start at zero *every* posting is refused — there is no first
+  posting, and because the policy is per-ledger rather than per-account, a
+  host cannot later say "protect cash, let the receivable float". The suite
+  pins all three behaviours. A product must therefore open its books under
+  `AllowNegative` (the default) and enforce solvency on the accounts it
+  cares about itself.
+
+Composition facts the product can rely on:
+
+- An outbox-mirrored posting replays into a byte-equal ledger, including a
+  VAT figure with four decimal places (`396.6627` — a value no binary float
+  holds), and a second restore is a no-op, so replay is idempotent.
+- Writing ledger-derived numbers into *formula* cells and recalculating
+  reproduces exactly the figures the ledger derived, and survives an XLSX
+  round trip. The statement an accountant receives cannot disagree with the
+  books, because the books wrote the cells the formulas read.
+- `decimal-money`'s `Add` is fallible rather than panicking on a currency
+  mismatch, allocation uses the largest-remainder method so parts sum to the
+  original exactly, and rounding only happens under an explicit
+  `RoundingPolicy` (HalfUp vs HalfEven on `0.005` differ, as they must).
+
+One documentation gap worth noting: sheet-engine's public API is 0-based
+`(row, col)` while formula text is 1-based (Excel's convention), which the
+crate documents in its own rustdoc but a consumer wiring a generated report
+meets immediately. It cost this suite a round of off-by-one errors, so the
+cross-reference is here for the next one.
