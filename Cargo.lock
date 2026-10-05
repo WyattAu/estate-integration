@@ -160,6 +160,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
+name = "api-paginate"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b922731389b81f68539ffbc8b0cdbabb77083ef3c0489e0280214f346ed0168"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "api-types"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50e634b03e7ceb13d72e6c80663e00cc847cd095f2b0af053074d27246b78cc1"
+dependencies = [
+ "http",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ar_archive_writer"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1558,12 +1578,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "error-classify"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e642d969ffff3fbf38c733c8112100255177060cd38fd72737044097706e21cd"
+dependencies = [
+ "error-codes",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "error-codes"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4bf3340918eaec05cb9264ca0465bace779c5e99ddc00cf7367620351c13bf52"
+dependencies = [
+ "axum",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "estate-integration"
 version = "0.1.0"
 dependencies = [
  "a2l-parse",
  "accessctl",
  "actor-kit",
+ "api-paginate",
+ "api-types",
  "async-trait",
  "axum",
  "barbican",
@@ -1582,6 +1626,8 @@ dependencies = [
  "dbc-parse",
  "decimal-money",
  "docs-pipeline",
+ "error-classify",
+ "error-codes",
  "eventbus-kit",
  "fetch-kit",
  "formula-lang",
@@ -1589,10 +1635,12 @@ dependencies = [
  "healthkit",
  "hmac 0.12.1",
  "http",
+ "http-errors",
  "hw-kit",
  "i18n-kit",
  "idempotency-kit",
  "image",
+ "json-envelope",
  "ledger-kit",
  "loop-retry",
  "mail-sync-kit",
@@ -1623,12 +1671,15 @@ dependencies = [
  "tamper-audit",
  "telemetry-init",
  "tempfile",
+ "thiserror 2.0.21",
  "throttle-kit",
  "tokenkit 0.4.1",
  "tokio",
  "toml 1.1.6+spec-1.1.0",
  "tower",
  "tracing",
+ "typed-id-derive",
+ "typed-id-new",
  "uring-kit",
  "uuid",
  "validkit",
@@ -2203,6 +2254,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-errors"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f4c87f03d00c358d3fd685660ca69d2825253a47a03c9ea1daf38047392259c"
+dependencies = [
+ "http",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2752,6 +2815,18 @@ dependencies = [
  "cfg-if",
  "futures-util",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "json-envelope"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "919e78072b3121643560300f9a3aaf31353de020d0169113cfa0a7b7724d0027"
+dependencies = [
+ "http",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -6016,6 +6091,28 @@ name = "typed-arena"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
+
+[[package]]
+name = "typed-id-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1977f15560f9c296514fb778f78134053fc538753dd4a2dc39fef920ff2de3df"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "typed-id-new"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0794412c360d347542dfa520161e8f5f2dd53ac9a9b3c068a0d23ade89e0a9dc"
+dependencies = [
+ "serde",
+ "typed-id-derive",
+ "uuid",
+]
 
 [[package]]
 name = "typenum"

@@ -121,6 +121,20 @@ actor-kit = "=0.2.3"                      # tests/systems_substrate.rs (work-ste
 slab-pool = "=0.1.0"                      # tests/systems_substrate.rs (borrow-checked pool guards)
 shared-state = "=0.1.1"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
 shm-rings = "=0.2.1"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
+
+# --- round 11: the API surface layer ---------------------------------------
+# Seven crates every service returns from a handler, and that had never been
+# composed with each other. The spine is one error travelling every hop:
+# enum -> code -> status -> recovery class -> envelope -> pagination.
+error-codes = "=1.1.0"                     # tests/api_errors.rs (codes, ProblemDetail, HttpError)
+error-classify = "=0.3.1"                 # tests/api_errors.rs (AppError trait)
+http-errors = "=0.1.0"                    # tests/api_errors.rs (status + problem derive)
+typed-id-new = "=0.1.0"                   # tests/api_errors.rs (UUIDv7 newtypes)
+typed-id-derive = "=0.1.0"                 # tests/api_errors.rs (the TypedId derive)
+api-types = "=0.1.1"                      # tests/api_errors.rs (ApiResponse, PaginationMeta)
+api-paginate = "=0.1.1"                   # tests/api_errors.rs (offset + cursor pagination)
+json-envelope = "=0.1.0"                  # tests/api_errors.rs (the parallel envelope)
+uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typed ids wrap UUIDv7)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
@@ -154,10 +168,13 @@ tower = { version = "0.5", features = ["util"] }
 async-trait = "0.1"
 tracing = "0.1"
 reqwest = { version = "0.12", features = ["json"] }
-uuid = { version = "1", features = ["v7"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 [dev-dependencies]
 wiremock = "0.6"
+# tests/api_errors.rs: a service error type to drive the derive, and the
+# `TypedId` derive's `#[serde(transparent)]` attribute needs serde in scope.
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 # tests/idempotent_webhook.rs: locally compute the HMAC-SHA256 signatures
 # webhookkit then verifies (the same crates webhookkit 2.0.0 builds on).

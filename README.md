@@ -174,6 +174,7 @@ no external network.
 | `tests/auth_provision.rs` | the provisioning + session stack: a SCIM user serializes to RFC 7644 shape (`userName` on the wire, never `user_name`) and round-trips; filters select from a provisioned set on SCIM attribute names; a list response reports `totalResults` independently of page size; accessctl's hardcoded role hierarchy and its Cedar policy set reach the same verdicts; ws-barbican extracts a token from header, registered query key and cookie with header precedence, refusing an unregistered key; and every action lands in a hash-linked audit chain that verifies | accessctl 0.1.0 (`cedar`), scim-kit 0.1.0, tamper-audit 0.2.0, ws-kit 0.4.2, ws-barbican 0.1.2 |
 | `tests/collab_docs.rs` | collaborative documents end to end: three replicas authored independently converge on byte-identical text under four delivery orders (each fragment present exactly once, none lost or duplicated); concurrent delete + insert converge in either causal order; replayed deletes are no-ops while replayed inserts **duplicate**; out-of-order delivery visibly diverges; presence join/leave/re-join; a `BroadcastHub` fans each publication to every subscriber once and *refuses* a broadcast with no receivers; i18n fallback chains (`fr-CA` → `fr` → `en`), plural-rule selectors, and locale parsing; markdown renders from collaboratively edited text with `<script>` stripped; the convergence ships as a typed event envelope | crdts-kit 0.1.0, i18n-kit 0.1.3, eventbus-kit 0.3.5 (`typed_eventbus`), docs-pipeline 0.1.4, ws-kit 0.4.2 |
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.3, slab-pool 0.1.0, shared-state 0.1.1, shm-rings 0.2.1 |
+| `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
 
 ## Run
 
@@ -750,3 +751,66 @@ actors stay in `Creating`, and the test *hangs* rather than failing
 informatively. `actor_kit::rt().block_on(..)` on a plain `#[test]` is the
 shape that works — and the crate ships `rt()` for exactly this, but the
 requirement is invisible until a suite trips over it.
+
+
+Round-11 notes (the API surface layer — `tests/api_errors.rs`):
+
+The layer every service returns from a handler: a typed error taxonomy, a
+recovery classification, RFC 9457 problem details, typed UUID newtypes, and
+pagination. Seven crates, first composition — and five findings, none of
+which any per-crate test could see because each is a *disagreement between*
+two crates.
+
+- **Two crates ship a response envelope whose types collide by name.**
+  `api-types` and `json-envelope` each export `ApiResponse<T>` and
+  `PaginationMeta`. They are different types with incompatible constructors —
+  `json-envelope` only offers `error` on `ApiResponse<()>` (an error response
+  can never carry a payload type) while `api-types` offers `error` /
+  `error_with` for every `T`, so a generic host cannot be written against
+  both. A service that mixes them returns two body shapes from two endpoints,
+  and a generated TS client validates only one. `api-paginate` adds a third
+  list wrapper, with a fourth spelling of "the array": `items` in
+  `api-paginate`, `data` in `api-types` and `json-envelope`. **Ask: pick one
+  envelope and retire the other two.** `api-types` is the strongest
+  (structured errors, OpenAPI derives, a list wrapper) and is what the
+  accounting product should use; `json-envelope` predates it.
+- **`api-types`' `ApiError::details` is the only optional member in the crate
+  that serializes as `null` instead of being omitted.** It has no
+  `skip_serializing_if`, while the envelope's own `data`, `error` and
+  `pagination` and the list wrapper's five members all omit. So one field's
+  absence is a `null` while all the others' absence is a missing key — and
+  the practical consequence is that the two envelopes **differ on the most
+  common response there is**: a failure with no extra detail. One-line fix in
+  `api-types`; pinned here so it cannot regress unnoticed.
+- **The error-code string has two casings.** `error-codes`, which owns the
+  taxonomy, emits SCREAMING_SNAKE (`NOT_FOUND`); `api-types` and
+  `json-envelope` accept an arbitrary string and their own examples use
+  lower_snake (`not_found`). Neither envelope validates or normalizes the
+  value, so a handler that formats `ErrorCode::as_str()` into `error_with`
+  produces a body whose casing depends on which enum it passed through, and a
+  client that switches on the code has to handle both. Ask: `ApiError` should
+  take an `ErrorCode` (or at least a newtype over the slug) rather than a
+  bare `String`.
+- **`ErrorCode::type_uri` is `https://httpstatuses.com/<status>`** — the URI
+  RFC 9457 §3.1.2 names as an *example* that "SHOULD NOT be dereferenced". As a
+  problem `type` it is legal but useless: `Auth` and `Unauthorized` — distinct
+  codes — share one URI, and nothing can be looked up. A deployment-specific
+  `urn:` (`urn:wyatt:ledger:not-found`) is what RFC 9457 asks for when the
+  type is meant to identify the problem class.
+- **The recovery class is the axis a retry loop needs, and it is not visible
+  in the HTTP response.** `RateLimited` (429) is `Retryable` while
+  `Forbidden` (403) is `UserAction` — the same status class, opposite
+  handling. A client that buckets errors by status retries a 403 forever; one
+  that trusts the class alone retries a bug. The class appears only in the
+  body and nothing standardises putting it there. A `Retry-After` header for
+  429 and a machine-readable `recovery_class` member in the error body would
+  close it.
+
+What the estate gets right here, and the suite now protects: every
+`ErrorCode`'s status, slug, type URI and public message come from one enum,
+so they cannot drift; `ProblemDetail` derives every core member from that
+enum rather than accepting them per call site; `ErrorCode::status_code` is
+kept as an alias for `http-errors` compatibility; and the typed-id derive
+produces UUID newtypes whose `Display`/`parse` round-trip and whose
+`parse` returns an `Option`, so a caller cannot use a value without deciding
+whether it was valid.
