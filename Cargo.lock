@@ -7181,9 +7181,9 @@ dependencies = [
 
 [[package]]
 name = "webauthn-kit"
-version = "0.3.1"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "248657e8247320379df344cf7658472ee48f48d1bef8e4635290dd352ad874f8"
+checksum = "f9832f5924aa172c6f50e6434de5a69b5228ba939da71fb2f8d4db20e4bc4c2a"
 dependencies = [
  "base64 0.22.1",
  "ciborium",

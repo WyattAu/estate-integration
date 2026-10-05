@@ -917,13 +917,29 @@ the most serious defect found in the estate to date, and it is now fixed.
   One trap worth recording: the obvious negative vector, "zoo … wrong", is
   *valid*. It is the specification's phrase for all-ff entropy. A negative test
   built on it would have asserted that valid phrases are refused.
-- **`webauthn-kit`'s `check_sign_count` accepts an *equal* count.** It refuses
-  a decrease (`new < current`) and exempts a stored `0`, but `new == current`
-  passes. A replayed assertion carries the counter the authenticator last
-  wrote, so that is exactly what a replay looks like. WebAuthn §7.2 makes the
-  clone signal a count that is *not greater than* the stored one, so the
-  intended check is `<=`; a clone that replays in order rather than resetting
-  is invisible to the crate as written.
+- **`webauthn-kit`'s `check_sign_count` accepted an *equal* count** — fixed in
+  `0.3.6`. The rule was `new < current`, so `new == current` passed, and a
+  replayed assertion carries the counter the authenticator last wrote: the one
+  shape an in-order clone hides behind. WebAuthn §7.2 makes the clone signal a
+  count *not greater than* the stored one, so the check is now `<=`.
+
+  The crate's own justification for the gap — "many hardware keys only
+  increment the counter occasionally and this must not lock users out" —
+  conflates an *unchanged* counter with a *zero* one. §7.2 skips the check when
+  either side is zero, and a zero is how an authenticator says it has no
+  counter. Both exemptions are now explicit, and the old code's treatment of a
+  reported zero as a decrease — which locked out exactly those counter-less
+  keys — is corrected.
+
+  The same release repaired six tests that were already red on `master`: four
+  fixtures wrote the COSE `alg` label as `2` when it is `3` (WebAuthn L2
+  §6.5.1.1: `1: kty, 3: alg, -1: crv, -2: x, -3: y`), and one built a CTAP2
+  attestation object with integer labels where the spec uses text keys
+  (`fmt`, `attStmt`, `authData`). A parser reading `alg` from the wrong label
+  fails against every real authenticator while passing tests built from its own
+  wrong fixtures. `0.3.6` adds the specification's published
+  `credentialPublicKey` bytes as a vector, since published bytes are the one
+  interop check that cannot drift.
 - **`oauth-toolkit`'s PKCE verifier takes the method as a `&str`.** RFC 7636
   defines exactly two values, `plain` and `S256`, and `S256` is required for
   public clients. A typo'd method compares `false` rather than erroring, and

@@ -51,14 +51,24 @@
 //!    repaired behaviour, and the one 24-word-only test that remains pins the
 //!    negative case that must *keep* failing.
 //!
-//! 1. **`webauthn-kit`'s `check_sign_count` accepts an *equal* count.** It
-//!    refuses a decrease (`new < current`) and treats a stored `0` as
-//!    exempt, but `new == current` passes — and a replayed assertion carries
-//!    the counter the authenticator last wrote, so that is exactly what a
-//!    replay looks like. WebAuthn §7.2 says the clone signal is a count that
-//!    is *not greater than* the stored one, so the intended check is `<=`.
-//!    A clone that replays in order rather than resetting is therefore
-//!    invisible to this crate.
+//! 1. **`webauthn-kit`'s `check_sign_count` accepted an *equal* count** — now
+//!    fixed. The rule was `new < current`, so `new == current` passed, and a
+//!    replayed assertion carries the counter the authenticator last wrote.
+//!    WebAuthn §7.2 makes the clone signal a count *not greater than* the
+//!    stored one, so the check is `<=`; a clone that replays in order rather
+//!    than resetting was invisible.
+//!
+//!    The crate documented the gap as "many hardware keys only increment the
+//!    counter occasionally and this must not lock users out", which conflates
+//!    an unchanged counter with a *zero* counter. §7.2 skips the check when
+//!    either side is zero, and zero is how an authenticator says it has no
+//!    counter — the old code refused a *reported* zero as a decrease, locking
+//!    out exactly the counter-less keys the exemption exists for.
+//!
+//!    **Fixed in `webauthn-kit 0.3.6`**: `<=`, with both zero exemptions
+//!    explicit and the error naming which relation tripped. The assertions
+//!    below now pin the §7.2 rule, so a regression fails here.
+//!
 //! 2. **`oauth-toolkit`'s PKCE verifier takes the method as a `&str`.** RFC
 //!    7636 defines exactly two values, `plain` and `S256`; a typo'd method
 //!    compares false rather than erroring, and is indistinguishable from a
@@ -332,44 +342,40 @@ fn a_webauthn_challenge_is_single_use_scoped_and_expiring() {
 
 #[test]
 fn a_sign_count_that_does_not_increase_is_refused() {
-    // WebAuthn's clone detection. §7.2 of the WebAuthn spec: if the new
-    // signature counter is *not greater than* the stored one, and neither is
-    // zero, the authenticator may have been cloned. The crate refuses a
-    // decrease.
+    // WebAuthn §7.2: the clone signal is a new signature counter that is *not
+    // greater than* the stored one, so the check is `<=`. Both the decrease and
+    // the equal case are refused, and the error says which one it was.
     assert!(check_sign_count(10, 11).is_ok(), "an increase is normal");
+
+    // The zero exemptions, which are what keep counter-less authenticators
+    // working: a stored zero is "no baseline yet" (first use), a reported zero
+    // is "I have no counter". Both sides of the comparison, both directions.
+    assert!(check_sign_count(0, 0).is_ok(), "zero against zero");
+    assert!(check_sign_count(0, 1).is_ok(), "first use, from zero");
+    assert!(check_sign_count(0, u32::MAX).is_ok());
     assert!(
-        check_sign_count(0, 1).is_ok(),
-        "...and a stored count of zero is exempt, since a credential that has \
-         never signed does not distinguish a clone from a first use"
-    );
-    assert!(
-        check_sign_count(0, 0).is_ok(),
-        "including zero against zero"
-    );
-    assert!(
-        check_sign_count(10, 3).is_err(),
-        "a decrease is refused as a possible cloned authenticator"
+        check_sign_count(42, 0).is_ok(),
+        "a reported zero is no counter, not a decrease — refusing it locks out \
+         exactly the keys that need the exemption"
     );
 
-    // **Round-13 finding: an *equal* count is accepted.** A replayed assertion
-    // carries the counter the authenticator last wrote, so `new == current`
-    // is exactly what a replay looks like — and it passes. Only a strictly
-    // lower value is caught, so a clone that replays in order rather than
-    // resetting is invisible. The spec's wording is "not greater than", so
-    // `<=` is the intended check and this is a real gap rather than a
-    // judgement call.
+    // The equal case is what a replay looks like, and it is now refused.
+    let equal =
+        check_sign_count(10, 10).expect_err("a replayed assertion carries the last counter");
     assert!(
-        check_sign_count(10, 10).is_ok(),
-        "an EQUAL count is accepted — a replayed assertion looks exactly like \
-         this, and the spec treats 'not greater than' as the clone signal"
+        equal.to_string().contains("unchanged"),
+        "the error distinguishes 'unchanged' from 'decreased': {equal}"
     );
-    assert_eq!(
-        check_sign_count(10, 10).is_ok(),
-        check_sign_count(10, 9).is_err(),
-        "...while a decrease IS refused, so the two cases are treated \
-         differently where the spec treats them the same. That asymmetry is \
-         the gap, stated as an assertion rather than a comment."
+
+    let decrease = check_sign_count(10, 3).expect_err("a decrease is a clone");
+    assert!(
+        decrease.to_string().contains("decreased"),
+        "and says so when it is the decrease case: {decrease}"
     );
+
+    // u32::MAX is the boundary that overflows a naive `< current` + 1.
+    assert!(check_sign_count(u32::MAX - 1, u32::MAX).is_ok());
+    assert!(check_sign_count(u32::MAX, u32::MAX).is_err());
 }
 
 // -- 5. PKCE, against RFC 7636 --------------------------------------------
