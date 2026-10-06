@@ -176,6 +176,12 @@ a2l-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_st
 dbc-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
 can-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; thiserror)
 xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; can-core + thiserror)
+# The L2 calibration layer over the four substrate crates above.
+# It re-exports a2l-parse/dbc-parse/xcp-core, so the suite can cross-check
+# the layer's answers against the substrates through one dependency.
+cal-model = "=0.1.0"                         # tests/cal_model_session.rs
+# The spectral analysis/restoration layer over dsp-core.
+dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs (no_std; dsp-core + thiserror)
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
