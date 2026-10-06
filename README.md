@@ -571,7 +571,6 @@ crate documents in its own rustdoc but a consumer wiring a generated report
 meets immediately. It cost this suite a round of off-by-one errors, so the
 cross-reference is here for the next one.
 
-
 Round-8 notes (the provisioning + session stack — `tests/auth_provision.rs`):
 
 The multi-tenant story an accounting firm needs on day one: an IdP pushes
@@ -627,7 +626,6 @@ Composition facts worth keeping:
   so a link-crafted `?token=` cannot inject a credential. That is the right
   default and worth having pinned.
 
-
 Round-9 notes (the collaborative-document stack — `tests/collab_docs.rs`):
 
 Shared documents with real-time sync, per-locale rendering, and publication.
@@ -678,7 +676,6 @@ looks exactly like the missing-dedup bug above, and cost a round of
 debugging before the authoring fixture was moved to separate replicas. It is
 the easiest way to misuse the crate and deserves an explicit note in its
 rustdoc.
-
 
 Round-10 notes (the single-binary service substrate — `tests/systems_substrate.rs`):
 
@@ -758,7 +755,6 @@ informatively. `actor_kit::rt().block_on(..)` on a plain `#[test]` is the
 shape that works — and the crate ships `rt()` for exactly this, but the
 requirement is invisible until a suite trips over it.
 
-
 Round-11 notes (the API surface layer — `tests/api_errors.rs`):
 
 The layer every service returns from a handler: a typed error taxonomy, a
@@ -821,7 +817,6 @@ produces UUID newtypes whose `Display`/`parse` round-trip and whose
 `parse` returns an `Option`, so a caller cannot use a value without deciding
 whether it was valid.
 
-
 Round-12 notes (the operational shell — `tests/flags_and_lifecycle.rs`):
 
 What every binary in the estate sets up at startup: which features are on,
@@ -880,7 +875,6 @@ Properties the suite now protects:
   no `enabled` flag, and `sample_rate` defaults to 1.0 — so a host that sets
   only an endpoint gets 100% sampling with OTLP export. Both defaults are
   asserted explicitly so a change to either fails here.
-
 
 Round-13 notes (the authentication stack — `tests/crypto_auth.rs`):
 
@@ -1031,7 +1025,7 @@ a reversal that negated the amount *as well as* flipping the side (a double
 negation that reverses nothing at all), an `Amount::minor` constructor that
 multiplied by a scale its representation did not call for, and a `quantize`
 whose tie-break took the wrong neighbour.
-<<<<<<< HEAD
+
 - **cal-model 0.1.0's `to_physical` masks an out-of-width raw value
   silently.** The argument is the element's own bit pattern, and it is
   masked to the datatype width without complaint:
@@ -1093,7 +1087,6 @@ whose tie-break took the wrong neighbour.
   uses 1e-2 and additionally checks that Hann at 50 % overlap is *not*
   reported COLA, which is the assertion that proves the predicate
   discriminates at all.
-=======
 
 Round-15 notes (the wallet, and what upgrading it broke elsewhere):
 
@@ -1198,4 +1191,3 @@ rest, and one of them was broken on arrival.
   mix them by accident — the units are not convertible implicitly. And
   `MockClock` can be advanced backwards, which a real clock cannot, which is the
   whole reason a time-dependent test is writable at all.
->>>>>>> origin/main
