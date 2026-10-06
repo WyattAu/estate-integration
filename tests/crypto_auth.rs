@@ -594,9 +594,9 @@ fn bip39_parses_the_published_vectors_and_refuses_a_bad_checksum() {
         "legal winner thank year wave sausage worth useful legal winner thank yellow",
         "letter advice cage absurd amount doctor acoustic avoid letter advice cage above",
         // All-ff entropy. The final word is "wrong", which reads like a
-        // deliberately corrupted phrase and is in fact the specification's
-        // own valid vector for this entropy — the most convincing argument
-        // for checking vectors against the wordlist rather than by eye.
+        // deliberately corrupted phrase and is in fact the specification's own
+        // valid vector for this entropy — the most convincing argument for
+        // checking vectors against the wordlist rather than by eye.
         "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong",
     ] {
         assert!(
@@ -605,9 +605,9 @@ fn bip39_parses_the_published_vectors_and_refuses_a_bad_checksum() {
         );
     }
 
-    // Pin the derived seed itself, not merely that parsing succeeded: this
-    // covers the checksum, the wordlist indices and the PBKDF2 passphrase
-    // handling at once, and it is fixed by the specification.
+    // Pin the derived seed itself, not merely that parsing succeeded: this covers
+    // the checksum, the wordlist indices and the PBKDF2 passphrase handling at
+    // once, and it is fixed by the specification.
     let seed = mnemonic::mnemonic_to_seed(
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
         "TREZOR",
@@ -653,9 +653,9 @@ fn bip39_parses_the_published_vectors_and_refuses_a_bad_checksum() {
 fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
     // The property a wallet host depends on: derivation is deterministic (the
     // same seed and path give the same address, every time, on every replica)
-    // and paths are non-collapsing (a different index or chain gives a
-    // different address). Together those are what make a recovery path
-    // meaningful years later.
+    // and paths are non-collapsing (a different index or chain gives a different
+    // address). Together those are what make a recovery path meaningful years
+    // later.
     //
     // Built from the canonical 12-word vector, which is what a real user's
     // phrase looks like — 0.2.1 could not parse this at all.
@@ -678,8 +678,8 @@ fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
         "and the account-0/index-0 shorthand agrees with the explicit path"
     );
 
-    // A sibling index is a different account — which is what stops two
-    // customers from receiving the same address.
+    // A sibling index is a different account — which is what stops two customers
+    // from receiving the same address.
     assert_ne!(
         eth::derive_eth_address(&seed, 0, 1).expect("derives"),
         first,
@@ -704,8 +704,8 @@ fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
         first.starts_with("0x") && first.len() == 42,
         "while Ethereum's is an EIP-55 checksummed address: {first}"
     );
-    // EIP-55 mixes case, so an all-lowercase address is a *different* string
-    // — a host that lowercases addresses for storage breaks signatures.
+    // EIP-55 mixes case, so an all-lowercase address is a *different* string —
+    // a host that lowercases addresses for storage breaks signatures.
     assert_ne!(
         first,
         first.to_lowercase(),
@@ -726,6 +726,106 @@ fn a_seed_derives_deterministic_accounts_and_never_returns_to_one() {
         first,
         "...and therefore every derived address, with nothing to signal it"
     );
+}
+
+/// **Round-15 finding: `bip32 0.6.0` accepts four of BIP-32 test vector 5's
+/// sixteen invalid extended keys, so the crate validates them itself.**
+///
+/// Measured: 0.6.0 refuses twelve and accepts both "zero depth with non-zero
+/// parent fingerprint" keys and both "zero depth with non-zero index" keys.
+/// Those are the depth-0 consistency rules — a master key has no parent and no
+/// index — so accepting them means the same private material has two valid
+/// encodings. That is malleability, and malleability is what breaks "is this the
+/// key I wrote down?" and any comparison of serialised keys.
+///
+/// `multi-chain-wallet 0.3.0` enforces all sixteen, plus BIP-32's rule that a
+/// public key may not name a hardened child. It also adds an import path the
+/// crate never had: `bip32 0.5` had no `FromStr` at all, so a user's existing
+/// xpub could not be validated whatsoever.
+#[test]
+fn an_extended_key_import_refuses_every_invalid_vector_five_key() {
+    use multi_chain_wallet::extended_key::{parse_xprv, parse_xpub};
+
+    // Vector 1's master key, from the specification.
+    let valid_xprv = "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi";
+    let valid_xpub = "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8";
+
+    assert!(parse_xprv(valid_xprv).is_ok(), "a valid master key imports");
+    assert!(
+        parse_xpub(valid_xpub).is_ok(),
+        "and so does its public form"
+    );
+
+    // The four cases upstream accepts. Each is 111 characters of valid
+    // Base58Check with a valid checksum, so nothing but the depth-0 rule
+    // distinguishes them from a real key.
+    for (key, expected) in [
+        (
+            "xprv9s2SPatNQ9Vc6GTbVMFPFo7jsaZySyzk7L8n2uqKXJen3KUmvQNTuLh3fhZMBoG3G4ZW1N2kZuHEPY53qmbZzCHshoQnNf4GvELZfqTUrcv",
+            "parent fingerprint",
+        ),
+        (
+            "xpub661no6RGEX3uJkY4bNnPcw4URcQTrSibUZ4NqJEw5eBkv7ovTwgiT91XX27VbEXGENhYRCf7hyEbWrR3FewATdCEebj6znwMfQkhRYHRLpJ",
+            "parent fingerprint",
+        ),
+        (
+            "xprv9s21ZrQH4r4TsiLvyLXqM9P7k1K3EYhA1kkD6xuquB5i39AU8KF42acDyL3qsDbU9NmZn6MsGSUYZEsuoePmjzsB3eFKSUEh3Gu1N3cqVUN",
+            "index",
+        ),
+        (
+            "xpub661MyMwAuDcm6CRQ5N4qiHKrJ39Xe1R1NyfouMKTTWcguwVcfrZJaNvhpebzGerh7gucBvzEQWRugZDuDXjNDRmXzSZe4c7mnTK97pTvGS8",
+            "index",
+        ),
+    ] {
+        let result = if key.starts_with("xpub") {
+            parse_xpub(key).err()
+        } else {
+            parse_xprv(key).err()
+        };
+        let result =
+            result.unwrap_or_else(|| panic!("{expected}: {key} must be refused"));
+        let message = result.to_string();
+        assert!(
+            message.contains(expected),
+            "the refusal must name the rule it broke ({expected}), got: {message}"
+        );
+    }
+}
+
+/// The strict import is reachable from a consumer, and it distinguishes a key of
+/// the wrong kind rather than parsing it as the other kind.
+///
+/// BIP-32's rule that a public key may not name a hardened child is enforced and
+/// tested in the crate's own suite, where a genuine hardened child can be derived
+/// from a real seed. Inventing a key string here would fail the Base58Check
+/// checksum instead and pass for the wrong reason — which is exactly the mistake
+/// a "negative vector" invites, and the reason the obvious "zoo ... wrong" vector
+/// for BIP-39 turned out to be a *valid* phrase.
+#[test]
+fn a_strict_import_distinguishes_a_public_key_from_a_private_one() {
+    use multi_chain_wallet::extended_key::{parse_xprv, parse_xpub, KeyError};
+
+    let valid_xprv = "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi";
+    let valid_xpub = "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8";
+
+    assert!(matches!(
+        parse_xprv(valid_xpub),
+        Err(KeyError::WrongKeyKind { .. })
+    ));
+    assert!(matches!(
+        parse_xpub(valid_xprv),
+        Err(KeyError::WrongKeyKind { .. })
+    ));
+
+    // A truncated body is an encoding failure, not a wrong-kind failure: the
+    // distinction matters because one is a caller bug and the other is a
+    // semantic mismatch.
+    // Three characters is shorter than any prefix.
+    assert!(matches!(parse_xprv("xpr"), Err(KeyError::Encoding(_))));
+    assert!(matches!(
+        parse_xprv("nope9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi"),
+        Err(KeyError::UnknownPrefix(_))
+    ));
 }
 
 // -- helpers --------------------------------------------------------------
