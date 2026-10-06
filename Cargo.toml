@@ -28,7 +28,7 @@ barbican = "=0.2.1"
 breaker = { version = "=2.0.1", features = ["tower"] }
 healthkit = { version = "=1.3.1", features = ["axum"] }
 throttle-kit = { version = "=2.0.0", features = ["in-memory", "tower"] }
-otelkit = "=2.0.3"
+otelkit = "=2.1.0"
 mailkit = { version = "=0.3.1", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.1"
 media-kit = "=0.2.1"
@@ -59,7 +59,7 @@ outbox-kit = "=0.2.0"                        # tests/outbox_dispatch.rs (default
 percentile-kit = "=0.1.0"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.1"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=0.2.0"                       # tests/metrics_scrape.rs
-webhookkit = "=2.2.0"                        # tests/idempotent_webhook.rs
+webhookkit = "=2.2.1"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
 telemetry-init = "=0.1.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
@@ -143,7 +143,7 @@ uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typ
 # `chrono` gates `FlagChange::now`; without it a change record has to be
 # built with an explicit timestamp, so the suite takes the feature to pin the
 # clock-stamping path.
-flag-kit = { version = "=0.2.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
+flag-kit = { version = "=0.7.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
 otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
 envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer precedence)
@@ -155,7 +155,7 @@ envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer p
 cryptkit = "=0.1.0"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
 webauthn-kit = "=0.3.7"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
 oauth-toolkit = "=0.3.0"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
-multi-chain-wallet = "=0.2.2"            # tests/crypto_auth.rs (key derivation)
+multi-chain-wallet = "=0.3.0"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
@@ -196,6 +196,11 @@ async-trait = "0.1"
 tracing = "0.1"
 reqwest = { version = "0.12", features = ["json"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+cal-model = "=0.1.1"                      # tests/round16_debt.rs (A2L + DBC + XCP calibration layer)
+dsp-spectral = "=0.1.0"                   # tests/round16_debt.rs (STFT/ISTFT, spectral features)
+cache-pal = "=0.4.0"                      # tests/round16_debt.rs (TTL cache beside shared-state and shm-rings)
+chronoshift = "=1.0.1"                    # tests/round16_debt.rs (superseded time source, beside clock-kit)
+
 [dev-dependencies]
 wiremock = "0.6"
 # tests/api_errors.rs: a service error type to drive the derive, and the

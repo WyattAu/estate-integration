@@ -147,7 +147,7 @@ no external network.
 | `tests/media_upload.rs` | duplicate upload dedup assertion; oversized-bomb rejection; variant count + EXIF orient | media-kit 0.2.1, blobkit 0.4.2, cas-kit 0.2.1, validkit 1.3.1 |
 | `tests/sync_client.rs` | MockStore seam ingest; events persisted to SQLite; replay after restart-simulation | mail-sync-kit 0.1.1, eventbus-kit 0.3.5 |
 | `tests/config_secrets.rs` | file → env → in-process-override precedence ladder (deep merge); `Sensitive<String>` redacted through the loaded struct's `Debug`/`Display`; `load_strict` names the unknown top-level key; lenient `load` still accepts the same file | config-kit 0.1.1 |
-| `tests/idempotent_webhook.rs` | HMAC-SHA256 gate (raw + Stripe `t=…,v1=…` envelope, locally signed); event id → `IdempotencyKey`; first delivery processes, duplicate hits Replay without re-executing; failed attempt releases the claim and the retry succeeds | webhookkit 2.2.0, idempotency-kit 0.1.0 |
+| `tests/idempotent_webhook.rs` | HMAC-SHA256 gate (raw + Stripe `t=…,v1=…` envelope, locally signed); event id → `IdempotencyKey`; first delivery processes, duplicate hits Replay without re-executing; failed attempt releases the claim and the retry succeeds | webhookkit 2.2.1, idempotency-kit 0.1.0 |
 | `tests/outbox_dispatch.rs` | flaky sender (2 failures then success) trips the dispatcher's breaker; open circuit pauses without burning attempt budget; half-open probe closes; all 5 events dispatched with per-event attempts recorded; graceful shutdown < 2 s | outbox-kit 0.2.0, breaker 2.0.1 |
 | `tests/percentile_report.rs` | tracker quantiles equal the sorted `nearest_rank` reference and are monotone; markdown row snapshot; criterion-shaped `estimates.json`/`sample.json` fixture gated to PASS, then to a typed `BudgetExceeded` FAIL; budget TOML rejects typo'd keys | percentile-kit 0.1.0 |
 | `tests/chaos_resilience.rs` | axum service under `chaos_layer` (seeded 30 % throttle + scripted error at index 7); 100 requests match the precomputed schedule exactly; recorder counts exact; same seed reproduces bit-for-bit; paused-clock latency fault | chaos-kit 0.1.1 (+ axum/tower) |
@@ -178,8 +178,9 @@ no external network.
 | `tests/systems_substrate.rs` | the single-binary service substrate: TTL cache expiry is measured from insertion (a hot key still expires) and `take_fresh` is the atomic read-and-remove a work queue needs; a readiness gate that latches and is revoked only deliberately; a lock-free slab pool whose guards are borrow-checked, whose exhaustion is a typed `None`, and which returns every slot on drop; a shared-memory SPMC ring that refuses to overwrite unread data and reports per-reader cursors; and actors exchanging prioritised messages on a work-stealing scheduler | actor-kit 0.2.5, slab-pool 0.1.0, shared-state 0.1.2, shm-rings 0.2.1 |
 | `tests/api_errors.rs` | the API surface layer: every `ErrorCode`'s status, slug, type URI and public message agree; the taxonomy's recovery classes partition sensibly against their statuses; RFC 9457 problem details derive every core member from the enum; typed UUID ids round-trip and refuse non-UUIDs; and one error travels variant → code → status → problem document → envelope with each hop checked against the last | error-codes 1.1.0, error-classify 0.3.1, typed-id-new 0.1.0, typed-id-derive 0.1.0, api-types 0.1.1, api-paginate 0.1.1, json-envelope 0.1.0 |
 | `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
-| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.7, oauth-toolkit 0.3.0, multi-chain-wallet 0.2.2 |
+| `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.7, oauth-toolkit 0.3.0, multi-chain-wallet 0.3.0 |
 | `tests/accounting_core.rs` | the new accounting core against the estate: append-only journals, balanced posting, period close, and reversal by counter-entry, plus the point at which two ledger crates in this workspace stop agreeing | double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
+| `tests/round16_debt.rs` | the four remaining debt crates where composition is the point: `cal-model` against the three substrates it claims to sit on, `dsp-spectral` STFT/ISTFT as inverses, `cache-pal` as a third TTL implementation beside `shared-state` and `shm-rings`, and `chronoshift` beside its own replacement `clock-kit` | cal-model 0.1.1, dsp-spectral 0.1.0, cache-pal 0.4.0, chronoshift 1.0.1 |
 
 ## Run
 
@@ -257,7 +258,7 @@ Round-3 notes (the 2026-09-16 kit wave):
   one-line `map_err`. A provided `From<Infallible>`-friendly adapter (or
   a blanket impl over `Borrow`) would make `Router::layer(chaos_layer(..))
   compile out of the box.
-- webhookkit 2.2.0 verifies signatures but exposes no signer (its
+- webhookkit 2.2.1 verifies signatures but exposes no signer (its
   `compute_hmac_sha256` is `pub(crate)`, test-only), so hosts faking the
   provider side reach for `hmac`/`sha2` directly — the same crates, but a
   `sign_hmac_sha256` re-export would drop two dev-dependencies.
@@ -474,7 +475,7 @@ re-run; four needed real work, and one pin is deliberately held back.
   this pin moved (2026-09-16), i.e. the release existed and only the
   consumer lagged — which is exactly the drift class the manifest audit
   now catches on a schedule.
-- **healthkit 1.3.1, metrics-kit 0.2.0, webhookkit 2.2.0, telemetry-init
+- **healthkit 1.3.1, metrics-kit 0.2.0, webhookkit 2.2.1, telemetry-init
   0.1.1, config-kit 0.1.1, chaos-kit 0.1.1, mailkit 0.3.1, mail-sync-kit
   0.1.1, otelkit 2.0.3, validkit 1.3.1, blobkit 0.4.2, tokenkit 0.4.1,
   throttle-kit 2.0.0, shutdown-kit 0.3.2** all took the pin bump with no
@@ -909,7 +910,7 @@ the most serious defect found in the estate to date, and it is now fixed.
   asserting that 12/15/18/21 *must* fail). A test suite can be evidence of a
   bug when it encodes the bug as the contract.
 
-  **Fixed in `multi-chain-wallet 0.2.2`** (published and pinned here): parsing
+  **Fixed in `multi-chain-wallet 0.3.0`** (published and pinned here): parsing
   goes through `bip39` directly, which validates every published vector, and
   generation honours all five BIP-39 lengths at exactly the requested count;
   `bip32` is kept for the BIP-32 derivation arithmetic, which never saw a
@@ -1030,6 +1031,7 @@ a reversal that negated the amount *as well as* flipping the side (a double
 negation that reverses nothing at all), an `Amount::minor` constructor that
 multiplied by a scale its representation did not call for, and a `quantize`
 whose tie-break took the wrong neighbour.
+<<<<<<< HEAD
 - **cal-model 0.1.0's `to_physical` masks an out-of-width raw value
   silently.** The argument is the element's own bit pattern, and it is
   masked to the datatype width without complaint:
@@ -1091,3 +1093,109 @@ whose tie-break took the wrong neighbour.
   uses 1e-2 and additionally checks that Hann at 50 % overlap is *not*
   reported COLA, which is the assertion that proves the predicate
   discriminates at all.
+=======
+
+Round-15 notes (the wallet, and what upgrading it broke elsewhere):
+
+`multi-chain-wallet 0.3.0` moves to `bip32 0.6` and `k256 0.14`, and adds the
+BIP-32 conformance suite that made the upgrade safe to attempt.
+
+- **`bip32 0.6` removed its `bip39`/`mnemonic` features** rather than fixing
+  them — `0.5` types entropy as `[u8; 32]`, so 128-bit entropy was
+  *unrepresentable*, not merely unvalidated. There is no upstream issue. The
+  standalone-`bip39` arrangement `0.2.2` introduced is now the only one
+  available.
+- **Derived addresses are unchanged.** All four of BIP-32's derivation vectors
+  now match the specification byte for byte, and the crate's pre-existing
+  address tests pass untouched. The vectors came *before* the upgrade for
+  exactly that reason: a conformance suite written afterwards proves nothing.
+- **`k256 0.14` removed `sign_prehash_recoverable`** and offers
+  `sign_digest_recoverable`, which *hashes* its input. A wallet is handed a
+  sighash that is already hashed, so that would sign a different message than the
+  network verifies and every transaction would be rejected — silently, with no
+  panic, and with any test that signed a message by hashing it first still green.
+  `signing_prehash` signs the prehash directly via
+  `hazmat::sign_prehashed_rfc6979`, with a regression test asserting the two
+  paths differ.
+
+Two findings that only composing crates can produce:
+
+- **`bip32 0.6.0` accepts four of BIP-32 test vector 5's sixteen invalid
+  extended keys.** It refuses twelve and accepts both "zero depth with non-zero
+  parent fingerprint" keys and both "zero depth with non-zero index" keys. Those
+  are the depth-0 consistency rules — a master key has no parent and no index —
+  so accepting them means the same private material has two valid encodings.
+  That is malleability, and malleability is what breaks "is this the key I wrote
+  down?" and any comparison of serialised keys. `multi-chain-wallet 0.3.0` now
+  enforces all sixteen through `extended_key::parse_xprv`/`parse_xpub`, plus
+  BIP-32's rule that a public key may not name a hardened child, plus canonical
+  re-serialisation. It also gives the crate an import path it never had:
+  `bip32 0.5` had no `FromStr` at all, so a user's existing xpub could not be
+  validated whatsoever.
+- **Adding `k256 0.14` broke `webhookkit 2.2.0` — with no change to that crate's
+  own manifest.** `hybrid-array` provides
+  `subtle::ConstantTimeEq for Array<T, U>` with `fn ct_eq(&self, other: &Self)`,
+  and when that impl is in scope it wins method resolution over `subtle`'s slice
+  impl. `k256 → sec1 → hybrid-array/subtle` turns it on, and **feature
+  unification is workspace-wide**, so `result.ct_eq(&signature_bytes)` stopped
+  compiling in a crate four directories away. Fixed in `webhookkit 2.2.1` by
+  naming the slice impl on both sides — which is also the comparison that was
+  always intended: two 32-byte buffers as byte strings, not as arrays.
+
+That second finding is the whole argument for this repo. Nothing in
+`webhookkit`'s own CI saw it, and no amount of per-crate testing would have.
+
+Round-16 notes (`tests/round16_debt.rs`):
+
+The audit's coverage debt is a list of crates published, working, and never proven
+to work alongside their neighbours. Ten of the eighteen are parsers and derive
+macros with no shared surface, where composing proves nothing. These four are the
+rest, and one of them was broken on arrival.
+
+- **`cal-model 0.1.0`'s `sample_project()` bound no signals at all.** It parsed
+  `SAMPLE_A2L`, registered the tables, declared the elements — and never attached
+  `SAMPLE_DBC`, which the crate exports and never uses. So `signal_bindings` was
+  empty for every module, `require_signal_binding` always failed, and the
+  "A2L + DBC → calibration session" path the crate exists for was never exercised
+  by the first thing a consumer reaches for. **Fixed in `0.1.1`.**
+
+  Two of its own tests built their no-DBC project from `sample_project()`,
+  relying on the fixture being *incomplete*. Depending on a fixture being wrong
+  to express "no bus attached" is how it stayed wrong, so those tests now build
+  from `SAMPLE_A2L` and say what they mean.
+
+- **A signal binding's bits are checked against arithmetic, not against the crate
+  that produced them.** `extract_raw` must return the bits `encode` wrote — and a
+  round trip through only those two functions catches a stateful bug but not a
+  *consistent* misreading of the start bit. The suite also perturbs each byte in
+  turn and asserts the binding is sensitive to some but not all of them: a
+  constant reader and a whole-frame reader both pass a naive round trip.
+  Perturbing byte-by-byte rather than computing a byte range, because for Motorola
+  `start_bit` is the MSB and `start_bit + length` says nothing about the high byte.
+
+- **`dsp-spectral`'s STFT and ISTFT are inverses** on a two-tone signal away from
+  the edges, compared in the interior where a centred window's overlap-add is
+  complete by construction — the property a round-trip test *within* the crate
+  cannot establish, because a consistently wrong transform is perfectly
+  self-consistent. Plus the two boundaries that actually bite: spectral flatness
+  is a geometric mean over an arithmetic one so it cannot exceed 1 (a value above
+  that means the log was taken on the wrong side), and a non-finite sample is
+  refused rather than transformed into a spectrum of NaN.
+
+- **`cache-pal` is the third TTL implementation** in this graph, beside
+  `shared-state`'s `TtlCache` and `shm-rings`. Pinned what a caller depends on:
+  present before the TTL, absent after, capacity enforced by eviction rather than
+  silent growth, hits and misses counted, and empty/NUL/4 KiB keys treated as
+  values — a cache that mishandles an empty key has a denial-of-service bug
+  reachable from any caller that builds keys from user input.
+
+- **`chronoshift` and `clock-kit` are both here**, and that is itself the
+  finding: the two are not interchangeable and the types make sure of it.
+  `chronoshift` is `i64` nanoseconds with a `system_clock()` constructor;
+  `clock-kit`'s `Clock` is a *trait* over a `Timestamp` with no associated
+  constructor at all, deliberately, so a caller must name the source it trusts,
+  and its `mono` is a monotonic floor rather than a wall clock. A caller cannot
+  mix them by accident — the units are not convertible implicitly. And
+  `MockClock` can be advanced backwards, which a real clock cannot, which is the
+  whole reason a time-dependent test is writable at all.
+>>>>>>> origin/main
