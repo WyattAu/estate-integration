@@ -28,7 +28,7 @@ barbican = "=0.2.1"
 breaker = { version = "=2.0.1", features = ["tower"] }
 healthkit = { version = "=1.3.1", features = ["axum"] }
 throttle-kit = { version = "=2.0.0", features = ["in-memory", "tower"] }
-otelkit = "=2.0.3"
+otelkit = "=2.1.0"
 mailkit = { version = "=0.3.1", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.1"
 media-kit = "=0.2.1"
@@ -143,7 +143,7 @@ uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typ
 # `chrono` gates `FlagChange::now`; without it a change record has to be
 # built with an explicit timestamp, so the suite takes the feature to pin the
 # clock-stamping path.
-flag-kit = { version = "=0.2.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
+flag-kit = { version = "=0.7.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
 otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
 envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer precedence)

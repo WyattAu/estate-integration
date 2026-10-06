@@ -2108,9 +2108,9 @@ checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
 
 [[package]]
 name = "flag-kit"
-version = "0.2.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de8d551eacb1c2d7c74083273663a9cfb4948e1a2a0be70ecfcff4267b67b22b"
+checksum = "095b7176f67ad4e45b974713ae74d03045063255f6666dea4b9908cf08e46910"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4225,9 +4225,9 @@ dependencies = [
 
 [[package]]
 name = "otelkit"
-version = "2.0.3"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ce67c05795abdf7aa0c716b79eadbe7eacec3ee09c378b924f6c5f2edae5143"
+checksum = "977493636b01c32d0ecebc6a8f4c48a97cc32add9173a6bab430ca5b8f79b70e"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
