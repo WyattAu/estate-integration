@@ -178,6 +178,7 @@ no external network.
 | `tests/flags_and_lifecycle.rs` | the operational shell: a percentage rollout puts the same user in the same bucket across 1,000 calls and across replicas; 0% serves nobody and 100% serves everybody while `enabled = false` beats both (so a rollback is one write); flag names are validated against `^[a-z][a-z0-9_]*$`; a daemon guard claims a lock, refuses a second claim, releases on drop, reclaims a stale one, and removes only its own; a telemetry facade whose defaults resolve to exporting nowhere; and layered config where the first layer that has a key wins | flag-kit 0.2.0 (`chrono`), pid-manager 0.1.0, otel-stack 0.2.0, envstack 0.2.1 |
 | `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.7, oauth-toolkit 0.3.0, multi-chain-wallet 0.3.0 |
 | `tests/accounting_core.rs` | the new accounting core against the estate: append-only journals, balanced posting, period close, and reversal by counter-entry, plus the point at which two ledger crates in this workspace stop agreeing | double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
+| `tests/round16_debt.rs` | the four remaining debt crates where composition is the point: `cal-model` against the three substrates it claims to sit on, `dsp-spectral` STFT/ISTFT as inverses, `cache-pal` as a third TTL implementation beside `shared-state` and `shm-rings`, and `chronoshift` beside its own replacement `clock-kit` | cal-model 0.1.1, dsp-spectral 0.1.0, cache-pal 0.4.0, chronoshift 1.0.1 |
 
 ## Run
 
@@ -1078,3 +1079,57 @@ Two findings that only composing crates can produce:
 
 That second finding is the whole argument for this repo. Nothing in
 `webhookkit`'s own CI saw it, and no amount of per-crate testing would have.
+
+Round-16 notes (`tests/round16_debt.rs`):
+
+The audit's coverage debt is a list of crates published, working, and never proven
+to work alongside their neighbours. Ten of the eighteen are parsers and derive
+macros with no shared surface, where composing proves nothing. These four are the
+rest, and one of them was broken on arrival.
+
+- **`cal-model 0.1.0`'s `sample_project()` bound no signals at all.** It parsed
+  `SAMPLE_A2L`, registered the tables, declared the elements — and never attached
+  `SAMPLE_DBC`, which the crate exports and never uses. So `signal_bindings` was
+  empty for every module, `require_signal_binding` always failed, and the
+  "A2L + DBC → calibration session" path the crate exists for was never exercised
+  by the first thing a consumer reaches for. **Fixed in `0.1.1`.**
+
+  Two of its own tests built their no-DBC project from `sample_project()`,
+  relying on the fixture being *incomplete*. Depending on a fixture being wrong
+  to express "no bus attached" is how it stayed wrong, so those tests now build
+  from `SAMPLE_A2L` and say what they mean.
+
+- **A signal binding's bits are checked against arithmetic, not against the crate
+  that produced them.** `extract_raw` must return the bits `encode` wrote — and a
+  round trip through only those two functions catches a stateful bug but not a
+  *consistent* misreading of the start bit. The suite also perturbs each byte in
+  turn and asserts the binding is sensitive to some but not all of them: a
+  constant reader and a whole-frame reader both pass a naive round trip.
+  Perturbing byte-by-byte rather than computing a byte range, because for Motorola
+  `start_bit` is the MSB and `start_bit + length` says nothing about the high byte.
+
+- **`dsp-spectral`'s STFT and ISTFT are inverses** on a two-tone signal away from
+  the edges, compared in the interior where a centred window's overlap-add is
+  complete by construction — the property a round-trip test *within* the crate
+  cannot establish, because a consistently wrong transform is perfectly
+  self-consistent. Plus the two boundaries that actually bite: spectral flatness
+  is a geometric mean over an arithmetic one so it cannot exceed 1 (a value above
+  that means the log was taken on the wrong side), and a non-finite sample is
+  refused rather than transformed into a spectrum of NaN.
+
+- **`cache-pal` is the third TTL implementation** in this graph, beside
+  `shared-state`'s `TtlCache` and `shm-rings`. Pinned what a caller depends on:
+  present before the TTL, absent after, capacity enforced by eviction rather than
+  silent growth, hits and misses counted, and empty/NUL/4 KiB keys treated as
+  values — a cache that mishandles an empty key has a denial-of-service bug
+  reachable from any caller that builds keys from user input.
+
+- **`chronoshift` and `clock-kit` are both here**, and that is itself the
+  finding: the two are not interchangeable and the types make sure of it.
+  `chronoshift` is `i64` nanoseconds with a `system_clock()` constructor;
+  `clock-kit`'s `Clock` is a *trait* over a `Timestamp` with no associated
+  constructor at all, deliberately, so a caller must name the source it trusts,
+  and its `mono` is a monotonic floor rather than a wall clock. A caller cannot
+  mix them by accident — the units are not convertible implicitly. And
+  `MockClock` can be advanced backwards, which a real clock cannot, which is the
+  whole reason a time-dependent test is writable at all.
