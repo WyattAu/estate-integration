@@ -844,6 +844,22 @@ criteria = "safe-to-deploy"
 version = "0.2.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.font-model]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.font-parse]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.font-shape]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.font-types]]
+version = "0.8.4"
+criteria = "safe-to-deploy"
+
 [[exemptions.foreign-types]]
 version = "0.3.2"
 criteria = "safe-to-deploy"

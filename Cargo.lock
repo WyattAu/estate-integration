@@ -2010,6 +2010,8 @@ dependencies = [
  "eventbus-kit",
  "fetch-kit",
  "flag-kit",
+ "font-model",
+ "font-shape",
  "formula-lang",
  "futures",
  "healthkit",
@@ -2254,6 +2256,43 @@ name = "foldhash"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
+
+[[package]]
+name = "font-model"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a94f5268bc93883ef0e1aebc3f4d3ffe3e02208ef0a787952ac535ad70a35788"
+dependencies = [
+ "font-parse",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "font-parse"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44b7866ea90c13ae1dbc5b794397f7ecee61e56046fac7f0ef42a8535eabf3d1"
+dependencies = [
+ "font-types",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "font-shape"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3cc897e51db3aa1e977e2b0db9ae9466c99cb43a21c6e13d8e5c415709db2b2"
+dependencies = [
+ "font-model",
+ "libm",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "font-types"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fa6a5e5a77b5f3f7f9e32879f484aa5b3632ddfbe568a16266c904a6f32cdaf"
 
 [[package]]
 name = "foreign-types"

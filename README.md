@@ -168,6 +168,7 @@ no external network.
 | `tests/spreadsheet_engine.rs` | the product layer end to end: literals and formulas, a quarterly model (SUM over ranges, IF, margin ratios), a 200-cell dependency chain and a 4,000-formula cone — each edit asserted through the invariant that **`recalculate_incremental` and `recalculate` agree cell-for-cell**; cross-sheet and quoted-sheet references (including a dangling sheet that heals when the sheet appears), formula→literal edge removal, error-value propagation, cycle detection with members, volatile tracking, XLSX round-trip that preserves a *live* dependency graph, and `VLOOKUP` over 100 rows | sheet-engine 0.1.0, formula-lang 0.1.1 |
 | `tests/cal_model_session.rs` | the L2 calibration layer driven through a bench workflow: load the sample A2L, bind CAN signals from the DBC, `connect` over `MockTransport`, read-modify-write a characteristic bit-exactly, write one element of a multi-element deposit and prove the neighbours are untouched, reject an out-of-limit write without mutating the transport, isolate calibration pages, snapshot/diff/restore, and calibrate a curve. Every physical value is cross-checked against a conversion computed directly from `a2l_parse::CompuMethod`, and every frame against `xcp_core`'s own builders — the layer re-exports all three substrates, so disagreement is checkable through one dependency | cal-model 0.1.0 (+ a2l-parse, dbc-parse, xcp-core through its re-exports) |
 | `tests/dsp_spectral_restore.rs` | dsp-spectral's numerical claims rather than its API: analysis-synthesis identity across all six windows and five hop/FFT pairs, Parseval consistency of the linear `power`, and **every feature recomputed against a naive reference written from the mathematical definition** — centroid, flatness, rolloff, bandwidth, flux. Restoration is measured both ways: gating must improve SNR by more than 5 dB *without* simply attenuating the signal, HPSS must localise the transient on the click rather than smear it, and zero over-subtraction must be near-identity | dsp-spectral 0.1.0 |
+| `tests/font_pipeline.rs` | the font toolchain's write path end to end: coverage must sum to a path's area within a stated tolerance (checked against an independently computed value, not a golden image), anti-aliasing must be observable at half-pixel offsets, coverage must be monotone in shape size, both fill rules must be implemented and disagree exactly where winding says they should, an affine transform must be equivalent to transforming the result, strokes must scale their ink linearly, and the model→shaper boundary must produce ink whose area is consistent with the advance the shaper reported. Subsetting must keep the requested code points, drop the rest, and yield a font that still validates | font-model 0.1.0, font-shape 0.1.0 (over font-parse) |
 | `tests/chaos_worker.rs` | a worker-kit supervisor job whose work unit is a tower service under `ChaosLayer` (seeded 5 ms latency on every call, scripted errors at two consecutive indexes): the failure budget trips the degradation latch — observed live, because a post-outage success clears the flag (round-5 finding) — the worker keeps firing past degradation and drains < 2 s; the same seed reproduces the identical fault sequence across two independent sessions; recorder counts are exact | chaos-kit 0.1.1, worker-kit 0.3.0 (no default features) |
 | `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.1 |
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
@@ -1191,3 +1192,30 @@ rest, and one of them was broken on arrival.
   mix them by accident — the units are not convertible implicitly. And
   `MockClock` can be advanced backwards, which a real clock cannot, which is the
   whole reason a time-dependent test is writable at all.
+- **font-shape 0.1.0's `mask_coverage` returns 0..255 units, not an area.**
+  400 solid pixels report `102_000.0`, not `400.0` — the name reads as an area
+  and the doc comment does say "dividing by 255 gives the ink area in pixels",
+  but a caller who forgets the divide is off by 255x, and every area comparison
+  in a renderer silently fails rather than erroring. Ask: rename to
+  `coverage_units`, or return the area and add a separate raw-sum accessor.
+- **font-shape 0.1.0 answers a zero-width or zero-height canvas with
+  `Ok(vec![])`, not a typed error**, while an oversized canvas returns
+  `RasterTooLarge` naming both the request and the limit. Both are total and
+  neither panics, which is the part that matters; but "no width" reads like a
+  caller mistake and is answered with a success value, so a host that forgets to
+  check the length downstream gets an index-out-of-bounds instead of an error it
+  can report. `InvalidSize` exists in the error enum for exactly this.
+- **font-shape 0.1.0's winding convention is per-contour, not per-path, and the
+  suite had to discover it.** Two same-wound squares must render differently
+  under `NonZero` (winding 2, solid) and `EvenOdd` (parity 2, hole) — and they
+  do, but only once you sample the *right* pixels: because `square()` builds from
+  the origin, the inner square occupies 0..20 and the ring 20..40. The first
+  three attempts at this test sampled the corner outside both squares and
+  concluded the rules were aliased. The finding is worth stating plainly because
+  the enum implies more than the rasteriser does on multi-subpath input, and a
+  host probing the behaviour by sampling one convenient pixel will reach the same
+  wrong conclusion.
+- **font-shape 0.1.0's `stroke_path` returns a single closed subpath** for an
+  open line, which is right (a stroke outlines a region) but means
+  `subpath_count() >= 2` is not a valid expectation — the ink band is asserted
+  from the raster instead, which is what actually matters.

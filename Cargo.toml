@@ -182,6 +182,10 @@ xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_st
 cal-model = "=0.1.1"                         # tests/cal_model_session.rs, tests/round16_debt.rs
 # The spectral analysis/restoration layer over dsp-core.
 dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tests/round16_debt.rs (no_std; dsp-core + thiserror)
+# The font toolchain's write path: an editable outline model and a CPU
+# rasterizer/shaper, layered over font-parse.
+font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
+font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
