@@ -179,9 +179,9 @@ xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_st
 # The L2 calibration layer over the four substrate crates above.
 # It re-exports a2l-parse/dbc-parse/xcp-core, so the suite can cross-check
 # the layer's answers against the substrates through one dependency.
-cal-model = "=0.1.0"                         # tests/cal_model_session.rs
+cal-model = "=0.1.1"                         # tests/cal_model_session.rs, tests/round16_debt.rs
 # The spectral analysis/restoration layer over dsp-core.
-dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs (no_std; dsp-core + thiserror)
+dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tests/round16_debt.rs (no_std; dsp-core + thiserror)
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
@@ -196,8 +196,6 @@ async-trait = "0.1"
 tracing = "0.1"
 reqwest = { version = "0.12", features = ["json"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
-cal-model = "=0.1.1"                      # tests/round16_debt.rs (A2L + DBC + XCP calibration layer)
-dsp-spectral = "=0.1.0"                   # tests/round16_debt.rs (STFT/ISTFT, spectral features)
 cache-pal = "=0.4.0"                      # tests/round16_debt.rs (TTL cache beside shared-state and shm-rings)
 chronoshift = "=1.0.1"                    # tests/round16_debt.rs (superseded time source, beside clock-kit)
 
