@@ -179,6 +179,7 @@ no external network.
 | `tests/crypto_auth.rs` | the authentication stack against published vectors rather than against itself: HMAC-SHA256 matches RFC 4231 cases 1–4 and 6 (including the block-size and 131-byte-key boundaries); base64url round-trips for 39 lengths and never emits `+`, `/` or `=`; a WebAuthn challenge is single-use, per-user, namespace-separated and timeout-bounded; PKCE verifies under `S256` and against cryptkit's own SHA-256; and a CSRF state nonce is single-use, session-bound and TTL-expiring | cryptkit 0.1.0, webauthn-kit 0.3.7, oauth-toolkit 0.3.0, multi-chain-wallet 0.3.0 |
 | `tests/accounting_core.rs` | the new accounting core against the estate: append-only journals, balanced posting, period close, and reversal by counter-entry, plus the point at which two ledger crates in this workspace stop agreeing | double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
 | `tests/round16_debt.rs` | the four remaining debt crates where composition is the point: `cal-model` against the three substrates it claims to sit on, `dsp-spectral` STFT/ISTFT as inverses, `cache-pal` as a third TTL implementation beside `shared-state` and `shm-rings`, and `chronoshift` beside its own replacement `clock-kit` | cal-model 0.1.1, dsp-spectral 0.1.0, cache-pal 0.4.0, chronoshift 1.0.1 |
+| `tests/invoicing.rs` | the product's AR layer against the estate: an invoice total surviving the round trip into the ledger and back, three orthogonal document states, a credit note cancelling the receivable without one negative amount, allocation across ledger balances, and a gapless hash-chained series | invoice-kit 0.1.0, double-entry 0.1.0, ledger-kit 0.1.1, decimal-money 1.1.1 |
 
 ## Run
 
@@ -1133,3 +1134,56 @@ rest, and one of them was broken on arrival.
   mix them by accident — the units are not convertible implicitly. And
   `MockClock` can be advanced backwards, which a real clock cannot, which is the
   whole reason a time-dependent test is writable at all.
+
+Round-17 notes (`tests/invoicing.rs`):
+
+`invoice-kit 0.1.0` is new: the product's accounts-receivable layer, written
+against EN 16931, Peppol BIS 3.0, EU Directive 2006/112/EC, HMRC VAT guidance,
+ZATCA's resolution and the Australian GST Act rather than against another
+implementation.
+
+**The finding: there are now three money types in this workspace and they
+disagree about what an amount is.**
+
+| crate | representation | direction |
+|---|---|---|
+| `ledger-kit` | `MonetaryAmount` — a decimal **value** | sign on the decimal |
+| `double-entry` | `Amount` — an integer **count of minor units** | side on the line |
+| `invoice-kit` | `Decimal`/`Amount` — integer at an explicit scale | document type |
+
+Each is correct in its own context and none converts to another without a
+decision. Three concrete consequences, all pinned:
+
+- **The same integer is a hundred times different.** 1000 minor units is
+  $10.00 and ¥1000, depending only on the exponent. A conversion that keeps the
+  number and drops the exponent is off by 100× — and the two do not even render
+  as the same string, because `MonetaryAmount` formats with a symbol and `Amount`
+  does not. Any comparison between them that goes through formatting is
+  comparing against a currency-symbol policy nobody agreed to.
+- **Three direction conventions.** ISO 20022 forbids the sign (`CdtDbtInd` is a
+  separate coded element where `CRDT` means *increase*), `double-entry` puts the
+  direction on the line, and `invoice-kit` puts it on the document.
+- **`minor_unit` is an `Option`, not a `u32`.** ISO 4217's `n.a.` for XBT and a
+  zero exponent for JPY are different facts, and collapsing them makes "is this
+  integral?" unanswerable.
+
+The suite also pins the interoperability boundary the research flagged as the most
+dangerous one: **Peppol BIS 3.0 §5.6 defines two mutually exclusive credit
+conventions**, and a document using both passes every validator while booking the
+wrong sign in the receiver's ledger. `invoice-kit` takes the CreditNote
+convention, so a credit note has the same shape as an invoice and the opposite
+meaning, and every amount stays non-negative — Peppol BR-27 forbids a negative
+item net price, and that is the single most common cause of a rejected credit
+note.
+
+And the shared invariant that makes composing two ledgers safe is now pinned from
+both sides: both `double-entry` and `ledger-kit` refuse an unbalanced fact, and a
+change to either has to keep them agreeing.
+
+Five bugs in `invoice-kit` were caught by its own tests before publication,
+including a division that inflated **every** quotient by a power of ten, a
+quantity applied twice in the line arithmetic, a rescale that could not express a
+rounding (so any unit price not an exact multiple of its base quantity produced
+**no amount at all**), and a journal entry that debited tax payable instead of
+crediting it — tax payable is a liability, so charging VAT increases it on the
+credit side.

@@ -2020,6 +2020,7 @@ dependencies = [
  "i18n-kit",
  "idempotency-kit",
  "image",
+ "invoice-kit",
  "json-envelope",
  "ledger-kit",
  "loop-retry",
@@ -3118,6 +3119,16 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "invoice-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92231dbb17a4de3b46321264210b33d78da02c56b077d28e27d69113bb60733a"
+dependencies = [
+ "double-entry",
+ "sha2 0.10.9",
 ]
 
 [[package]]
