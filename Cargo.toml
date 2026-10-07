@@ -84,6 +84,10 @@ ledger-kit = "=0.1.1"                        # tests/ledger_settlement.rs (defau
 # `MonetaryAmount`), and billing-kit re-exports the same crate — so these
 # three pins are one type in three places, which is the point the suite
 # asserts rather than assumes.
+# Round 19: the IPC stack — HTTP over a Unix domain socket with pooled storage.
+axum-stack = "=0.2.0"                      # tests/ipc_stack.rs (health routes, request-id)
+poolkit = { version = "=0.1.2", features = ["sqlite"] }  # tests/ipc_stack.rs (sqlite pool)
+uds-kit = "=0.1.0"                        # tests/ipc_stack.rs (timeout-bounded raw client)
 invoice-kit = "=0.2.1"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.1"                       # tests/payable.rs (AP: recoverability, three-way split)
@@ -214,6 +218,9 @@ thiserror = "2"
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 tempfile = "3"
+# ipc_stack.rs runs DDL through the pool's AnyPool; the sqlite driver comes from
+# poolkit's facade feature so the graph has exactly one sqlx.
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "any", "sqlite"] }
 # tests/idempotent_webhook.rs: locally compute the HMAC-SHA256 signatures
 # webhookkit then verifies (the same crates webhookkit 2.0.0 builds on).
 hmac = "0.12"
