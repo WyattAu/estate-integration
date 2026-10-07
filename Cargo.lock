@@ -196,6 +196,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
+name = "ap-kit"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fcdd34759802bdcd2297ed031cdeffb0551e53897e36b2c0c4fa7d10396e80c"
+dependencies = [
+ "double-entry",
+ "vat-rules",
+]
+
+[[package]]
 name = "api-paginate"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1978,6 +1988,7 @@ dependencies = [
  "a2l-parse",
  "accessctl",
  "actor-kit",
+ "ap-kit",
  "api-paginate",
  "api-types",
  "async-trait",
@@ -2070,6 +2081,7 @@ dependencies = [
  "uring-kit",
  "uuid",
  "validkit",
+ "vat-rules",
  "webauthn-kit",
  "webhookkit",
  "wire-kit",
@@ -3162,12 +3174,13 @@ dependencies = [
 
 [[package]]
 name = "invoice-kit"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92231dbb17a4de3b46321264210b33d78da02c56b077d28e27d69113bb60733a"
+checksum = "8d0b216b0f3c0c10030c78416792f366de31e366a0f1b00438c0b69bd3b34132"
 dependencies = [
  "double-entry",
  "sha2 0.10.9",
+ "vat-rules",
 ]
 
 [[package]]
@@ -7342,6 +7355,12 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
+name = "vat-rules"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efd4d32ebaee67eb42b80d4c4193c9d3371e6a79b112c270bcf09b9315ab4fb8"
 
 [[package]]
 name = "vcpkg"

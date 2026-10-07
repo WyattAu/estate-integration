@@ -84,7 +84,9 @@ ledger-kit = "=0.1.1"                        # tests/ledger_settlement.rs (defau
 # `MonetaryAmount`), and billing-kit re-exports the same crate — so these
 # three pins are one type in three places, which is the point the suite
 # asserts rather than assumes.
-invoice-kit = "=0.1.0"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
+invoice-kit = "=0.2.1"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
+vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
+ap-kit = "=0.1.1"                       # tests/payable.rs (AP: recoverability, three-way split)
 double-entry = "=0.1.0"                    # tests/accounting_core.rs (the accounting core)
 decimal-money = "=1.1.1"                      # tests/money_stack.rs
 # 0.2.0 (published 2026-10-05 by this loop): realigns decimal-money from

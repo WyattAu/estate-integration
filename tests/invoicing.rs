@@ -36,10 +36,10 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use double_entry::{currencies, Account, AccountId, AccountType, Amount, Ledger, RoundingMode};
+use double_entry::{currencies, Account, AccountId, AccountType, Amount, Ledger};
 use invoice_kit::{
     Decimal, DocumentType, Invoice, InvoiceLine, IssueReason, RoundingPolicy, SettlementState,
-    TaxCategory,
+    TaxCategory, TieMode,
 };
 use ledger_kit::LedgerError;
 
@@ -406,12 +406,12 @@ fn the_rounding_policy_is_a_decision_recorded_on_the_document() {
     // two obvious platform defaults disagree with each other.
     assert_eq!(
         RoundingPolicy::En16931Group.tie_mode(),
-        RoundingMode::HalfUp,
+        TieMode::HalfUp,
         "chosen explicitly, not inherited from IEEE 754's half-even default"
     );
     assert_eq!(
         RoundingPolicy::HmrcSeventeenFive.tie_mode(),
-        RoundingMode::AwayFromZero,
+        TieMode::AwayFromZero,
         "and HMRC's 'round up at half a penny' is not the same rule"
     );
 }
