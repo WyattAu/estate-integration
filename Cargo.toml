@@ -88,6 +88,9 @@ ledger-kit = "=0.1.1"                        # tests/ledger_settlement.rs (defau
 axum-stack = "=0.2.0"                      # tests/ipc_stack.rs (health routes, request-id)
 poolkit = { version = "=0.1.2", features = ["sqlite"] }  # tests/ipc_stack.rs (sqlite pool)
 uds-kit = "=0.1.0"                        # tests/ipc_stack.rs (timeout-bounded raw client)
+# Round 20: the spreadsheet-diff pair — byte-level deltas over parsed workbooks.
+delta-kit = "=0.2.1"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
+sheet-xlsx = "=0.1.1"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 invoice-kit = "=0.2.1"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.1"                       # tests/payable.rs (AP: recoverability, three-way split)

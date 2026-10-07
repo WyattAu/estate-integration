@@ -1624,6 +1624,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "delta-kit"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f066def047fc33c89d81f109207b053ed43d90ed3d8e3dd63d7736e81ec802d2"
+dependencies = [
+ "blake3",
+ "hashbrown 0.17.1",
+ "thiserror 2.0.21",
+ "zstd",
+]
+
+[[package]]
 name = "der"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2102,6 +2114,7 @@ dependencies = [
  "cryptkit",
  "dbc-parse",
  "decimal-money",
+ "delta-kit",
  "docs-pipeline",
  "double-entry",
  "dsp-spectral",
@@ -2153,6 +2166,7 @@ dependencies = [
  "shared-state",
  "sheet-core",
  "sheet-engine",
+ "sheet-xlsx",
  "shm-rings",
  "shutdown-kit 0.3.2",
  "sieve-kit",
