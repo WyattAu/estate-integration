@@ -166,6 +166,9 @@ no external network.
 | `tests/outbox_dispatch_metrics.rs` | dispatch with a metric per attempt (`outbox_dispatch_total{outcome=delivered/failed/paused}`, `outbox_pending` gauge) through a breaker-wrapped sender under failure injection: the open circuit's sheds are visible as `paused` in the parsed render and the breaker's transitions appear in the dispatch report — and the two views count the same attempts (sender-level breaker burn bounded; round-5 finding) | outbox-kit 0.2.0, metrics-kit 0.2.0, breaker 2.0.1 |
 | `tests/calibration_stack.rs` | the whole automotive calibration pipeline: A2L description (addresses, datatypes, limits, `COMPU_METHOD` coefficients) + DBC bit layout (`start_bit`/`bit_length`/`byte_order`/`scale`) bound host-side; XCP `CONNECT` negotiates the byte order and `MAX_CTO`, which then parameterises every `SET_MTA`/`UPLOAD`/DAQ frame built at the A2L addresses; a DAQ DTO crosses `can_core` in both directions (command → SocketCAN bytes → `CanFrame` → packet) and back out through `dbc-parse` `decode_raw` and the A2L conversion; the write path frames a limit-checked value for `DOWNLOAD`; the slave `ERR` taxonomy, truncated buffers, and an oversized packet are all typed failures | a2l-parse 0.1.0, dbc-parse 0.1.0, can-core 0.1.0, xcp-core 0.1.0 |
 | `tests/spreadsheet_engine.rs` | the product layer end to end: literals and formulas, a quarterly model (SUM over ranges, IF, margin ratios), a 200-cell dependency chain and a 4,000-formula cone — each edit asserted through the invariant that **`recalculate_incremental` and `recalculate` agree cell-for-cell**; cross-sheet and quoted-sheet references (including a dangling sheet that heals when the sheet appears), formula→literal edge removal, error-value propagation, cycle detection with members, volatile tracking, XLSX round-trip that preserves a *live* dependency graph, and `VLOOKUP` over 100 rows | sheet-engine 0.1.0, formula-lang 0.1.1 |
+| `tests/cal_model_session.rs` | the L2 calibration layer driven through a bench workflow: load the sample A2L, bind CAN signals from the DBC, `connect` over `MockTransport`, read-modify-write a characteristic bit-exactly, write one element of a multi-element deposit and prove the neighbours are untouched, reject an out-of-limit write without mutating the transport, isolate calibration pages, snapshot/diff/restore, and calibrate a curve. Every physical value is cross-checked against a conversion computed directly from `a2l_parse::CompuMethod`, and every frame against `xcp_core`'s own builders — the layer re-exports all three substrates, so disagreement is checkable through one dependency | cal-model 0.1.0 (+ a2l-parse, dbc-parse, xcp-core through its re-exports) |
+| `tests/dsp_spectral_restore.rs` | dsp-spectral's numerical claims rather than its API: analysis-synthesis identity across all six windows and five hop/FFT pairs, Parseval consistency of the linear `power`, and **every feature recomputed against a naive reference written from the mathematical definition** — centroid, flatness, rolloff, bandwidth, flux. Restoration is measured both ways: gating must improve SNR by more than 5 dB *without* simply attenuating the signal, HPSS must localise the transient on the click rather than smear it, and zero over-subtraction must be near-identity | dsp-spectral 0.1.0 |
+| `tests/font_pipeline.rs` | the font toolchain's write path end to end: coverage must sum to a path's area within a stated tolerance (checked against an independently computed value, not a golden image), anti-aliasing must be observable at half-pixel offsets, coverage must be monotone in shape size, both fill rules must be implemented and disagree exactly where winding says they should, an affine transform must be equivalent to transforming the result, strokes must scale their ink linearly, and the model→shaper boundary must produce ink whose area is consistent with the advance the shaper reported. Subsetting must keep the requested code points, drop the rest, and yield a font that still validates | font-model 0.1.0, font-shape 0.1.0 (over font-parse) |
 | `tests/chaos_worker.rs` | a worker-kit supervisor job whose work unit is a tower service under `ChaosLayer` (seeded 5 ms latency on every call, scripted errors at two consecutive indexes): the failure budget trips the degradation latch — observed live, because a post-outage success clears the flag (round-5 finding) — the worker keeps firing past degradation and drains < 2 s; the same seed reproduces the identical fault sequence across two independent sessions; recorder counts are exact | chaos-kit 0.1.1, worker-kit 0.3.0 (no default features) |
 | `tests/config_tenant.rs` | per-tenant resolution: base config + tenant override files through `ConfigBuilder` layers — deep merge (one nested knob overridden, siblings kept), the same key resolving differently per tenant, secrets redacted through every render of the merged load, and `load_strict` naming a typo'd tenant key | config-kit 0.1.1 |
 | `tests/telemetry_pipeline.rs` | the full observability pipeline in one process: `Telemetry::init` → register counter/gauge/histogram → six stage latencies into BOTH the metrics-kit histogram and a percentile-kit tracker → scrape validated as Prometheus 0.0.4 (inline parser; `_count`/`_sum`/`+Inf` consistent with the tracker's truth) → budget gate PASS + outlier FAIL → idempotent shutdown flush | telemetry-init 0.1.1, metrics-kit 0.2.0, percentile-kit 0.1.0 |
@@ -570,7 +573,6 @@ crate documents in its own rustdoc but a consumer wiring a generated report
 meets immediately. It cost this suite a round of off-by-one errors, so the
 cross-reference is here for the next one.
 
-
 Round-8 notes (the provisioning + session stack — `tests/auth_provision.rs`):
 
 The multi-tenant story an accounting firm needs on day one: an IdP pushes
@@ -626,7 +628,6 @@ Composition facts worth keeping:
   so a link-crafted `?token=` cannot inject a credential. That is the right
   default and worth having pinned.
 
-
 Round-9 notes (the collaborative-document stack — `tests/collab_docs.rs`):
 
 Shared documents with real-time sync, per-locale rendering, and publication.
@@ -677,7 +678,6 @@ looks exactly like the missing-dedup bug above, and cost a round of
 debugging before the authoring fixture was moved to separate replicas. It is
 the easiest way to misuse the crate and deserves an explicit note in its
 rustdoc.
-
 
 Round-10 notes (the single-binary service substrate — `tests/systems_substrate.rs`):
 
@@ -757,7 +757,6 @@ informatively. `actor_kit::rt().block_on(..)` on a plain `#[test]` is the
 shape that works — and the crate ships `rt()` for exactly this, but the
 requirement is invisible until a suite trips over it.
 
-
 Round-11 notes (the API surface layer — `tests/api_errors.rs`):
 
 The layer every service returns from a handler: a typed error taxonomy, a
@@ -820,7 +819,6 @@ produces UUID newtypes whose `Display`/`parse` round-trip and whose
 `parse` returns an `Option`, so a caller cannot use a value without deciding
 whether it was valid.
 
-
 Round-12 notes (the operational shell — `tests/flags_and_lifecycle.rs`):
 
 What every binary in the estate sets up at startup: which features are on,
@@ -879,7 +877,6 @@ Properties the suite now protects:
   no `enabled` flag, and `sample_rate` defaults to 1.0 — so a host that sets
   only an endpoint gets 100% sampling with OTLP export. Both defaults are
   asserted explicitly so a change to either fails here.
-
 
 Round-13 notes (the authentication stack — `tests/crypto_auth.rs`):
 
@@ -1030,6 +1027,68 @@ a reversal that negated the amount *as well as* flipping the side (a double
 negation that reverses nothing at all), an `Amount::minor` constructor that
 multiplied by a scale its representation did not call for, and a `quantize`
 whose tie-break took the wrong neighbour.
+
+- **cal-model 0.1.0's `to_physical` masks an out-of-width raw value
+  silently.** The argument is the element's own bit pattern, and it is
+  masked to the datatype width without complaint:
+  `to_physical("engine", "rev_limit_cut", 1000)` returns `232.0`
+  (`1000 & 0xFF`) for a UBYTE flag whose calibration limits are `[0, 1]`.
+  A host holding a count gets a confidently wrong number instead of an
+  error. Note the asymmetry that makes it survivable: `to_raw` *does*
+  enforce the calibration limits and refuses, so the masking case is
+  unreachable through the inverse on a limited characteristic — but a
+  caller who reaches `to_physical` with a value from anywhere other than
+  the session layer has no protection. Ask: reject a raw value exceeding
+  `element_mask`, or add value-taking entry points that cannot be confused
+  with count-taking ones.
+- **cal-model 0.1.0 does not populate `COMPU_TAB` points from the A2L.**
+  `from_a2l` loads the description; a `TABLE` conversion whose
+  `COMPU_TAB_REF` has no registered points then resolves to
+  `CalError::Unsupported`. The crate ships `sample::complete` for its own
+  fixture, and a host with real files must write the equivalent: loading
+  is two calls, not one. The failure is safe — a typed error rather than a
+  silent identity fallback, which would write a wrong number into an ECU —
+  but it is an ergonomic gap worth knowing before wiring the crate up.
+- **cal-model 0.1.0's `CalParameter` places the curve's abscissa in the
+  bounds, not in `value`.** `midpoint(lower, upper)` is the x and `value`
+  is the y. A caller who reads `value` as "the input I want to hit" and
+  leaves the bounds wide collapses every node onto one abscissa and gets a
+  meaningless fit with no error. The doc comment says so; pinned in the
+  suite because it is the one field whose role is easy to invert.
+- **dsp-spectral 0.1.0 weights its spectral features by magnitude, not by
+  power.** `spectral_centroid`, `spectral_bandwidth` and `spectral_rolloff`
+  all sum `magnitude`, while the textbook definitions are power-weighted —
+  so a host ported from librosa or a DSP text gets different numbers (a few
+  percent on broadband signals, much more on harmonic ones). The crate's
+  docs are internally consistent, so this is a deliberate choice rather
+  than a bug, but it is exactly the convention a caller gets wrong; the
+  suite pins it against a magnitude-weighted reference.
+- **dsp-spectral 0.1.0's `GateConfig::threshold_db` is positive headroom
+  above the noise floor**, not a threshold below it: a bin must rise *this
+  many dB above* the profile to count as signal. The intuitive reading is
+  the opposite, and passing `-30.0` classifies every bin as signal and gates
+  nothing — measured as a 0.07 dB SNR improvement versus 10.6 dB with the
+  documented `+6.0`. A silent no-op gate is a bad failure mode for a
+  restoration library, so it is worth a doc-level warning even though the
+  field's own docs are correct.
+- **dsp-spectral 0.1.0: `zero_crossing_rate` divides by `len - 1` and
+  counts `a * b < 0.0`.** The `len - 1` denominator makes the rate an
+  exact crossing *density* in [-1, 1] rather than a slightly compressed
+  one, and the strict product means a pair touching exact zero is not
+  counted. Both are defensible and both differ from the naive reading;
+  pinned so a port to another language reproduces them exactly.
+- **dsp-spectral 0.1.0 defines its own `Complex`, because dsp-core has
+  none.** dsp-core's FFT takes an interleaved `f64` buffer, so there is no
+  shared bin-view type to reuse. Defining one is the right call, but it
+  means a host bridging the two crates converts at every boundary rather
+  than passing values across.
+- **`StftConfig::is_cola` needs a tolerance of about 1e-2, not 1e-6.** It
+  compares the per-residue sum of `w^2` against the nominal overlap, and
+  Hann's squared overlap is constant only to roughly 1e-3. Asserting
+  machine-epsilon COLA fails on a window that genuinely is COLA; the suite
+  uses 1e-2 and additionally checks that Hann at 50 % overlap is *not*
+  reported COLA, which is the assertion that proves the predicate
+  discriminates at all.
 
 Round-15 notes (the wallet, and what upgrading it broke elsewhere):
 
@@ -1187,3 +1246,31 @@ rounding (so any unit price not an exact multiple of its base quantity produced
 **no amount at all**), and a journal entry that debited tax payable instead of
 crediting it — tax payable is a liability, so charging VAT increases it on the
 credit side.
+
+- **font-shape 0.1.0's `mask_coverage` returns 0..255 units, not an area.**
+  400 solid pixels report `102_000.0`, not `400.0` — the name reads as an area
+  and the doc comment does say "dividing by 255 gives the ink area in pixels",
+  but a caller who forgets the divide is off by 255x, and every area comparison
+  in a renderer silently fails rather than erroring. Ask: rename to
+  `coverage_units`, or return the area and add a separate raw-sum accessor.
+- **font-shape 0.1.0 answers a zero-width or zero-height canvas with
+  `Ok(vec![])`, not a typed error**, while an oversized canvas returns
+  `RasterTooLarge` naming both the request and the limit. Both are total and
+  neither panics, which is the part that matters; but "no width" reads like a
+  caller mistake and is answered with a success value, so a host that forgets to
+  check the length downstream gets an index-out-of-bounds instead of an error it
+  can report. `InvalidSize` exists in the error enum for exactly this.
+- **font-shape 0.1.0's winding convention is per-contour, not per-path, and the
+  suite had to discover it.** Two same-wound squares must render differently
+  under `NonZero` (winding 2, solid) and `EvenOdd` (parity 2, hole) — and they
+  do, but only once you sample the *right* pixels: because `square()` builds from
+  the origin, the inner square occupies 0..20 and the ring 20..40. The first
+  three attempts at this test sampled the corner outside both squares and
+  concluded the rules were aliased. The finding is worth stating plainly because
+  the enum implies more than the rasteriser does on multi-subpath input, and a
+  host probing the behaviour by sampling one convenient pixel will reach the same
+  wrong conclusion.
+- **font-shape 0.1.0's `stroke_path` returns a single closed subpath** for an
+  open line, which is right (a stroke outlines a region) but means
+  `subpath_count() >= 2` is not a valid expectation — the ink band is asserted
+  from the raster instead, which is what actually matters.
