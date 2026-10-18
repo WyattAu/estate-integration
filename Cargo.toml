@@ -196,6 +196,14 @@ dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tes
 # rasterizer/shaper, layered over font-parse.
 font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
 font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
+# The composition/IME layer and the two neighbours it has to agree with.
+# `a11y-kit` because a composing textbox must be announced as such, and
+# `tui-actions` because a keymap must not fire shortcuts the IME owns.
+a11y-kit = "=0.1.0"                        # tests/input_composition.rs (L1 tree)
+tui-actions = "=0.1.0"                     # tests/input_composition.rs (L2 keymap)
+# input-kit 0.1.0 is on crates.io; pinned exact so a drift between the
+# published artifact and this suite is attributable to a real version change.
+input-kit = "=0.1.0"                       # tests/input_composition.rs (L1 compose)
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
