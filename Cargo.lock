@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "a11y-kit"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70cd6ced210690cbcceb61e7eb57db612bc22e8c8f2119a7b8488b4b417dc8d3"
+checksum = "5c7384c78666e49454427624a8d26ffa74f0d93172ee9d7ed0a54c1842b5b44d"
 dependencies = [
  "thiserror 2.0.21",
 ]

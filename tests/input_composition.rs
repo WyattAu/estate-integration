@@ -34,7 +34,7 @@
 //!    public constructors rather than trusted to the unit tests, because the
 //!    unit tests and this crate share an author and therefore a blind spot.
 
-use a11y_kit::{A11yNode, A11yRole, A11yTree, States};
+use a11y_kit::{A11yNode, A11yRole, A11yTree, NodeId, States};
 use input_kit::{grapheme, Composer, DeadKey, InputEvent, Output, Preedit};
 use tui_actions::{Action, Key, KeyEvent, Keymap, Mode};
 
@@ -71,55 +71,67 @@ fn utf16_to_byte(s: &str, unit: usize) -> usize {
 
 // --- 1. The a11y signal -----------------------------------------------------
 
-/// A textbox mid-IME-composition has no representable state in the a11y tree.
+/// A textbox mid-IME-composition is marked busy, so a screen reader does not
+/// announce a half-formed syllable as the value.
 ///
-/// MEASURED 2026-10-18 (composing this suite, `a11y-kit` 0.1.0):
-/// `a11y_kit::States` carries eight `bool`s and one `checked: Option<TriState>`
-/// (`a11y-kit/src/node.rs:111`), and `core::mem::size_of::<States>()` is **9**.
-/// None of the flags means "busy", which is the ARIA signal a screen reader
-/// uses to know a value is transient and not yet committed. So there is no way
-/// to write "this textbox is composing" into the tree today.
+/// This test started as a finding. Composing `input-kit` against `a11y-kit`
+/// 0.1.0 showed that `States` (eight `bool`s plus one `Option<TriState>`,
+/// `size_of` == 9) had no way to say "this value is not final", which is what
+/// `aria-busy` is for. The gap was asserted mechanically so that adding the
+/// field would turn the test red; `a11y-kit` 0.2.0 added `busy`, and the
+/// ratchet is now the assertion that the two crates actually agree.
 ///
-/// The gap is asserted mechanically rather than described, because a described
-/// gap decays into a stale comment. Adding the missing `busy: bool` grows
-/// `States` to 10 bytes and turns this test red, at which point the tree side
-/// of the fix has to be written rather than rediscovered.
-///
-/// MEASURED: the first version of this assertion predicted 10 bytes from a
-/// hand-count of the fields and was wrong; the ratchet failed on the first run
-/// and the true size is 9. That is the point of asserting the measurement
-/// rather than the arithmetic.
+/// The bug this prevents is specific: without `busy`, a screen reader announces
+/// `にほ` while the user is still typing it.
 #[test]
-fn a_composing_textbox_has_no_busy_state() {
-    // The settled case works today and must keep working. The tree needs a Window
-    // root, or the audit rejects the focus as unreachable (it checks focus
-    // reachability, so a lone focused textbox fails).
-    let window = A11yNode::new(a11y_kit::NodeId(0), A11yRole::Window, "Chisel Docs");
-    let node = A11yNode::new(a11y_kit::NodeId(1), A11yRole::Textbox, "Page text")
-        .with_parent(a11y_kit::NodeId(0))
+fn a_composing_textbox_is_marked_busy() {
+    // The settled case works and must keep working. The tree needs a Window
+    // root, or the audit rejects the focus as unreachable.
+    let window = A11yNode::new(NodeId(0), A11yRole::Window, "Chisel Docs");
+    let field = NodeId(1);
+    let mut node = A11yNode::new(field, A11yRole::Textbox, "Page text")
+        .with_parent(NodeId(0))
         .with_states(States {
             focused: true,
             ..States::default()
         });
     let mut tree = A11yTree::new();
     tree.insert(window);
-    tree.insert(node);
+    tree.insert(node.clone());
     let audit = tree.audit().expect("a focused named textbox under a window audits clean");
     assert_eq!(audit.interactive, 1);
     assert_eq!(tree.focused().len(), 1);
 
-    // The composing case has nowhere to go.
+    // Settled: not busy.
+    assert!(!node.states.busy, "a settled field is not busy");
+
+    // Now the user starts typing Japanese. The composer's composition state
+    // and the tree's busy state must be driven from the same thing.
     let mut composer = Composer::new();
     composer.handle(InputEvent::Preedit(Preedit::at_end("にほ")));
     assert!(composer.is_composing());
 
-    assert_eq!(
-        core::mem::size_of::<States>(),
-        9,
-        "a11y_kit::States is no longer 9 bytes: it changed shape. If a `busy` \
-         flag was added, the composing textbox can now be announced; wire it \
-         up in this suite and change the number above to its new size."
+    node.states.busy = composer.is_composing();
+    assert!(
+        node.states.busy,
+        "a composing field must be busy so its half-formed value is not announced"
     );
+    // Busy is not a synonym for unusable: the control is still live.
+    assert!(node.states.focused, "the field keeps focus while composing");
+    assert!(!node.states.disabled, "composing does not disable the field");
+    assert!(!node.states.invalid, "composing does not invalidate the field");
+
+    // Committing settles it again.
+    let committed = composer.handle(InputEvent::Commit("日本".into()));
+    assert!(matches!(committed, Output::Commit(_)));
+    node.states.busy = composer.is_composing();
+    assert!(!node.states.busy, "the field is settled once the value commits");
+
+    // The tree audits clean in every one of those states.
+    let mut live = A11yTree::new();
+    live.insert(A11yNode::new(NodeId(0), A11yRole::Window, "Chisel Docs"));
+    live.insert(node);
+    assert!(live.audit().is_ok());
 }
 
 // --- 2. Composition is consulted before the keymap --------------------------
