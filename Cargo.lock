@@ -2197,6 +2197,7 @@ dependencies = [
  "typed-id-derive",
  "typed-id-new",
  "uds-kit",
+ "ui-text-edit",
  "uring-kit",
  "uuid",
  "validkit",
@@ -7694,6 +7695,16 @@ checksum = "34e27890848b2cb9e8be2a0f3a7655087de42fecbbc2016812f13d3e20f9cb1a"
 dependencies = [
  "thiserror 2.0.21",
  "tokio",
+]
+
+[[package]]
+name = "ui-text-edit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8f9e02cd33705a0d262f190aa3d998cc7f5d7248db12e7759b95ae4021d431e"
+dependencies = [
+ "a11y-kit",
+ "input-kit",
 ]
 
 [[package]]
