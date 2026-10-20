@@ -897,9 +897,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6651c9ed80effdc7db0ff72512157f901af5e3549e341e24b1dd4887d836d838"
+checksum = "877bf67ac8e52449eb2f9e98a344ea163beb70dd1f9eebe3cc5357dcfeaee4df"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -2266,7 +2266,7 @@ dependencies = [
  "mail-sync-kit",
  "mailkit",
  "media-kit",
- "metrics-kit 0.2.0",
+ "metrics-kit",
  "multi-chain-wallet",
  "oauth-toolkit",
  "otel-stack",
@@ -2368,9 +2368,9 @@ dependencies = [
 
 [[package]]
 name = "eventbus-kit"
-version = "0.3.5"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49b428544f9e6848aaa1097b0148e0f497cdb12946e5d39b5b4f18220b87981e"
+checksum = "cd99f664b857560fb6a3c535b4f04738aa5d262d2323c3b4bba1149c7c881192"
 dependencies = [
  "async-trait",
  "dashmap",
@@ -2470,9 +2470,9 @@ checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
 name = "find-msvc-tools"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484"
+checksum = "1c66915cc5391097de7a2b0b972e8505aa33c0df401fd3a6811dbdb32881ba48"
 
 [[package]]
 name = "fixedbitset"
@@ -3219,7 +3219,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
 ]
 
 [[package]]
@@ -3978,7 +3978,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "url",
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
 ]
 
 [[package]]
@@ -4174,7 +4174,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "uuid",
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
  "zeroize",
 ]
 
@@ -4260,12 +4260,6 @@ checksum = "d1219ed1b7f229ee7104d281dd01d6802fe28bb6e95d292942c4daacdeb798c0"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "metrics-kit"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4552de8f2c00e47aecd957736f29667efaf8338322ea8381db8fa24888058ab3"
 
 [[package]]
 name = "metrics-kit"
@@ -4621,9 +4615,9 @@ dependencies = [
 
 [[package]]
 name = "oauth-toolkit"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d197e2fbd35ab2a1fc3eaba43d4629e9e9b8f1eef1a68f4b6715a820ba8eeec7"
+checksum = "6ea48864f3a75baa9ca0235319604200c8b04de04389cb9f18dbc7ee5804daf9"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4826,9 +4820,9 @@ dependencies = [
 
 [[package]]
 name = "otelkit"
-version = "2.1.0"
+version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "977493636b01c32d0ecebc6a8f4c48a97cc32add9173a6bab430ca5b8f79b70e"
+checksum = "b2397b322a2866f9f91ac2cc9717a49eafe73f1fa93f1f605ee81daa09e1c94b"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
@@ -4851,7 +4845,7 @@ dependencies = [
  "async-trait",
  "breaker",
  "futures",
- "metrics-kit 0.2.0",
+ "metrics-kit",
  "rand 0.10.3",
  "serde",
  "thiserror 2.0.21",
@@ -5833,7 +5827,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
 ]
 
 [[package]]
@@ -7192,12 +7186,13 @@ checksum = "7b2093cf4c8eb1e67749a6762251bc9cd836b6fc171623bd0a9d324d37af2417"
 
 [[package]]
 name = "tamper-audit"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f87deba1485ac03e713e5e9b37e808260e0959c60c19a178139ae1ada3a0320c"
+checksum = "b2d0598746514e1bece1b57f7851e0093b01c5d850b95419343cdc1cd283a629"
 dependencies = [
  "async-trait",
  "chrono",
+ "getrandom 0.4.3",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -7207,11 +7202,11 @@ dependencies = [
 
 [[package]]
 name = "telemetry-init"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7415d2dfecf0823f14d8408f5f80f0045414128b75757f040de9d54d40cb299c"
+checksum = "52cb1c9bacfc3f43e08b28fe53f4da93d2a4e9ef885424572857a01c5a242e74"
 dependencies = [
- "metrics-kit 0.1.0",
+ "metrics-kit",
  "thiserror 2.0.21",
  "tracing",
  "tracing-core",
@@ -7323,9 +7318,9 @@ dependencies = [
 
 [[package]]
 name = "throttle-kit"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56ad3b989cfe5889b8fe236f3dd3efb1d885def9c4bffb5c969526527e481666"
+checksum = "5f3f016deeca6c2ede8752a4c4cc92d1a554ed32230aef9ad3b5bf7650b7ee7b"
 dependencies = [
  "axum",
  "dashmap",
@@ -7416,9 +7411,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.53.3"
+version = "1.54.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e"
+checksum = "a0c168a474b95bfecfe908a65d4bdffc523144b649a74c09c286afb35d53e0bc"
 dependencies = [
  "bytes",
  "libc",
@@ -8131,7 +8126,17 @@ dependencies = [
  "js-sys",
  "rand 0.10.3",
  "serde_core",
+ "uuid-rng-internal",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "uuid-rng-internal"
+version = "1.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e1d7ccff5e453092983b2a5ec27ebdd52745f40bef229e92051a054a37c662b"
+dependencies = [
+ "getrandom 0.4.3",
 ]
 
 [[package]]
@@ -8423,9 +8428,9 @@ dependencies = [
 
 [[package]]
 name = "webauthn-kit"
-version = "0.3.7"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50b1797fb519219a6629c590b648cad3608753206fc3b8321983fc68c96e3ab4"
+checksum = "e933dbfca7a1065e00d236cbec8bf619e162fb47a35323bf4d951d4d82cb3059"
 dependencies = [
  "base64 0.22.1",
  "ciborium",
@@ -8453,9 +8458,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-root-certs"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b96554aa2acc8ccdb7e1c9a58a7a68dd5d13bccc69cd124cb09406db612a1c9b"
+checksum = "58ec80e73fd8baf57bf0d9615554c75348bda990d6d5bbeab964dd068319fecb"
 dependencies = [
  "rustls-pki-types",
 ]
@@ -8466,14 +8471,14 @@ version = "0.26.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
 dependencies = [
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
 ]
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dcd9d09a39985f5344844e66b0c530a33843579125f23e21e9f0f220850f22a"
+checksum = "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9"
 dependencies = [
  "rustls-pki-types",
 ]
