@@ -131,6 +131,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "alloc-no-stdlib"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2fb6cfd47bf496ff64095c20eaba0c201404ee38714d4142fcfa1dc334fcc7a"
+
+[[package]]
+name = "alloc-stdlib"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b5c1865780388bfa186411ab5f247819487fc4864c6e9c3106611fa347586e1"
+dependencies = [
+ "alloc-no-stdlib",
+]
+
+[[package]]
 name = "allocator-api2"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -771,6 +786,16 @@ dependencies = [
  "tokio",
  "tower",
  "tower-layer",
+]
+
+[[package]]
+name = "brotli-decompressor"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1473a798e9776ca115dd0bd3712d939d66dd293939864bd7d68bb2031ec66954"
+dependencies = [
+ "alloc-no-stdlib",
+ "alloc-stdlib",
 ]
 
 [[package]]
@@ -2239,6 +2264,7 @@ dependencies = [
  "docs-core",
  "docs-pipeline",
  "double-entry",
+ "dsp-core",
  "dsp-spectral",
  "envstack",
  "error-classify",
@@ -2247,6 +2273,7 @@ dependencies = [
  "fetch-kit",
  "flag-kit",
  "font-model",
+ "font-parse",
  "font-shape",
  "formula-lang",
  "futures",
@@ -2563,7 +2590,9 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44b7866ea90c13ae1dbc5b794397f7ecee61e56046fac7f0ef42a8535eabf3d1"
 dependencies = [
+ "brotli-decompressor",
  "font-types 0.8.4",
+ "miniz_oxide 0.8.9",
  "thiserror 2.0.21",
 ]
 
