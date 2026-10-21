@@ -240,7 +240,7 @@ chisel-kernel = "=0.1.0"                    # tests/chisel_platform.rs (ids + se
 # Service adapters, published 2026-10-21 and earlier. Neither needs its
 # service to be composed: the Workflow is pure JSON manipulation and the
 # search runs on an in-memory index.
-comfyui-kit = "=0.1.0"                      # tests/service_clients.rs (ComfyUI workflow)
+comfyui-kit = "=0.2.0"                      # tests/service_clients.rs (ComfyUI workflow)
 tantivy-helper = "=0.3.0"                   # tests/service_clients.rs (search)
 # The composition/IME layer and the two neighbours it has to agree with.
 # `a11y-kit` because a composing textbox must be announced as such, and

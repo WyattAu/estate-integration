@@ -1732,9 +1732,9 @@ dependencies = [
 
 [[package]]
 name = "signalkit-core"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53c6c15357a0da760b91516f39c0aa152f397cf5e392d087f35eb606f04da0a2"
+checksum = "49b0f99f276c9b1cf6b601dbcf5454f844d7b375e5ebde638804acfc9d2a675f"
 dependencies = [
  "clock-kit",
  "fetch-kit",
