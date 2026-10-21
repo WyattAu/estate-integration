@@ -26,10 +26,19 @@ fn coordinate_bounds_are_enforced_at_construction() {
     assert!(Coords::new(0.0, 0.0).is_ok());
     assert!(Coords::new(90.0, 180.0).is_ok(), "the poles are valid");
     assert!(Coords::new(-90.0, -180.0).is_ok(), "so are their opposites");
-    assert!(Coords::new(90.000_1, 0.0).is_err(), "latitude past the pole");
-    assert!(Coords::new(0.0, 180.000_1).is_err(), "longitude past the antimeridian");
+    assert!(
+        Coords::new(90.000_1, 0.0).is_err(),
+        "latitude past the pole"
+    );
+    assert!(
+        Coords::new(0.0, 180.000_1).is_err(),
+        "longitude past the antimeridian"
+    );
     assert!(Coords::new(f64::NAN, 0.0).is_err(), "NaN latitude");
-    assert!(Coords::new(0.0, f64::INFINITY).is_err(), "infinite longitude");
+    assert!(
+        Coords::new(0.0, f64::INFINITY).is_err(),
+        "infinite longitude"
+    );
 }
 
 /// Parsing round-trips a formatted coordinate, and refuses malformed text.
@@ -108,13 +117,15 @@ fn a_malformed_postcode_is_refused_at_parse_time() {
 #[test]
 fn email_extraction_finds_addresses_in_text() {
     let parser = HtmlParser::new();
-    let found =
-        parser.extract_emails("Contact alice@rustlang.org or bob@test.org today.");
+    let found = parser.extract_emails("Contact alice@rustlang.org or bob@test.org today.");
     assert!(
         found.iter().any(|e| e.contains("alice@rustlang.org")),
         "alice missing: {found:?}"
     );
-    assert!(found.iter().any(|e| e.contains("bob@test.org")), "bob missing: {found:?}");
+    assert!(
+        found.iter().any(|e| e.contains("bob@test.org")),
+        "bob missing: {found:?}"
+    );
     // And the reserved domain is filtered, which is a feature.
     assert!(
         !parser

@@ -80,7 +80,11 @@ fn routing_is_deterministic_per_task_class() {
     for _ in 0..8 {
         let a = router.route(TaskClass::Fast);
         let b = router.route(TaskClass::Fast);
-        assert_eq!(format!("{a:?}"), format!("{b:?}"), "Fast routed twice, differently");
+        assert_eq!(
+            format!("{a:?}"),
+            format!("{b:?}"),
+            "Fast routed twice, differently"
+        );
     }
     // Every class must route somewhere, and the three classes are distinct
     // inputs even if the default model serves them all.
@@ -117,7 +121,10 @@ fn the_budget_refuses_a_call_that_would_exceed_it() {
         format!("{err:?}").contains("BudgetExceeded"),
         "the refusal is a typed budget error, got {err:?}"
     );
-    assert!((tracker.total_usd() - 20.0).abs() < 1e-9, "a refused call was billed");
+    assert!(
+        (tracker.total_usd() - 20.0).abs() < 1e-9,
+        "a refused call was billed"
+    );
 }
 
 /// The refusal carries the numbers a caller needs to react: current spend,
@@ -158,7 +165,12 @@ fn an_uncapped_tracker_always_accepts() {
     let tracker = CostTracker::new(None);
     for _ in 0..3 {
         tracker
-            .record("claude-sonnet-4-20250514", 1_000_000, 1_000_000, &placeholder)
+            .record(
+                "claude-sonnet-4-20250514",
+                1_000_000,
+                1_000_000,
+                &placeholder,
+            )
             .expect("no budget means no refusal");
     }
     // Three placeholder-priced calls at $4 each.
