@@ -59,8 +59,7 @@ fn the_palette_passes_the_gate_in_every_cvd_variant() {
         Variant::Cvd(color_kit::CvdKind::Tritanopia),
     ] {
         let variant = derive(&graph, kind).expect("derives");
-        audit(&variant, None)
-            .unwrap_or_else(|e| panic!("{kind:?} variant fails the gate: {e}"));
+        audit(&variant, None).unwrap_or_else(|e| panic!("{kind:?} variant fails the gate: {e}"));
     }
 }
 
@@ -117,10 +116,16 @@ fn the_gate_fails_on_a_palette_that_breaks_aa() {
     }"##;
     let graph = TokenGraph::from_dtcg_json("broken", broken).expect("valid DTCG");
     let err = audit(&graph, None).expect_err("must fail");
-    let ThemeError::ContrastViolation { ratio, required, .. } = err else {
+    let ThemeError::ContrastViolation {
+        ratio, required, ..
+    } = err
+    else {
         panic!("expected a contrast violation, got {err:?}");
     };
-    assert!(ratio < required, "the measured ratio must be under the floor");
+    assert!(
+        ratio < required,
+        "the measured ratio must be under the floor"
+    );
 }
 
 /// `color-kit` measures the pair the gate enforces, checked independently.
@@ -174,7 +179,10 @@ fn the_seed_palette_gates_and_lowers() {
 
     assert_eq!(SEED.len(), 12, "the seed sets twelve roles");
     for (role, hex) in SEED {
-        assert!(parse_hex(hex).is_some(), "{role:?} hex {hex:?} does not parse");
+        assert!(
+            parse_hex(hex).is_some(),
+            "{role:?} hex {hex:?} does not parse"
+        );
     }
 }
 
@@ -189,8 +197,7 @@ fn derived_variants_lower_to_visuals() {
         Variant::Cvd(color_kit::CvdKind::Tritanopia),
     ] {
         let variant = derive(&graph, kind).expect("derives");
-        theme_egui::to_visuals(&variant)
-            .unwrap_or_else(|e| panic!("{kind:?} does not lower: {e}"));
+        theme_egui::to_visuals(&variant).unwrap_or_else(|e| panic!("{kind:?} does not lower: {e}"));
     }
 }
 

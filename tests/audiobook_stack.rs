@@ -271,7 +271,10 @@ fn the_leaves_survive_hostile_bytes_through_the_model() {
         let probe = MediaProbe::probe(&bytes);
         if probe.container.is_none() {
             assert_eq!(probe.confidence, Confidence::Unknown);
-            assert!(probe.duration_ms.is_none(), "{bytes:?}: duration without a container");
+            assert!(
+                probe.duration_ms.is_none(),
+                "{bytes:?}: duration without a container"
+            );
         }
     }
     // Real magic is recognised even when the rest is absurd.

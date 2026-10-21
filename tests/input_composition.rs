@@ -98,7 +98,9 @@ fn a_composing_textbox_is_marked_busy() {
     let mut tree = A11yTree::new();
     tree.insert(window);
     tree.insert(node.clone());
-    let audit = tree.audit().expect("a focused named textbox under a window audits clean");
+    let audit = tree
+        .audit()
+        .expect("a focused named textbox under a window audits clean");
     assert_eq!(audit.interactive, 1);
     assert_eq!(tree.focused().len(), 1);
 
@@ -118,14 +120,23 @@ fn a_composing_textbox_is_marked_busy() {
     );
     // Busy is not a synonym for unusable: the control is still live.
     assert!(node.states.focused, "the field keeps focus while composing");
-    assert!(!node.states.disabled, "composing does not disable the field");
-    assert!(!node.states.invalid, "composing does not invalidate the field");
+    assert!(
+        !node.states.disabled,
+        "composing does not disable the field"
+    );
+    assert!(
+        !node.states.invalid,
+        "composing does not invalidate the field"
+    );
 
     // Committing settles it again.
     let committed = composer.handle(InputEvent::Commit("日本".into()));
     assert!(matches!(committed, Output::Commit(_)));
     node.states.busy = composer.is_composing();
-    assert!(!node.states.busy, "the field is settled once the value commits");
+    assert!(
+        !node.states.busy,
+        "the field is settled once the value commits"
+    );
 
     // The tree audits clean in every one of those states.
     let mut live = A11yTree::new();
@@ -169,13 +180,19 @@ fn composition_must_be_consulted_before_the_keymap() {
     } else {
         false
     };
-    assert!(went_to_ime, "Enter committed the candidate instead of splitting");
+    assert!(
+        went_to_ime,
+        "Enter committed the candidate instead of splitting"
+    );
 
     // And the field is immediately reusable.
     assert!(!composer.is_composing());
     let after = map.resolve(&KeyEvent::plain(Key::Enter));
     assert_eq!(after.len(), 1);
-    assert!(after[0].is(&Action::new("app:split")), "the binding survived the composition");
+    assert!(
+        after[0].is(&Action::new("app:split")),
+        "the binding survived the composition"
+    );
 }
 
 /// The collision is real, not hypothetical: the keys an IME must own are keys
@@ -291,7 +308,11 @@ fn a_full_typing_session_never_loses_or_duplicates_text() {
         }
     };
 
-    apply(&mut composer, InputEvent::Preedit(Preedit::at_end("にほ")), &mut document);
+    apply(
+        &mut composer,
+        InputEvent::Preedit(Preedit::at_end("にほ")),
+        &mut document,
+    );
     apply(
         &mut composer,
         InputEvent::Preedit(Preedit::at_end("にほんご")),
@@ -328,10 +349,15 @@ fn a_dead_key_session_produces_one_grapheme_per_keypress() {
     let mut composer = Composer::new();
     let mut document = String::new();
 
-    for (base, key) in [('c', DeadKey::Cedilla), ('a', DeadKey::Grave), ('f', DeadKey::Cedilla), ('e', DeadKey::Acute)] {
-        composer.handle(InputEvent::Preedit(Preedit::at_end(
-            alloc_string(key.mark()),
-        )));
+    for (base, key) in [
+        ('c', DeadKey::Cedilla),
+        ('a', DeadKey::Grave),
+        ('f', DeadKey::Cedilla),
+        ('e', DeadKey::Acute),
+    ] {
+        composer.handle(InputEvent::Preedit(Preedit::at_end(alloc_string(
+            key.mark(),
+        ))));
         match composer.handle(InputEvent::Commit(key.compose(base))) {
             Output::Commit(t) => document.push_str(&t),
             _ => unreachable!("a commit yields a commit"),
@@ -344,7 +370,11 @@ fn a_dead_key_session_produces_one_grapheme_per_keypress() {
     // pass, and the fallback is the one every hand-rolled table gets wrong.
     assert_eq!(document, "çàf\u{327}é");
     assert_eq!(document.chars().count(), 5, "five code points");
-    assert_eq!(grapheme::count(&document), 4, "four keypresses, four clusters");
+    assert_eq!(
+        grapheme::count(&document),
+        4,
+        "four keypresses, four clusters"
+    );
     assert_eq!(
         grapheme::delete(&document, 0..1).as_deref(),
         Some("àf\u{327}é"),

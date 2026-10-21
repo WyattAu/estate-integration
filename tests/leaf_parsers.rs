@@ -38,7 +38,7 @@ fn minimal_ttf() -> Vec<u8> {
     out.extend_from_slice(&16u16.to_be_bytes()); // searchRange
     out.extend_from_slice(&0u16.to_be_bytes()); // entrySelector
     out.extend_from_slice(&0u16.to_be_bytes()); // rangeShift
-    // One table directory entry: a required table, present, non-empty.
+                                                // One table directory entry: a required table, present, non-empty.
     let tag = b"cmap";
     let offset: u32 = 12 + 16; // right after the directory
     let length: u32 = 4;
@@ -84,7 +84,10 @@ fn every_truncation_of_a_font_is_an_err_not_a_panic() {
 fn header_corruption_is_rejected() {
     let mut bytes = minimal_ttf();
     bytes[0] = 0x7F; // sfnt version: neither 1.0, 'OTTO', 'true', nor 'ttcf'
-    assert!(FontRef::new(&bytes).is_err(), "unknown sfnt version accepted");
+    assert!(
+        FontRef::new(&bytes).is_err(),
+        "unknown sfnt version accepted"
+    );
 
     let mut bytes = minimal_ttf();
     bytes[4] = 0xFF; // numTables high byte: claims 65280 tables
@@ -92,7 +95,10 @@ fn header_corruption_is_rejected() {
 
     let mut bytes = minimal_ttf();
     bytes[12 + 8] = 0xFF; // table offset high byte: past the end of the buffer
-    assert!(FontRef::new(&bytes).is_err(), "out-of-range table offset accepted");
+    assert!(
+        FontRef::new(&bytes).is_err(),
+        "out-of-range table offset accepted"
+    );
 }
 
 /// The collection and owned paths over the same hostile bytes.
@@ -265,12 +271,21 @@ fn fft_rejects_sizes_it_cannot_implement() {
 #[test]
 fn fft_edges_are_typed_errors() {
     let err = Fft::new(1).expect_err("size 1 is below the minimum");
-    assert!(format!("{err:?}").contains("min"), "the error names the minimum");
+    assert!(
+        format!("{err:?}").contains("min"),
+        "the error names the minimum"
+    );
 
     let fft = Fft::new(4).expect("size 4");
     let mut short = vec![0.0; 4];
-    assert!(fft.forward(&mut short).is_err(), "half-length buffer accepted");
-    assert!(fft.inverse(&mut short).is_err(), "half-length buffer accepted");
+    assert!(
+        fft.forward(&mut short).is_err(),
+        "half-length buffer accepted"
+    );
+    assert!(
+        fft.inverse(&mut short).is_err(),
+        "half-length buffer accepted"
+    );
     let mut long = vec![0.0; 16];
     assert!(fft.forward(&mut long).is_err(), "oversized buffer accepted");
 }

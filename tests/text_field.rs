@@ -28,7 +28,7 @@ use input_kit::{Composer, DeadKey, InputEvent, Output, Preedit};
 use tui_actions::{Action, Key, KeyEvent, Keymap, Mode};
 use ui_text_edit::bridge;
 use ui_text_edit::compose::composing_field_from;
-use ui_text_edit::{StringBuffer, TextField, field_from, field_from_start};
+use ui_text_edit::{field_from, field_from_start, StringBuffer, TextField};
 
 /// The longest value this suite accepts as announceable. Not a house rule, a
 /// measured stand-in for "enough to be useful, short enough to be read".
@@ -71,11 +71,19 @@ fn a_long_value_is_truncated_at_a_character_boundary() {
 /// the field disagree about what the text is.
 #[test]
 fn truncation_never_splits_a_cluster() {
-    for filler in ["e\u{301}", "\u{1F1FA}\u{1F1F8}", "\u{1F469}\u{200D}\u{1F4BB}", "日"] {
+    for filler in [
+        "e\u{301}",
+        "\u{1F1FA}\u{1F1F8}",
+        "\u{1F469}\u{200D}\u{1F4BB}",
+        "日",
+    ] {
         let body = filler.repeat(200);
         let announced = bridge::truncate_for_announcement(&body);
         assert!(bridge::is_truncated(&body));
-        assert!(announced.ends_with(bridge::ELLIPSIS), "{filler:?}: no ellipsis");
+        assert!(
+            announced.ends_with(bridge::ELLIPSIS),
+            "{filler:?}: no ellipsis"
+        );
 
         // The announced value is the body's first N clusters plus the ellipsis,
         // so stripping the ellipsis must leave an exact prefix of the body.
@@ -128,7 +136,10 @@ fn a_focused_field_claims_printable_keys_first() {
     };
 
     for key in [Key::Char('j'), Key::Char('k')] {
-        assert!(focus_has_it(&mut field, key), "a focused field takes {key:?}");
+        assert!(
+            focus_has_it(&mut field, key),
+            "a focused field takes {key:?}"
+        );
         assert_eq!(field.text(), if key == Key::Char('j') { "j" } else { "jk" });
     }
 
@@ -158,7 +169,11 @@ fn losing_focus_returns_the_keys_to_the_keymap() {
         let actions = map.resolve(&KeyEvent::plain(Key::Char('j')));
         assert!(!actions.is_empty());
     }
-    assert_eq!(field.text(), before, "the field did not see an unfocused key");
+    assert_eq!(
+        field.text(),
+        before,
+        "the field did not see an unfocused key"
+    );
 }
 
 // --- 3. The caret survives every unit it passes through ----------------------
@@ -178,7 +193,10 @@ fn the_caret_names_the_same_character_in_every_unit() {
     assert_eq!(text.len(), 11);
     let utf16: usize = text.chars().map(char::len_utf16).sum();
     assert_eq!(utf16, 6);
-    assert!(text.len() != clusters, "the units must actually differ here");
+    assert!(
+        text.len() != clusters,
+        "the units must actually differ here"
+    );
 
     for target in 0..=clusters {
         // Put the caret at cluster `target`.
@@ -221,7 +239,10 @@ fn a_session_across_all_three_crates_ends_consistent() {
     // IME: compose "にほんご" and commit "日本語".
     for pre in ["に", "にほ", "にほんご"] {
         field.handle(InputEvent::Preedit(Preedit::at_end(pre)));
-        assert!(bridge::is_busy(&field), "mid-syllable must not be announced");
+        assert!(
+            bridge::is_busy(&field),
+            "mid-syllable must not be announced"
+        );
     }
     field.handle(InputEvent::Commit("日本語".into()));
     assert_eq!(field.text(), "日本語");
@@ -256,10 +277,16 @@ fn a_cancelled_composition_leaves_the_value_untouched() {
     for pre in ["こ", "こん", "こんにち"] {
         field.handle(InputEvent::Preedit(Preedit::at_end(pre)));
     }
-    assert_eq!(field.handle(InputEvent::Reset), ui_text_edit::FieldUpdate::Cancelled);
+    assert_eq!(
+        field.handle(InputEvent::Reset),
+        ui_text_edit::FieldUpdate::Cancelled
+    );
     assert_eq!(field.text(), "draft", "the draft is untouched");
     assert!(!bridge::is_busy(&field));
-    assert!(!field.flush(), "a cancelled composition has nothing to flush");
+    assert!(
+        !field.flush(),
+        "a cancelled composition has nothing to flush"
+    );
 }
 
 /// Focus loss mid-composition: the typed text is recovered exactly once.
