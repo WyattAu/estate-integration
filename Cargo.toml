@@ -223,6 +223,14 @@ theme-kit = "=0.1.0"                       # tests/ui_semantics.rs (L1 tokens)
 color-kit = "=0.1.0"                       # tests/ui_semantics.rs (L0 colour)
 theme-egui = "=0.1.0"                      # tests/ui_semantics.rs (L2 lowering)
 docs-core = "=0.1.0"                       # tests/ui_semantics.rs (L2 docs)
+# The signal engine and the trend application it was extracted from. The
+# suites assert type identity across trendkit-core's re-exports, so a copy of
+# model/score reappearing inside trendkit-core turns the tests red.
+# NOTE: the signalkit/skillkit/trendkit family is composed by sqlite-side/,
+# a separate crate in this repo with its own lockfile. It needs rusqlite 0.40
+# while eventbus-kit (above, sqlite feature, exercised by sync_client.rs)
+# needs 0.32, and rusqlite links native sqlite3, so the two majors cannot
+# share a graph. Moving these pins into the root breaks the resolve.
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
@@ -261,6 +269,7 @@ sha2 = "0.10"
 toml = "1"
 
 [workspace]
+exclude = ["sqlite-side"]
 
 [lints.rust]
 unsafe_code = "forbid"
