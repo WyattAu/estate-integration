@@ -11,6 +11,14 @@ categories = ["development-tools::testing"]
 publish = false
 exclude = ["target/"]
 
+[features]
+# Required by the error-classify derive: its generated impl gates `fn code`
+# behind `#[cfg(feature = "errcode")]`, and cfg in macro-expanded code is
+# evaluated against the CONSUMING crate's features. Without this, the derive
+# produces an impl missing a required trait method.
+default = ["errcode"]
+errcode = []
+
 [dependencies]
 # --- WyattAu estate crates -------------------------------------------------
 # Pinned to exact published versions: these tests verify that the released
@@ -217,6 +225,23 @@ simd-tokenizer = "=0.1.2"                   # tests/token_routing.rs (token esti
 # from scraped pages. Both guard boundaries where malformed input is normal.
 geo-kit = "=1.1.1"                          # tests/geo_contacts.rs (coords + address)
 contact-miner = "=0.1.0"                    # tests/geo_contacts.rs (extraction + validation)
+# Proc-macro crates, consumed directly: the macros are imported from these
+# crates themselves, and the generated code names the runtime crates
+# (error-classify and validkit, both pinned above).
+error-classify-derive = "=0.1.0"            # tests/proc_macro_derives.rs (AppError derive)
+validkit-derive = "=0.1.0"                  # tests/proc_macro_derives.rs (Validated derive)
+
+# Platform side of Chisel Docs, published 2026-10-21: the three crates every
+# Chisel service stands on (asset CAS, sessions and roles, ids and settings).
+chisel-assets = "=0.1.0"                    # tests/chisel_platform.rs (asset CAS)
+chisel-auth = "=0.1.0"                      # tests/chisel_platform.rs (sessions)
+chisel-kernel = "=0.1.0"                    # tests/chisel_platform.rs (ids + settings)
+
+# Service adapters, published 2026-10-21 and earlier. Neither needs its
+# service to be composed: the Workflow is pure JSON manipulation and the
+# search runs on an in-memory index.
+comfyui-kit = "=0.1.0"                      # tests/service_clients.rs (ComfyUI workflow)
+tantivy-helper = "=0.3.0"                   # tests/service_clients.rs (search)
 # The composition/IME layer and the two neighbours it has to agree with.
 # `a11y-kit` because a composing textbox must be announced as such, and
 # `tui-actions` because a keymap must not fire shortcuts the IME owns.
@@ -264,6 +289,8 @@ cache-pal = "=0.4.0"                      # tests/round16_debt.rs (TTL cache bes
 chronoshift = "=1.0.1"                    # tests/round16_debt.rs (superseded time source, beside clock-kit)
 
 [dev-dependencies]
+# Matching tantivy-helper 0.3.0, so the suite can build TantivyDocuments.
+tantivy = "=0.26.2"
 wiremock = "0.6"
 # tests/api_errors.rs: a service error type to drive the derive, and the
 # `TypedId` derive's `#[serde(transparent)]` attribute needs serde in scope.
