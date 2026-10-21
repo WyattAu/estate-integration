@@ -202,6 +202,12 @@ font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
 font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
 # DSP primitives (biquad, FFT) that hostile coefficients could drive to a NaN.
 dsp-core = "=0.1.0"                        # tests/leaf_parsers.rs (L0 DSP)
+# The audiobook stack, published 2026-10-21: domain model over two L0 codecs.
+# Composed the day it shipped, which is the whole point of exact pins on
+# fresh artifacts.
+audiobook-core = "=0.5.0"                   # tests/audiobook_stack.rs (L1 model, published 2026-10-21)
+id3-core = "=0.3.0"                          # tests/audiobook_stack.rs (L0 ID3)
+mp4-core = "=0.3.1"                          # tests/audiobook_stack.rs (L0 MP4)
 # The composition/IME layer and the two neighbours it has to agree with.
 # `a11y-kit` because a composing textbox must be announced as such, and
 # `tui-actions` because a keymap must not fire shortcuts the IME owns.

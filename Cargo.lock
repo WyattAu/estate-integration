@@ -408,6 +408,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "audiobook-core"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "333f73c5742222c0e0f85a9f9905527ef15dec89acdab7c98fa2b8c4c9ca9a2e"
+dependencies = [
+ "id3-core",
+ "mp4-core",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2238,6 +2248,7 @@ dependencies = [
  "api-paginate",
  "api-types",
  "async-trait",
+ "audiobook-core",
  "axum",
  "axum-stack",
  "barbican",
@@ -2283,6 +2294,7 @@ dependencies = [
  "http-errors",
  "hw-kit",
  "i18n-kit",
+ "id3-core",
  "idempotency-kit",
  "image",
  "input-kit",
@@ -2294,6 +2306,7 @@ dependencies = [
  "mailkit",
  "media-kit",
  "metrics-kit",
+ "mp4-core",
  "multi-chain-wallet",
  "oauth-toolkit",
  "otel-stack",
@@ -3412,6 +3425,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "id3-core"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4cc70b1c20b0bbbd6dbf57892e694c6becd14cd7fcccdd93668a97ff42c69e7"
+dependencies = [
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "idempotency-kit"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4396,6 +4418,15 @@ checksum = "bb85c154ba489f01b25c0d36ae69a87e4a1c73a72631fc6c0eb6dde34a73e44b"
 dependencies = [
  "num-traits",
  "pxfm",
+]
+
+[[package]]
+name = "mp4-core"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94121f6f9c515c9ed9f1ff2e65ce7d00025b04c71a8bef0d3b9f128c3999f983"
+dependencies = [
+ "thiserror 2.0.21",
 ]
 
 [[package]]
