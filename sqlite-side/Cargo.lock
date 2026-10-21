@@ -146,9 +146,9 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "cas-kit"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4eeda4683bcfb92df0c42b2d93c2e716a8d43212ab8cf40d151bec321e077336"
+checksum = "27854f776b6d7aed89b4b62c342a760d56149bdf6c2b8ade87e2d53aa4e4e45b"
 dependencies = [
  "blake3",
  "clap",
