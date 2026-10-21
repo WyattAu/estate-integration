@@ -208,6 +208,15 @@ dsp-core = "=0.1.0"                        # tests/leaf_parsers.rs (L0 DSP)
 audiobook-core = "=0.5.0"                   # tests/audiobook_stack.rs (L1 model, published 2026-10-21)
 id3-core = "=0.3.0"                          # tests/audiobook_stack.rs (L0 ID3)
 mp4-core = "=0.3.1"                          # tests/audiobook_stack.rs (L0 MP4)
+
+# AI-infrastructure leaves: token estimation and model/cost routing. Composed
+# together because the estimate and the budget must agree to be meaningful.
+model-router = "=0.1.0"                     # tests/token_routing.rs (routing + cost)
+simd-tokenizer = "=0.1.2"                   # tests/token_routing.rs (token estimate)
+# Data-hygiene leaves: coordinate and address validation, contact extraction
+# from scraped pages. Both guard boundaries where malformed input is normal.
+geo-kit = "=0.1.0"                          # tests/geo_contacts.rs (coords + address)
+contact-miner = "=0.1.0"                    # tests/geo_contacts.rs (extraction + validation)
 # The composition/IME layer and the two neighbours it has to agree with.
 # `a11y-kit` because a composing textbox must be announced as such, and
 # `tui-actions` because a keymap must not fire shortcuts the IME owns.
