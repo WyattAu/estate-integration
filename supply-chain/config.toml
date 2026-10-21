@@ -536,6 +536,10 @@ criteria = "safe-to-deploy"
 version = "0.4.2"
 criteria = "safe-to-deploy"
 
+[[exemptions.contact-miner]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.convert_case]]
 version = "0.4.0"
 criteria = "safe-to-deploy"
@@ -582,6 +586,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.crc32fast]]
 version = "1.5.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.crc32fast]]
+version = "1.5.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.crdts-kit]]
@@ -1138,6 +1146,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.generic-array]]
 version = "0.14.9"
+criteria = "safe-to-deploy"
+
+[[exemptions.geo-kit]]
+version = "1.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.getopts]]
@@ -1738,6 +1750,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.mio]]
 version = "1.2.4"
+criteria = "safe-to-deploy"
+
+[[exemptions.model-router]]
+version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.moka]]
@@ -2428,6 +2444,10 @@ criteria = "safe-to-deploy"
 version = "0.103.15"
 criteria = "safe-to-deploy"
 
+[[exemptions.rustls-webpki]]
+version = "0.103.16"
+criteria = "safe-to-deploy"
+
 [[exemptions.rustversion]]
 version = "1.0.23"
 criteria = "safe-to-deploy"
@@ -2640,6 +2660,10 @@ criteria = "safe-to-deploy"
 version = "0.3.10"
 criteria = "safe-to-deploy"
 
+[[exemptions.simd-tokenizer]]
+version = "0.1.2"
+criteria = "safe-to-deploy"
+
 [[exemptions.simd_cesu8]]
 version = "1.2.0"
 criteria = "safe-to-deploy"
@@ -2678,6 +2702,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.smol_str]]
 version = "0.3.6"
+criteria = "safe-to-deploy"
+
+[[exemptions.smol_str]]
+version = "0.3.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.socket2]]
