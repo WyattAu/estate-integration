@@ -2836,9 +2836,9 @@ dependencies = [
 
 [[package]]
 name = "geo-kit"
-version = "0.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f81015b46a20483d606c14ac7c21112dff0e4553a8d5af2daa23baa864d6e2c2"
+checksum = "6676744d755689c18921a88c849a75051f75db017b31b884cce79b4bf8216dad"
 dependencies = [
  "serde",
  "thiserror 2.0.21",
@@ -4426,9 +4426,9 @@ dependencies = [
 
 [[package]]
 name = "model-router"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "601a9d71bf20bf8911c72ed029adea78d0f779d3619bd537ab1aecd3164d82f9"
+checksum = "d970fdc4ef6fd660fa95e37ada0d79922a4aa28aaf6d760e30c068ddc2a3d033"
 dependencies = [
  "thiserror 2.0.21",
 ]
