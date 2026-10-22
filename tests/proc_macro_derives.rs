@@ -98,7 +98,10 @@ fn the_validated_derive_checks_every_field() {
         homepage: Some("https://example.org".to_owned()),
         display_name: "Alice".to_owned(),
     };
-    assert!(good.validate().is_ok(), "a fully valid struct failed: {good:?}");
+    assert!(
+        good.validate().is_ok(),
+        "a fully valid struct failed: {good:?}"
+    );
 
     // Bad email alone fails.
     let bad_email = Signup {

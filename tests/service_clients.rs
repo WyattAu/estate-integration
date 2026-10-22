@@ -99,7 +99,10 @@ fn search_engine(tag: &str) -> (SearchEngine, tantivy::schema::Field) {
         },
     };
     let engine = SearchEngine::new(&config).expect("engine builds");
-    let field = engine.schema().get_field("title").expect("the field is in the schema");
+    let field = engine
+        .schema()
+        .get_field("title")
+        .expect("the field is in the schema");
     (engine, field)
 }
 

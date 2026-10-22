@@ -32,7 +32,11 @@ fn the_asset_store_deduplicates_and_removes() {
 
     let first = store.put(b"same bytes").expect("put");
     let second = store.put(b"same bytes").expect("put again");
-    assert_eq!(first.hash(), second.hash(), "identical bytes, different hashes");
+    assert_eq!(
+        first.hash(),
+        second.hash(),
+        "identical bytes, different hashes"
+    );
     assert_eq!(first.address(), second.address());
 
     assert!(store.contains(&first));
@@ -42,7 +46,10 @@ fn the_asset_store_deduplicates_and_removes() {
     store.remove(&first).expect("remove");
     // The crate's own removal test asserts via `is_empty`, which is the
     // documented observable; a second remove of the same address is a no-op.
-    assert!(store.is_empty().expect("is_empty"), "the store is empty after removal");
+    assert!(
+        store.is_empty().expect("is_empty"),
+        "the store is empty after removal"
+    );
     store.remove(&first).expect("a second remove is a no-op");
 }
 
@@ -66,7 +73,10 @@ fn distinct_bytes_get_distinct_addresses() {
 #[test]
 fn a_user_id_refuses_empty_and_whitespace() {
     assert!(UserId::try_from(String::new()).is_err(), "empty accepted");
-    assert!(UserId::try_from("   ".to_owned()).is_err(), "whitespace accepted");
+    assert!(
+        UserId::try_from("   ".to_owned()).is_err(),
+        "whitespace accepted"
+    );
     let ok = UserId::try_from("alice".to_owned()).expect("a plain name is valid");
     assert_eq!(ok.as_str(), "alice");
 }
@@ -82,7 +92,10 @@ fn the_role_hierarchy_permits_and_denies() {
     // Every role can read everything: Read and ReadAudit are unconditional.
     for role in [Role::Auditor, Role::Reviewer, Role::Editor, Role::Owner] {
         assert!(role.permits(Capability::Read), "{role:?} reads");
-        assert!(role.permits(Capability::ReadAudit), "{role:?} reads the audit trail");
+        assert!(
+            role.permits(Capability::ReadAudit),
+            "{role:?} reads the audit trail"
+        );
     }
     // The edit-grade capabilities go to Editor and Owner.
     for cap in [Capability::Edit, Capability::Redact, Capability::Sign] {
@@ -103,9 +116,8 @@ fn the_role_hierarchy_permits_and_denies() {
 /// session.
 #[test]
 fn a_session_issues_validates_and_refreshes() {
-    let service =
-        SessionService::new("test-signing-secret", "chisel-test", "chisel-doc")
-            .expect("a configured service");
+    let service = SessionService::new("test-signing-secret", "chisel-test", "chisel-doc")
+        .expect("a configured service");
 
     let tokens = service.issue(&user("alice"), Role::Editor).expect("issue");
     assert!(!tokens.access.is_empty());
@@ -118,12 +130,20 @@ fn a_session_issues_validates_and_refreshes() {
         claims.permits(Capability::Redact),
         "in a PDF editor, redaction is an editing operation: an Editor redacts"
     );
-    assert!(!claims.permits(Capability::ManageMembers), "an Editor cannot manage members");
+    assert!(
+        !claims.permits(Capability::ManageMembers),
+        "an Editor cannot manage members"
+    );
 
     // Refresh: same session id, a new access token.
     let refreshed = service.refresh(&tokens.refresh).expect("refresh");
-    assert_eq!(refreshed.sid, tokens.sid, "the session id survives the refresh");
-    let claims_again = service.validate(&refreshed.access).expect("validate refreshed");
+    assert_eq!(
+        refreshed.sid, tokens.sid,
+        "the session id survives the refresh"
+    );
+    let claims_again = service
+        .validate(&refreshed.access)
+        .expect("validate refreshed");
     assert_eq!(claims_again.role(), Some(Role::Editor));
     assert!(
         claims_again.permits(Capability::Redact),
@@ -135,18 +155,26 @@ fn a_session_issues_validates_and_refreshes() {
 /// crate's own doc names this as deliberate, so it is asserted.
 #[test]
 fn an_unconfigured_service_fails_at_construction() {
-    assert!(SessionService::new("", "issuer", "audience").is_err(), "empty secret");
-    assert!(SessionService::new("secret", "", "audience").is_err(), "empty issuer");
-    assert!(SessionService::new("secret", "issuer", "").is_err(), "empty audience");
+    assert!(
+        SessionService::new("", "issuer", "audience").is_err(),
+        "empty secret"
+    );
+    assert!(
+        SessionService::new("secret", "", "audience").is_err(),
+        "empty issuer"
+    );
+    assert!(
+        SessionService::new("secret", "issuer", "").is_err(),
+        "empty audience"
+    );
 }
 
 /// A tampered token is refused. Signing exists to make this hold; a suite that
 /// only tests the happy path would pass with the signature check commented out.
 #[test]
 fn a_tampered_token_is_refused() {
-    let service =
-        SessionService::new("test-signing-secret", "chisel-test", "chisel-doc")
-            .expect("configures");
+    let service = SessionService::new("test-signing-secret", "chisel-test", "chisel-doc")
+        .expect("configures");
     let tokens = service.issue(&user("bob"), Role::Reviewer).expect("issue");
 
     let mut tampered = tokens.access.clone();
@@ -158,8 +186,8 @@ fn a_tampered_token_is_refused() {
     );
 
     // A token from a different secret is refused too.
-    let other = SessionService::new("a-different-secret", "chisel-test", "chisel-doc")
-        .expect("configures");
+    let other =
+        SessionService::new("a-different-secret", "chisel-test", "chisel-doc").expect("configures");
     let foreign = other.issue(&user("bob"), Role::Reviewer).expect("issue");
     assert!(
         service.validate(&foreign.access).is_err(),
