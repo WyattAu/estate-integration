@@ -1,4 +1,4 @@
-# Dogfood coverage — what `estate-integration` actually proves
+# Dogfood coverage: what `estate-integration` actually proves
 
 Generated from this repo's `Cargo.toml` (73 exact pins) against
 `engineering-standards/scripts/estate-audit.py` (the manifest). Refresh both
@@ -6,11 +6,11 @@ after any publish or pin change; this file is the human view of that report.
 
 The 161 crates published under the account divide three ways:
 
-- **71 composed** — pulled by a suite here and exercised against their
+- **71 composed**: pulled by a suite here and exercised against their
   neighbours, in 33 suites.
-- **75 exempt** — product monorepos, UI components and dormant families that
+- **75 exempt**: product monorepos, UI components and dormant families that
   carry their own tests (listed below).
-- **16 debt** — published, working, and never proven to work alongside
+- **16 debt**: published, working, and never proven to work alongside
   anything. This is the only number worth watching.
 
 > Coverage is not a vanity metric here. Every suite exists to catch
@@ -60,14 +60,14 @@ Each round adds suites and closes debt. Counts are crates newly composed:
 | 4 | `telemetry_bootstrap`, `telemetry_pipeline`, `worker_supervisor_drain` | 3 |
 | 5 | `clock_precision`, `book_feed`, `hw_pinned_hotpath`, `uring_proxy`, `ledger_settlement`, `policy_gateway`, `chaos_worker`, `outbox_dispatch_metrics` | 9 |
 | 6 | pin refresh (17 stale exact pins) + de-flake two runner-sensitive suites | 0 |
-| 7 | `money_stack` — the accounting core | 6 |
-| 8 | `auth_provision` — SCIM + RBAC + session + audit | 5 |
-| 9 | `collab_docs` — CRDT convergence + i18n + publication | 4 |
-| 10 | `systems_substrate` — actors + pool + shared memory + cache | 4 |
+| 7 | `money_stack`: the accounting core | 6 |
+| 8 | `auth_provision`: SCIM + RBAC + session + audit | 5 |
+| 9 | `collab_docs`: CRDT convergence + i18n + publication | 4 |
+| 10 | `systems_substrate`: actors + pool + shared memory + cache | 4 |
 | 11 | `calibration_stack`, `spreadsheet_engine` (product-layer round) | 12 |
-| 12 | `api_errors` + `flags_and_lifecycle` — error envelope and process ownership | 12 |
-| 13 | `crypto_auth` — HMAC + WebAuthn + PKCE + CSRF + wallet | 4 |
-| 14 | `accounting_core` — the new immutable double-entry ledger, composed against `ledger-kit` | 1 |
+| 12 | `api_errors` + `flags_and_lifecycle`: error envelope and process ownership | 12 |
+| 13 | `crypto_auth`: HMAC + WebAuthn + PKCE + CSRF + wallet | 4 |
+| 14 | `accounting_core`: the new immutable double-entry ledger, composed against `ledger-kit` | 1 |
 
 Debt fell **53 → 32 → 24 → 20 → 16** over rounds 7–14.
 
@@ -77,12 +77,12 @@ Some families are covered by their own test suites rather than by an
 estate-integration suite, and the audit is told so explicitly in
 `COVERAGE_EXEMPT`:
 
-- `suture-*` (36) — product monorepo under evaluation, has its own suites
-- `leptos-*` (8), `ply*` (5), `polyfont-*` (9) — UI and charting, exercised by
+- `suture-*` (36): product monorepo under evaluation, has its own suites
+- `leptos-*` (8), `ply*` (5), `polyfont-*` (9): UI and charting, exercised by
   `crdt-demo` and the site; `polyfont-*` is dormant since 2026-05
-- `vane-*` (11) — separate product monorepo with its own suite
-- `crawlkit-*` (2) — separate product monorepo with its own suite
-- `resilient-fetch`, `loop-retry` — superseded and renamed; still pinned
+- `vane-*` (11): separate product monorepo with its own suite
+- `crawlkit-*` (2): separate product monorepo with its own suite
+- `resilient-fetch`, `loop-retry`: superseded and renamed; still pinned
 - sibling crates pulled transitively (derive macros, renamed packages)
 
 ## Reading the findings
