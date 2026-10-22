@@ -28,8 +28,8 @@ publish = false
 
 [dependencies]
 signalkit = "=0.1.0"
-signalkit-core = "=0.1.1"
-signalkit-integrity = "=0.2.6"
+signalkit-core = "=0.1.2"
+signalkit-integrity = "=0.2.7"
 trendkit-core = "=0.3.1"
 trendkit-profile = "=0.3.0"
 skillkit-core = "=0.1.0"   # the `skillkit` and `trendkit` facades are CLIs with no lib target
