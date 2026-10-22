@@ -1597,6 +1597,10 @@ criteria = "safe-to-deploy"
 version = "0.29.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.nix]]
+version = "0.31.3"
+criteria = "safe-to-deploy"
+
 [[exemptions.nohash-hasher]]
 version = "0.2.0"
 criteria = "safe-to-deploy"
@@ -2353,6 +2357,10 @@ criteria = "safe-to-deploy"
 version = "0.1.1"
 criteria = "safe-to-deploy"
 
+[[exemptions.sheet-xlsx]]
+version = "0.1.2"
+criteria = "safe-to-deploy"
+
 [[exemptions.shm-rings]]
 version = "0.2.1"
 criteria = "safe-to-deploy"
@@ -2845,6 +2853,10 @@ criteria = "safe-to-deploy"
 version = "0.1.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.typed-path]]
+version = "0.12.4"
+criteria = "safe-to-deploy"
+
 [[exemptions.typeid]]
 version = "1.0.3"
 criteria = "safe-to-deploy"
@@ -3295,6 +3307,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.zip]]
 version = "4.6.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.zip]]
+version = "9.0.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.zlib-rs]]
