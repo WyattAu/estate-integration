@@ -2097,6 +2097,10 @@ criteria = "safe-to-deploy"
 version = "0.12.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.report-kit]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.reqwest]]
 version = "0.12.28"
 criteria = "safe-to-deploy"
@@ -2487,6 +2491,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.stacker]]
 version = "0.1.25"
+criteria = "safe-to-deploy"
+
+[[exemptions.statement-ofx]]
+version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.streaming-iterator]]
@@ -2963,6 +2971,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.valuable]]
 version = "0.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.vat-return]]
+version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.vat-rules]]
