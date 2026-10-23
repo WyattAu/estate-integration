@@ -2493,6 +2493,10 @@ criteria = "safe-to-deploy"
 version = "0.1.25"
 criteria = "safe-to-deploy"
 
+[[exemptions.statement-ofx]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.streaming-iterator]]
 version = "0.1.9"
 criteria = "safe-to-deploy"
@@ -2967,6 +2971,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.valuable]]
 version = "0.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.vat-return]]
+version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.vat-rules]]
