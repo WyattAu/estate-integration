@@ -2470,6 +2470,7 @@ dependencies = [
  "pid-manager",
  "policy-kit",
  "poolkit",
+ "recon-kit",
  "reqwest 0.12.28",
  "reqwest 0.13.5",
  "resilient-fetch",
@@ -6028,6 +6029,12 @@ dependencies = [
  "font-types 0.12.7",
  "once_cell",
 ]
+
+[[package]]
+name = "recon-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f41b07667bd265112e5642cfc5e47991592806e4826974a1fd1e7d44bd9fe0f0"
 
 [[package]]
 name = "redox_syscall"
