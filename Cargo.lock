@@ -2471,6 +2471,7 @@ dependencies = [
  "policy-kit",
  "poolkit",
  "recon-kit",
+ "report-kit",
  "reqwest 0.12.28",
  "reqwest 0.13.5",
  "resilient-fetch",
@@ -6161,6 +6162,15 @@ dependencies = [
  "uuid",
  "vstd",
  "yaml_serde",
+]
+
+[[package]]
+name = "report-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89ae7d0bc6d63e644b0f3b4485b5f9a58569eaecddea598bfd967f5696b207dc"
+dependencies = [
+ "double-entry",
 ]
 
 [[package]]
