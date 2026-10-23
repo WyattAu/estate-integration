@@ -1188,6 +1188,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 
 [[package]]
+name = "contact-miner"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e7b378e6c3fc848ae804d2e0deb9d6e4764a05772abac6e628e8166563a4eb6"
+dependencies = [
+ "clap",
+ "dashmap",
+ "rand 0.8.8",
+ "regex",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2110,6 +2130,7 @@ dependencies = [
  "chronoshift",
  "clock-kit",
  "config-kit",
+ "contact-miner",
  "crdts-kit",
  "cryptkit",
  "dbc-parse",
@@ -2128,6 +2149,7 @@ dependencies = [
  "font-shape",
  "formula-lang",
  "futures",
+ "geo-kit",
  "healthkit",
  "hmac 0.12.1",
  "http",
@@ -2615,6 +2637,16 @@ dependencies = [
  "typenum",
  "version_check",
  "zeroize",
+]
+
+[[package]]
+name = "geo-kit"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6676744d755689c18921a88c849a75051f75db017b31b884cce79b4bf8216dad"
+dependencies = [
+ "serde",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
