@@ -11,6 +11,14 @@ categories = ["development-tools::testing"]
 publish = false
 exclude = ["target/"]
 
+[features]
+# Required by the error-classify derive: its generated impl gates `fn code`
+# behind `#[cfg(feature = "errcode")]`, and cfg in macro-expanded code is
+# evaluated against the CONSUMING crate's features. Without this, the derive
+# produces an impl missing a required trait method.
+default = ["errcode"]
+errcode = []
+
 [dependencies]
 # --- WyattAu estate crates -------------------------------------------------
 # Pinned to exact published versions: these tests verify that the released
@@ -27,15 +35,15 @@ barbican = "=0.2.1"
 # `timeout` feature anywhere in the graph breaks outbox-kit's build.
 breaker = { version = "=2.0.1", features = ["tower"] }
 healthkit = { version = "=1.3.1", features = ["axum"] }
-throttle-kit = { version = "=2.0.0", features = ["in-memory", "tower"] }
-otelkit = "=2.1.0"
+throttle-kit = { version = "=2.1.0", features = ["in-memory", "tower"] }
+otelkit = "=2.2.1"
 mailkit = { version = "=0.3.1", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.1"
 media-kit = "=0.2.1"
 blobkit = { version = "=0.4.2", features = ["memory", "std", "serde"] }
 cas-kit = { version = "=0.2.1", features = ["tokio"] }
 mail-sync-kit = "=0.1.1"
-eventbus-kit = { version = "=0.3.5", features = ["sqlite"] }
+eventbus-kit = { version = "=0.4.0", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
 # NOTE: `retry-backoff` was pinned here from round 1 and never used by any
 # suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
@@ -62,7 +70,7 @@ metrics-kit = "=0.2.0"                       # tests/metrics_scrape.rs
 webhookkit = "=2.2.1"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
-telemetry-init = "=0.1.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
+telemetry-init = "=0.1.2"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
 # NOTE: default-features = false. worker-kit's default `breaker` feature pins
 # breaker with `features = ["timeout"]`, which unifies graph-wide and breaks
 # outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
@@ -90,10 +98,7 @@ poolkit = { version = "=0.1.2", features = ["sqlite"] }  # tests/ipc_stack.rs (s
 uds-kit = "=0.1.0"                        # tests/ipc_stack.rs (timeout-bounded raw client)
 # Round 20: the spreadsheet-diff pair — byte-level deltas over parsed workbooks.
 delta-kit = "=0.2.1"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
-sheet-xlsx = "=0.1.1"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
-# Round 21: the lead pipeline — mine contacts, validate them, attach UK addresses.
-contact-miner = "=0.1.0"                   # tests/lead_pipeline.rs (parse + validate + store)
-geo-kit = "=1.1.1"                        # tests/lead_pipeline.rs (UK postcode + address + coords)
+sheet-xlsx = "=0.1.2"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 invoice-kit = "=0.2.1"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.1"                       # tests/payable.rs (AP: recoverability, three-way split)
@@ -115,7 +120,7 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 # auth story the accounting product needs on day one.
 accessctl = { version = "=0.1.0", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
-tamper-audit = "=0.2.0"                     # tests/auth_provision.rs (hash-linked audit chain)
+tamper-audit = "=0.2.1"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=0.4.2"                           # tests/auth_provision.rs (typed WS transport)
 ws-barbican = "=0.1.2"                      # tests/auth_provision.rs (token from header/query/cookie)
 
@@ -166,8 +171,8 @@ envstack = "=0.2.1"                      # tests/flags_and_lifecycle.rs (layer p
 # published vector (RFC 4231, RFC 7636, RFC 4648) or against the *other*
 # crate, never against itself.
 cryptkit = "=0.1.0"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
-webauthn-kit = "=0.3.7"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
-oauth-toolkit = "=0.3.0"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
+webauthn-kit = "=0.4.0"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
+oauth-toolkit = "=0.4.0"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
 multi-chain-wallet = "=0.3.0"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
@@ -197,8 +202,75 @@ cal-model = "=0.1.1"                         # tests/cal_model_session.rs, tests
 dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tests/round16_debt.rs (no_std; dsp-core + thiserror)
 # The font toolchain's write path: an editable outline model and a CPU
 # rasterizer/shaper, layered over font-parse.
+# The L0 leaves the stacks above sit on, pinned directly. Exercising them
+# only through their parents left their own error paths unwalked, and both
+# take untrusted bytes (font-parse: SFNT/OTF/WOFF from web fonts).
+font-parse = "=0.1.0"                      # tests/leaf_parsers.rs (L0 SFNT parser)
 font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
 font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
+# DSP primitives (biquad, FFT) that hostile coefficients could drive to a NaN.
+dsp-core = "=0.1.0"                        # tests/leaf_parsers.rs (L0 DSP)
+# The audiobook stack, published 2026-10-21: domain model over two L0 codecs.
+# Composed the day it shipped, which is the whole point of exact pins on
+# fresh artifacts.
+audiobook-core = "=0.5.0"                   # tests/audiobook_stack.rs (L1 model, published 2026-10-21)
+id3-core = "=0.3.0"                          # tests/audiobook_stack.rs (L0 ID3)
+mp4-core = "=0.3.1"                          # tests/audiobook_stack.rs (L0 MP4)
+
+# AI-infrastructure leaves: token estimation and model/cost routing. Composed
+# together because the estimate and the budget must agree to be meaningful.
+model-router = "=0.2.0"                     # tests/token_routing.rs (routing + cost)
+simd-tokenizer = "=0.1.2"                   # tests/token_routing.rs (token estimate)
+# Data-hygiene leaves: coordinate and address validation, contact extraction
+# from scraped pages. Both guard boundaries where malformed input is normal.
+geo-kit = "=1.1.1"                          # tests/geo_contacts.rs (coords + address)
+contact-miner = "=0.1.0"                    # tests/geo_contacts.rs (extraction + validation)
+# Proc-macro crates, consumed directly: the macros are imported from these
+# crates themselves, and the generated code names the runtime crates
+# (error-classify and validkit, both pinned above).
+error-classify-derive = "=0.1.0"            # tests/proc_macro_derives.rs (AppError derive)
+validkit-derive = "=0.1.0"                  # tests/proc_macro_derives.rs (Validated derive)
+
+# Platform side of Chisel Docs, published 2026-10-21: the three crates every
+# Chisel service stands on (asset CAS, sessions and roles, ids and settings).
+chisel-assets = "=0.1.0"                    # tests/chisel_platform.rs (asset CAS)
+chisel-auth = "=0.1.0"                      # tests/chisel_platform.rs (sessions)
+chisel-kernel = "=0.1.0"                    # tests/chisel_platform.rs (ids + settings)
+
+# Service adapters, published 2026-10-21 and earlier. Neither needs its
+# service to be composed: the Workflow is pure JSON manipulation and the
+# search runs on an in-memory index.
+comfyui-kit = "=0.2.0"                      # tests/service_clients.rs (ComfyUI workflow)
+tantivy-helper = "=0.3.0"                   # tests/service_clients.rs (search)
+# The composition/IME layer and the two neighbours it has to agree with.
+# `a11y-kit` because a composing textbox must be announced as such, and
+# `tui-actions` because a keymap must not fire shortcuts the IME owns.
+a11y-kit = "=0.2.0"                        # tests/input_composition.rs (L1 tree)
+tui-actions = "=0.1.0"                     # tests/input_composition.rs (L2 keymap)
+# input-kit 0.1.0 is on crates.io; pinned exact so a drift between the
+# published artifact and this suite is attributable to a real version change.
+input-kit = "=0.1.0"                       # tests/input_composition.rs, tests/text_field.rs (L1 compose)
+# ui-text-edit 0.1.0 is on crates.io; pinned exact with the a11y feature on, so
+# a drift between the published artifact and this suite is attributable to a
+# real version change. The suite was written against a path pin before
+# publication, per the ADR-0005 rule.
+ui-text-edit = { version = "=0.1.0", features = ["a11y"] }  # tests/text_field.rs (L2 field)
+# The theme stack, exact-pinned so the published artifacts are proven to
+# compose rather than merely existing. theme-egui is compiled against egui
+# 0.37, so it composes here and not in chisel-doc (which pins 0.36); that is
+# the one-crate-per-toolkit-major rule from ADR-0005 in practice.
+theme-kit = "=0.1.0"                       # tests/ui_semantics.rs (L1 tokens)
+color-kit = "=0.1.0"                       # tests/ui_semantics.rs (L0 colour)
+theme-egui = "=0.1.0"                      # tests/ui_semantics.rs (L2 lowering)
+docs-core = "=0.1.0"                       # tests/ui_semantics.rs (L2 docs)
+# The signal engine and the trend application it was extracted from. The
+# suites assert type identity across trendkit-core's re-exports, so a copy of
+# model/score reappearing inside trendkit-core turns the tests red.
+# NOTE: the signalkit/skillkit/trendkit family is composed by sqlite-side/,
+# a separate crate in this repo with its own lockfile. It needs rusqlite 0.40
+# while eventbus-kit (above, sqlite feature, exercised by sync_client.rs)
+# needs 0.32, and rusqlite links native sqlite3, so the two majors cannot
+# share a graph. Moving these pins into the root breaks the resolve.
 
 # --- plumbing ---------------------------------------------------------------
 tokio = { version = "1", features = ["full"] }
@@ -217,6 +289,8 @@ cache-pal = "=0.4.0"                      # tests/round16_debt.rs (TTL cache bes
 chronoshift = "=1.0.1"                    # tests/round16_debt.rs (superseded time source, beside clock-kit)
 
 [dev-dependencies]
+# Matching tantivy-helper 0.3.0, so the suite can build TantivyDocuments.
+tantivy = "=0.26.2"
 wiremock = "0.6"
 # tests/api_errors.rs: a service error type to drive the derive, and the
 # `TypedId` derive's `#[serde(transparent)]` attribute needs serde in scope.
@@ -237,6 +311,7 @@ sha2 = "0.10"
 toml = "1"
 
 [workspace]
+exclude = ["sqlite-side"]
 
 [lints.rust]
 unsafe_code = "forbid"

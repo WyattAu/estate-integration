@@ -1,62 +1,62 @@
 # Changelog
 
 All notable changes to this project are documented here. Format: [Keep a
-Changelog](https://keepachangelog.com/) — versions follow [semver](https://semver.org).
+Changelog](https://keepachangelog.com/): versions follow [semver](https://semver.org).
 
 ## [Unreleased]
 
 ### Added
-- Round-5 composition suites — ten flows proving the consumer-less
+- Round-5 composition suites: ten flows proving the consumer-less
   crates compose (all exact-pinned at their published versions, verified
   via the crates.io API):
   - `tests/clock_precision.rs`: clock-kit (TSC-calibrated) +
-    percentile-kit — calibrated reads monotonic and typed; one measured
+    percentile-kit: calibrated reads monotonic and typed; one measured
     workload into both a `LatencyRing` and a `PercentileTracker` with
     bit-identical nearest-rank statistics; committed-style budget PASS
     and a typed `BudgetExceeded` FAIL naming the metric.
-  - `tests/book_feed.rs`: wire-kit + book-kit — FIX 4.4 `35=X` encode →
+  - `tests/book_feed.rs`: wire-kit + book-kit: FIX 4.4 `35=X` encode →
     parse/checksum → typed `Command` mapping → `replay` (`GapPolicy`)
     → depth exactness, replay checksum-identical to direct application;
     truncation, corruption, and journal gaps are typed failures.
   - `tests/hw_pinned_hotpath.rs`: hw-kit (`pin_current_core`, fail-closed
-    mask read-back) + clock-kit — a pinned hot loop measured into a
+    mask read-back) + clock-kit: a pinned hot loop measured into a
     `LatencyRing`, tolerance-bounded stability (P99 ≤ 10× median, no
     half-to-half drift), calibrated-vs-`Instant` cross-check, affinity
     restored and verified; typed pin failures and `CpuSet` round-trips.
-  - `tests/uring_proxy.rs`: uring-kit + breaker + throttle-kit — a real
+  - `tests/uring_proxy.rs`: uring-kit + breaker + throttle-kit: a real
     echo proxy on an `io_uring` engine thread under breaker-first /
     GCRA-second admission (CIRCUIT_OPEN pause, THROTTLED retry_after,
     two scripted failures trip, half-open probe recovers); exact
     decision ledger; token/probe/pool contracts hold on any host.
   - `tests/ledger_settlement.rs`: ledger-kit + outbox-kit +
-    idempotency-kit — settlement post → `OutboxJournal` durable mirror
+    idempotency-kit: settlement post → `OutboxJournal` durable mirror
     (envelope id == posting id) → `DuplicatePosting`/`InvalidPosting`
     retry semantics → dispatcher delivers once → `restore` replays the
     undelivered tail into a fresh ledger → genesis-aware chain verify;
     `RejectNegative` refuses an overdraw before anything records.
-  - `tests/policy_gateway.rs`: policy-kit + fetch-kit — a
+  - `tests/policy_gateway.rs`: policy-kit + fetch-kit: a
     `fetch_kit::middleware::Middleware` evaluates a Rego bundle over the
     request document; violations short-circuit before `Next::run` (no
     network, no retry budget), poisoned engines fail closed; verdicts
     attributed per rule; null-safety asserted.
-  - `tests/chaos_worker.rs`: chaos-kit + worker-kit — a supervisor job
+  - `tests/chaos_worker.rs`: chaos-kit + worker-kit: a supervisor job
     whose work unit is a tower service under a seeded `ChaosLayer`
     (latency every call, two consecutive scripted outages): the failure
-    budget trips the degradation latch (observed live — see findings),
+    budget trips the degradation latch (observed live: see findings),
     the worker survives and drains < 2 s, and the same seed reproduces
     the identical fault sequence across two sessions; recorder counts
     exact.
-  - `tests/config_tenant.rs`: config-kit per-tenant resolution — base +
+  - `tests/config_tenant.rs`: config-kit per-tenant resolution: base +
     tenant override files, deep merge (one nested knob overridden,
     siblings kept), per-tenant differences, secrets redacted through the
     merged load, `load_strict` naming the typo.
   - `tests/telemetry_pipeline.rs`: telemetry-init + metrics-kit +
-    percentile-kit — init → register → record into both the histogram
+    percentile-kit: init → register → record into both the histogram
     and the tracker → 0.0.4-valid scrape (inline parser, histogram
     aggregates consistent with the tracker) → budget PASS + outlier
     FAIL → idempotent shutdown flush.
   - `tests/outbox_dispatch_metrics.rs`: outbox-kit + metrics-kit +
-    breaker — dispatch with a metric per attempt
+    breaker: dispatch with a metric per attempt
     (`outbox_dispatch_total{outcome}`, `outbox_pending`) through a
     breaker-wrapped sender under failure injection; the open circuit's
     sheds appear as `paused` in the parsed render and the transitions in
@@ -101,7 +101,7 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
   - `tests/idempotent_webhook.rs`: webhookkit HMAC/Stripe verification →
     idempotency-kit claim (First/Replay/release-and-retry).
   - `tests/outbox_dispatch.rs`: outbox-kit dispatcher with a flaky sender
-    — breaker trip, open-circuit pause without attempt burn, half-open
+   : breaker trip, open-circuit pause without attempt burn, half-open
     probe recovery, 5/5 dispatched, shutdown < 2 s.
   - `tests/percentile_report.rs`: tracker quantiles vs sorted reference,
     markdown snapshot, criterion fixture + committed budgets PASS and
@@ -114,19 +114,19 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
     parser.
 
 ### Changed
-- CI: adopt the org-level `cargo vet` gate — the shared rust-kit workflow
+- CI: adopt the org-level `cargo vet` gate: the shared rust-kit workflow
   gained an unconditional `vet` job after round 3; the store is
   bootstrapped with `cargo vet init` (current lockfile as the vetted
   baseline, 435 locked crates), `cargo vet --locked` green locally.
 - breaker pin 2.0.0 → 2.0.1 (test-only release over 2.0.0; current exact
-  pin — the round-3 outbox suite configures the dispatcher's breaker with
+  pin: the round-3 outbox suite configures the dispatcher's breaker with
   breaker 2.0.1's own `CircuitBreakerConfig`/`BackoffStrategy` types).
 - New dependencies (exact-pinned estate kits): config-kit, idempotency-kit,
   outbox-kit, percentile-kit, chaos-kit, metrics-kit, webhookkit; dev-deps
   `hmac`/`sha2` to compute the webhook signatures webhookkit verifies.
 - Round 4 adds (exact-pinned estate kits): telemetry-init 0.1.0 (default
   features; `otlp` stays off), worker-kit 0.1.0 (`default-features =
-  false`, features `leader` — the default `breaker` feature forces
+  false`, features `leader`: the default `breaker` feature forces
   breaker's `timeout` feature graph-wide and breaks outbox-kit 0.1.0's
   compile; see the README round-4 findings), shutdown-kit 0.3.0;
   metrics-kit 0.1.0 was already pinned.
@@ -134,7 +134,7 @@ Changelog](https://keepachangelog.com/) — versions follow [semver](https://sem
   crates.io API): clock-kit 0.1.0 (`tsc` feature), book-kit 0.1.0,
   wire-kit 0.1.0, hw-kit 0.1.0 (`libc` feature), uring-kit 0.1.0,
   ledger-kit 0.1.0 (default: audit+outbox), policy-kit 0.1.0 (default:
-  json), fetch-kit 0.2.0 (default: json+rustls-tls+retry — hermetic);
+  json), fetch-kit 0.2.0 (default: json+rustls-tls+retry: hermetic);
   plus `http` 1 and a renamed `reqwest-edge` (=0.13) dependency for the
   fetch-kit middleware seam (see the README round-5 findings).
 

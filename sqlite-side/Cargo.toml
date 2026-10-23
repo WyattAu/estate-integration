@@ -1,0 +1,57 @@
+[package]
+name = "estate-integration-sqlite-side"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+
+# A second composition crate, deliberately NOT a workspace member.
+#
+# Why this exists: `rusqlite` links the native `sqlite3` library, so a cargo
+# graph can hold exactly one `rusqlite` major. The root crate composes
+# `eventbus-kit` on rusqlite 0.32, and the signalkit family needs rusqlite
+# 0.40. Both are estate crates and both are correct; they simply cannot be
+# resolved together, and the conflict is only visible when something tries.
+#
+# The finding was produced by attempting to compose `skillkit` 0.1.1, which
+# depends on `signalkit-integrity ^0.1.0` -> rusqlite ^0.40, alongside the
+# root crate's eventbus-kit. The failure is structural, not a version bump:
+# no published pair of these crates resolves today.
+#
+# Consequences:
+# - this directory has its OWN Cargo.lock and target dir, so the two sides
+#   never negotiate;
+# - suites here cover the crates that cannot live in the root graph;
+# - `estate-audit` reads this manifest as a second consumer
+#   (`WyattAu/estate-integration@HEAD:sqlite-side`), so the pins below count
+#   as composition for coverage purposes.
+
+[dependencies]
+signalkit = "=0.1.0"
+signalkit-core = "=0.1.2"
+signalkit-integrity = "=0.2.7"
+trendkit-core = "=0.3.1"
+trendkit-profile = "=0.3.0"
+skillkit-core = "=0.1.0"   # the `skillkit` and `trendkit` facades are CLIs with no lib target
+skillkit-store = "=0.1.0"
+# The clock is injected into the engine so collection is deterministic.
+clock-kit = "=0.1.0"
+
+[dev-dependencies]
+# The same CAS skillkit-store delegates to, so the round-trip test reads blobs
+# through the crate's own access path rather than guessing the shard layout.
+cas-kit = "=0.2.1"
+
+# `TrendSource::collect` is async-fn-in-trait and deliberately not `Send`, so a
+# single-threaded block_on is the right executor for it.
+futures = "0.3"
+
+[lints.rust]
+missing_docs = "deny"
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
