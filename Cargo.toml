@@ -102,7 +102,7 @@ sheet-xlsx = "=0.1.2"                     # tests/spreadsheet_diff.rs (xlsx roun
 # Round 22: the month-end close — statements matched against a real ledger.
 recon-kit = "=0.1.0"                      # tests/month_close.rs (the matching engine)
 # Round 23: the reporting layer — trial balance and aging over the close.
-report-kit = "=0.1.0"                     # tests/reporting.rs (trial balance + aging)
+report-kit = "=0.2.1"                     # tests/reporting.rs (trial balance + aging)
 # Round 24: the OFX adapter — a real bank file feeding the matching engine.
 statement-ofx = "=0.1.0"                  # tests/ofx_close.rs (parse OFX, reconcile)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.

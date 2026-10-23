@@ -6168,9 +6168,9 @@ dependencies = [
 
 [[package]]
 name = "report-kit"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89ae7d0bc6d63e644b0f3b4485b5f9a58569eaecddea598bfd967f5696b207dc"
+checksum = "23c4dba4dd721f6440dfe9a0aa0d6738548941454922b071e5b1d2e0e266928f"
 dependencies = [
  "double-entry",
 ]

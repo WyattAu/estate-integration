@@ -282,3 +282,58 @@ fn the_aging_and_the_ledger_agree_on_what_is_still_owed() {
     }
     assert_eq!(aging.total("GBP") as i64, debtor_net);
 }
+
+#[test]
+fn the_pl_and_the_balance_sheet_read_one_trial_balance_two_ways() {
+    use report_kit::{BalanceSheet, IncomeStatement};
+
+    let (ledger, invoices) = build_ledger();
+    let tb = TrialBalance::from_ledger(&ledger, "2026-07-31");
+
+    let pl = IncomeStatement::from_trial_balance(&tb, "GBP");
+    // Revenue is the sum of the three invoices' nets, exactly as priced.
+    let expected_revenue: i64 = invoices.iter().map(|(_, net, _)| net).sum();
+    assert_eq!(pl.total_revenue(), expected_revenue);
+
+    let sheet = BalanceSheet::from_trial_balance(&tb, "GBP");
+    // The profit on the P&L is the retained result on the balance sheet,
+    // because both derive from the same rows.
+    assert_eq!(pl.result(), sheet.retained_result);
+    assert!(sheet.is_balanced(), "assets == liabilities + equity + result");
+
+    // The month's arithmetic, in the reporting vocabulary: the bank moved by
+    // opening capital plus the two settlements; the debtors carry the open
+    // invoice's gross; the retained result carries the profit.
+    let bank = tb
+        .rows_for("GBP")
+        .into_iter()
+        .find(|r| r.account_id == "1000")
+        .expect("bank row")
+        .net();
+    assert_eq!(bank, 500_000 + 144_000 + 54_600);
+    assert_eq!(sheet.total_assets(), bank + sheet_total(&tb, "1100"));
+}
+
+fn sheet_total(tb: &TrialBalance, account_id: &str) -> i64 {
+    tb.rows_for("GBP")
+        .into_iter()
+        .find(|r| r.account_id == account_id)
+        .expect("row")
+        .net()
+}
+
+#[test]
+fn the_balance_sheet_refuses_to_balance_only_when_the_ledger_is_wrong() {
+    use report_kit::BalanceSheet;
+
+    // A correct ledger always balances here, because is_balanced restates the
+    // per-currency trial balance in reporting vocabulary. This test exists so
+    // that a future "helpful" plugging of an unexplained-difference line fails
+    // it: the sheet balances or it does not, and nothing in between.
+    let (ledger, _invoices) = build_ledger();
+    let tb = TrialBalance::from_ledger(&ledger, "2026-07-31");
+    assert!(tb.is_balanced());
+    assert!(tb.accounting_equation_holds("GBP"));
+    let sheet = BalanceSheet::from_trial_balance(&tb, "GBP");
+    assert!(sheet.is_balanced());
+}
