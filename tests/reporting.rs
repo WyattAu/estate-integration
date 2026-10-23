@@ -299,7 +299,10 @@ fn the_pl_and_the_balance_sheet_read_one_trial_balance_two_ways() {
     // The profit on the P&L is the retained result on the balance sheet,
     // because both derive from the same rows.
     assert_eq!(pl.result(), sheet.retained_result);
-    assert!(sheet.is_balanced(), "assets == liabilities + equity + result");
+    assert!(
+        sheet.is_balanced(),
+        "assets == liabilities + equity + result"
+    );
 
     // The month's arithmetic, in the reporting vocabulary: the bank moved by
     // opening capital plus the two settlements; the debtors carry the open
