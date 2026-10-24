@@ -28,15 +28,14 @@ dependencies = [
 
 [[package]]
 name = "accessctl"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54b175b234b448e9038b0713514349c5af4340d79e47e79f153b4a438dc4735c"
+checksum = "86d715b80801bd4e5c3ba81cb74d606dcb695ea506f282757c61b51d0e1469ac"
 dependencies = [
  "cedar-policy",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "tokio",
 ]
 
 [[package]]
@@ -1313,9 +1312,9 @@ dependencies = [
 
 [[package]]
 name = "comfyui-kit"
-version = "0.2.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f368429435f78be7f8bdab21c77cff909ae43144d973a6a61e052e731714f21c"
+checksum = "f65a0055312c6f234fb0d4566e3c705f6aa3a4db6c84466ec81a257e819c841d"
 dependencies = [
  "fetch-kit",
  "futures-util",
@@ -4013,14 +4012,12 @@ dependencies = [
 
 [[package]]
 name = "json-envelope"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "919e78072b3121643560300f9a3aaf31353de020d0169113cfa0a7b7724d0027"
+checksum = "097e43a3bf6a7a47f5c24fc91729fbedb5e60fe291e3569f7f425d3b38bf8cf4"
 dependencies = [
- "http",
  "serde",
  "serde_json",
- "thiserror 2.0.21",
 ]
 
 [[package]]

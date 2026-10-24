@@ -26,7 +26,7 @@ version = "0.6.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.accessctl]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.accesskit]]
@@ -478,7 +478,7 @@ version = "4.6.9"
 criteria = "safe-to-deploy"
 
 [[exemptions.comfyui-kit]]
-version = "0.2.0"
+version = "0.2.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.compression-codecs]]
@@ -1330,7 +1330,7 @@ version = "0.3.106"
 criteria = "safe-to-deploy"
 
 [[exemptions.json-envelope]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.jsonschema]]
@@ -2098,7 +2098,7 @@ version = "0.12.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.report-kit]]
-version = "0.1.0"
+version = "0.2.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.reqwest]]
