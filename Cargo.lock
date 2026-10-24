@@ -931,9 +931,9 @@ dependencies = [
 
 [[package]]
 name = "cas-kit"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27854f776b6d7aed89b4b62c342a760d56149bdf6c2b8ade87e2d53aa4e4e45b"
+checksum = "7a673695c2d341833e360ea6abb7abf470989408dfff9edcb3c16f389e928da9"
 dependencies = [
  "blake3",
  "clap",
@@ -1320,9 +1320,9 @@ checksum = "2ebdda89edc534bf8d5dd2857562633b6495557e5846552ade994b99ed13c36a"
 
 [[package]]
 name = "config-kit"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75ea96e6d3e7083ddeed81d93bfe57e3d66b85f94f62c33f8d91e7546c9fc1bd"
+checksum = "4c6fc7f8b9c8a627da283c35cdc8043b50da2f7ac9564306cecbb77d8b689a69"
 dependencies = [
  "serde",
  "serde_ignored",
@@ -1466,9 +1466,9 @@ dependencies = [
 
 [[package]]
 name = "crdts-kit"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f96bd3d594bd89039d6716932f560f581fbf2e6617d46d7c2c180f11a4767957"
+checksum = "08e1bcc026faf31c7fe1d621c20accb080e7de99409a3ca926952936a737cef0"
 dependencies = [
  "uuid",
 ]
@@ -1771,9 +1771,9 @@ checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
 
 [[package]]
 name = "decimal-money"
-version = "1.1.1"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25ad7be141f67e1f31af099aa59071b8ab847a132a73a73a1bd0255dec63a9ed"
+checksum = "f6688d2995126cfae4178a4f644eba6e33c9ecbc4d7e80d723564d7141e41e82"
 dependencies = [
  "rust_decimal",
  "serde",
@@ -2345,14 +2345,12 @@ dependencies = [
 
 [[package]]
 name = "error-codes"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bf3340918eaec05cb9264ca0465bace779c5e99ddc00cf7367620351c13bf52"
+checksum = "56a241b5268fd0ce0bcdd5aca9b067e6a549d8216eb05c6aec907a919166c114"
 dependencies = [
- "axum",
  "serde",
  "serde_json",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -2675,9 +2673,9 @@ checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
 
 [[package]]
 name = "flag-kit"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "095b7176f67ad4e45b974713ae74d03045063255f6666dea4b9908cf08e46910"
+checksum = "ce99ab21bc03f2c3af185f5923b0cf97fc96e1a8cdb174b3b0b35b7977542956"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4444,9 +4442,9 @@ dependencies = [
 
 [[package]]
 name = "mailkit"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "952ee981d0d865138a7e44bd7788608d6aa1a1fab480052bb474b29c8400468d"
+checksum = "3f286e51b33400e5102fa5f0d2a31aa536094a2e0926a92a8b86b83ccf731f78"
 dependencies = [
  "chrono",
  "reqwest 0.12.28",
@@ -4509,9 +4507,9 @@ dependencies = [
 
 [[package]]
 name = "media-kit"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f643499833fa5d0ee466cd1d0251835d5fe7f6c2674ba2c49459be3d23f75513"
+checksum = "3015ca23719ff286d8f08872dd793437b86202b57539a48397beb1b5f60747b3"
 dependencies = [
  "image",
  "kamadak-exif",
@@ -4536,9 +4534,9 @@ dependencies = [
 
 [[package]]
 name = "metrics-kit"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71555c355c34727dafcea9a2b9bf1d7592c4de055750f8a1e61f77d18f49d7cd"
+checksum = "f5f6040b0ee54a30bed9114814f3b9106591de2e2941e386e548b5887b5e731c"
 
 [[package]]
 name = "micromap"
@@ -4614,9 +4612,9 @@ dependencies = [
 
 [[package]]
 name = "model-router"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d970fdc4ef6fd660fa95e37ada0d79922a4aa28aaf6d760e30c068ddc2a3d033"
+checksum = "d5cf0dcd944fa54d0161219cbb6a7e5995ac6d910f21e8f4d71d6ed5904d8296"
 dependencies = [
  "thiserror 2.0.21",
 ]
@@ -4924,9 +4922,9 @@ dependencies = [
 
 [[package]]
 name = "oauth-toolkit"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ea48864f3a75baa9ca0235319604200c8b04de04389cb9f18dbc7ee5804daf9"
+checksum = "347aee1755785a096302d42770e6427555ac0bef6ddb09f8e26b0bd62ff87ce8"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5144,9 +5142,9 @@ dependencies = [
 
 [[package]]
 name = "otelkit"
-version = "2.2.2"
+version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f53fa3bc7c8f1aa32e94535920b407516241f7e20b5616cb8a19ea1da0aca311"
+checksum = "c33214e453c082361b171b4107af06a7abb0b2c00a250199796b182f0e351324"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
@@ -5321,9 +5319,9 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
 name = "percentile-kit"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "821537297c1e1bf92068a5dec6a70a079dd576aaf2b017fdcaf9c057300e415e"
+checksum = "9590f40b4da883fd7b0717a5191ac31be50eaf506f01b3eab87b6b6a6f2bbb68"
 dependencies = [
  "serde",
  "serde_json",
@@ -6924,9 +6922,9 @@ dependencies = [
 
 [[package]]
 name = "shared-state"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ffd96462eb99c4d0ff04faf778f25818611c8c0969aab276af78728d222e866"
+checksum = "cb7229d449530fc7427220f5abac08cc7eebbc99ee0f0b60b2d2172d0fd0c46f"
 dependencies = [
  "dashmap",
  "loom",
@@ -6969,9 +6967,9 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "shm-rings"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f3987760ccc72fbebe599d447e494384e16d6aa2183ffc16f56cd207194a0fa"
+checksum = "bb6e9b901c8f965ea947e85b45bcfc0afa0a81b24ad1c7e4075714bff90127e3"
 dependencies = [
  "memmap2",
  "thiserror 2.0.21",
@@ -7049,9 +7047,9 @@ checksum = "3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea"
 
 [[package]]
 name = "simd-tokenizer"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55429694ed3e1e8a4d9395d2ffe9a769f112118cef76843b5eddc0a315beeb01"
+checksum = "ed6ca8ba4e21c07cd5bfd0616236ff5a7e6c036a4d6b953713b40b2d20fe14a4"
 dependencies = [
  "thiserror 2.0.21",
 ]
@@ -7117,9 +7115,9 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
 name = "slab-pool"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc64d989e4c609452da794175b29987139c3f0053d40f0f44974d8e91f1382f3"
+checksum = "a2a4d29aa68f0b6fce653e8a19cb9bedfdfe1bf88c2c1f83421d34a964e6d925"
 dependencies = [
  "thiserror 2.0.21",
 ]
@@ -7600,9 +7598,9 @@ checksum = "7b2093cf4c8eb1e67749a6762251bc9cd836b6fc171623bd0a9d324d37af2417"
 
 [[package]]
 name = "tamper-audit"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2d0598746514e1bece1b57f7851e0093b01c5d850b95419343cdc1cd283a629"
+checksum = "29ff010c4d204faa810e6d5388a19c83e5f5e9954e67b86b8ed42733ce1814c9"
 dependencies = [
  "async-trait",
  "chrono",
@@ -7775,9 +7773,9 @@ dependencies = [
 
 [[package]]
 name = "telemetry-init"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52cb1c9bacfc3f43e08b28fe53f4da93d2a4e9ef885424572857a01c5a242e74"
+checksum = "1bb0d9d78345b455550875437c1f40f66f84bc551b9cc12b049529080360c472"
 dependencies = [
  "metrics-kit",
  "thiserror 2.0.21",
@@ -7891,9 +7889,9 @@ dependencies = [
 
 [[package]]
 name = "throttle-kit"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0650b79f485a7f77ac7d8e31eb541083a18f1546579e73d964f84b71a125b155"
+checksum = "78535cfa0aeec475746060d85bd62409bf9724dc371cc5741fed6bb316b96cdd"
 dependencies = [
  "axum",
  "dashmap",
@@ -8521,11 +8519,10 @@ checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
 
 [[package]]
 name = "typed-id-derive"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1977f15560f9c296514fb778f78134053fc538753dd4a2dc39fef920ff2de3df"
+checksum = "9fdb5a3c12220549551e0f732cf82829e53fde2971a52b40c9414aa2a7ac3e25"
 dependencies = [
- "proc-macro2",
  "quote",
  "syn 2.0.119",
 ]
@@ -8585,9 +8582,9 @@ dependencies = [
 
 [[package]]
 name = "uds-kit"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34e27890848b2cb9e8be2a0f3a7655087de42fecbbc2016812f13d3e20f9cb1a"
+checksum = "cb577b048eee76de5624316d84536e99416020d5731869390fdbe0fc26759dca"
 dependencies = [
  "thiserror 2.0.21",
  "tokio",
@@ -8787,9 +8784,9 @@ dependencies = [
 
 [[package]]
 name = "validkit"
-version = "1.3.2"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c52730f2e15086179a2b8f70274d55148fdb81c189195e46cd7a9de6385c4f0"
+checksum = "5be8b1a32ae6243f008f6001fb73f8aa9016a46385f583518f07c5d248d0cdd2"
 dependencies = [
  "serde",
  "thiserror 2.0.21",
@@ -9086,9 +9083,9 @@ dependencies = [
 
 [[package]]
 name = "webauthn-kit"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e933dbfca7a1065e00d236cbec8bf619e162fb47a35323bf4d951d4d82cb3059"
+checksum = "1d2cf2b5e6ce60ce2da1ce0b9409564589d4be9b5151df343ec811c0616cacc9"
 dependencies = [
  "base64 0.22.1",
  "ciborium",
