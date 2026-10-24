@@ -131,7 +131,7 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 accessctl = { version = "=0.1.3", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.1"                     # tests/auth_provision.rs (hash-linked audit chain)
-ws-kit = "=1.0.0"                           # tests/auth_provision.rs (typed WS transport)
+ws-kit = "=1.0.1"                           # tests/auth_provision.rs (typed WS transport)
 ws-barbican = "=0.1.4"                      # tests/auth_provision.rs (token from header/query/cookie)
 
 # --- round 9: collaborative documents + publication -----------------------

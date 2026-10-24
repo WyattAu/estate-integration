@@ -9506,9 +9506,9 @@ dependencies = [
 
 [[package]]
 name = "ws-kit"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf0b3ede85a9d5c812987bbe4f8eb5e70f5bc0977a5ff8e5860bcb254762f5e7"
+checksum = "b17380650506e3dedb0d8d7ad31ba09ef12e5df805662d478a437cf1624c06a5"
 dependencies = [
  "axum",
  "bytes",
