@@ -2427,6 +2427,7 @@ dependencies = [
  "invoice-kit",
  "json-envelope",
  "ledger-kit",
+ "ledger-pg",
  "loop-retry",
  "mail-sync-kit",
  "mailkit",
@@ -4183,6 +4184,17 @@ dependencies = [
  "tamper-audit",
  "thiserror 2.0.21",
  "uuid",
+]
+
+[[package]]
+name = "ledger-pg"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4f6a7525110e7bfe5bfbf1b43eaaa81536af20fc47bedf11887325a67b2b8a1"
+dependencies = [
+ "double-entry",
+ "sqlx",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
