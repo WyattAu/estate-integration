@@ -57,8 +57,8 @@ loop-retry = "=0.1.1"                          # round 6 (transitive via fetch-k
 
 # --- round 3: dogfooding the 2026-09-16 kit wave -----------------------------
 # Each pin names the suite that exercises it (tests/).
-config-kit = "=0.1.2"                        # tests/config_secrets.rs
-idempotency-kit = "=0.1.0"                   # tests/idempotent_webhook.rs (default: memory)
+config-kit = "=1.0.0"                        # tests/config_secrets.rs
+idempotency-kit = "=1.0.0"                   # tests/idempotent_webhook.rs (default: memory)
 # outbox-kit 0.2.0 — the pin that used to be held at 0.1.0. ledger-kit
 # 0.1.1 declares `outbox-kit = "^0.2"`, so one graph now holds a single
 # major and the durable-journal suite runs on the current release. See the
@@ -85,7 +85,7 @@ book-kit = "=0.1.0"                          # tests/book_feed.rs
 wire-kit = "=0.1.0"                          # tests/book_feed.rs
 hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
 uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
-ledger-kit = "=1.0.0"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
+ledger-kit = "=1.0.1"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
 
 # --- round 6: the accounting core -------------------------------------------
 # decimal-money is ledger-kit's own money type (re-exported as

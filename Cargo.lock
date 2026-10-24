@@ -1094,7 +1094,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8255541bf8472c0da7ebee4462b248217d068b3d33418b9507ce29ee1ad5becc"
 dependencies = [
- "config-kit",
+ "config-kit 0.1.2",
  "serde",
  "thiserror 2.0.21",
 ]
@@ -1323,6 +1323,19 @@ name = "config-kit"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c6fc7f8b9c8a627da283c35cdc8043b50da2f7ac9564306cecbb77d8b689a69"
+dependencies = [
+ "serde",
+ "serde_ignored",
+ "serde_path_to_error",
+ "thiserror 2.0.21",
+ "toml 1.1.8+spec-1.1.0",
+]
+
+[[package]]
+name = "config-kit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcfa8c09f928294b59a4341f5e4ab932dd31769140929ea16d3288f771c423e2"
 dependencies = [
  "serde",
  "serde_ignored",
@@ -2387,7 +2400,7 @@ dependencies = [
  "clock-kit",
  "color-kit",
  "comfyui-kit",
- "config-kit",
+ "config-kit 1.0.0",
  "contact-miner",
  "crdts-kit",
  "cryptkit",
@@ -2421,7 +2434,7 @@ dependencies = [
  "hw-kit",
  "i18n-kit",
  "id3-core",
- "idempotency-kit",
+ "idempotency-kit 1.0.0",
  "image",
  "input-kit",
  "invoice-kit",
@@ -3630,6 +3643,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "idempotency-kit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d681483e5aad9583542d99537fbaa60a0b55aa1c8b2f9ca1b1439a9ded70b5fb"
+dependencies = [
+ "async-trait",
+ "blake3",
+ "dashmap",
+ "hex",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4181,13 +4207,13 @@ dependencies = [
 
 [[package]]
 name = "ledger-kit"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d15fdd15f95521007f5860817604993cb3b56f98d77aac3e1cfe19e90ce64ce7"
+checksum = "2c9bfbad3fc23a038fd3350c38d7f3e2acf6929a362785a7a386fa840695186b"
 dependencies = [
  "async-trait",
  "decimal-money",
- "idempotency-kit",
+ "idempotency-kit 1.0.0",
  "outbox-kit",
  "serde_json",
  "tamper-audit",
@@ -9105,7 +9131,7 @@ checksum = "09194f57213d2ce2bde946e789d66e4f41ce6bd1feb2725f72631b96c31eafe8"
 dependencies = [
  "hex",
  "hmac 0.13.0",
- "idempotency-kit",
+ "idempotency-kit 0.1.0",
  "serde_json",
  "sha2 0.11.1",
  "subtle",
