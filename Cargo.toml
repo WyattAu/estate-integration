@@ -25,7 +25,7 @@ errcode = []
 # artifacts interoperate, so every failure is attributable to a real drift
 # between crates, not to a moving dependency.
 salting = "=2.0.0"
-tokenkit = { version = "=0.4.1", features = ["revocation", "rotation"] }
+tokenkit = { version = "=1.0.0", features = ["revocation", "rotation"] }
 validkit = "=1.3.1"
 barbican = "=0.2.2"
 # 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
