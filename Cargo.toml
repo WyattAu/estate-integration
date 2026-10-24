@@ -27,7 +27,7 @@ errcode = []
 salting = "=2.0.0"
 tokenkit = { version = "=0.4.1", features = ["revocation", "rotation"] }
 validkit = "=1.3.1"
-barbican = "=0.2.1"
+barbican = "=0.2.2"
 # 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
 # NOTE: the `timeout` feature is deliberately OFF — see tests/outbox_dispatch.rs
 # and the README findings: outbox-kit 0.1.0's dispatcher match on
@@ -85,7 +85,7 @@ book-kit = "=0.1.0"                          # tests/book_feed.rs
 wire-kit = "=0.1.0"                          # tests/book_feed.rs
 hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
 uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
-ledger-kit = "=0.1.1"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
+ledger-kit = "=1.0.0"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
 
 # --- round 6: the accounting core -------------------------------------------
 # decimal-money is ledger-kit's own money type (re-exported as
@@ -107,8 +107,8 @@ report-kit = "=0.2.1"                     # tests/reporting.rs (trial balance + 
 statement-ofx = "=0.1.0"                  # tests/ofx_close.rs (parse OFX, reconcile)
 statement-camt = "=0.1.0"                 # tests/camt_close.rs (ISO 20022 close)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.
-vat-return = "=0.1.0"                     # tests/vat_period.rs (the quarter's boxes)
-invoice-kit = "=0.2.1"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
+vat-return = "=0.1.1"                     # tests/vat_period.rs (the quarter's boxes)
+invoice-kit = "=1.0.0"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.1"                       # tests/payable.rs (AP: recoverability, three-way split)
 double-entry = "=0.1.0"                    # tests/accounting_core.rs (the accounting core)
@@ -131,7 +131,7 @@ accessctl = { version = "=0.1.1", features = ["cedar"] }  # tests/auth_provision
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.1"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=0.4.2"                           # tests/auth_provision.rs (typed WS transport)
-ws-barbican = "=0.1.2"                      # tests/auth_provision.rs (token from header/query/cookie)
+ws-barbican = "=0.1.3"                      # tests/auth_provision.rs (token from header/query/cookie)
 
 # --- round 9: collaborative documents + publication -----------------------
 # Five crates that had no composed suite. The centre of gravity is
@@ -185,7 +185,7 @@ oauth-toolkit = "=0.4.0"                 # tests/crypto_auth.rs (PKCE vs RFC 763
 multi-chain-wallet = "=0.3.0"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
-fetch-kit = "=0.2.0"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
+fetch-kit = "=0.2.1"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
 # built on reqwest 0.13, while the workspace's other reqwest consumers
 # (axum-stack-era suites, wiremock hosts) stay on 0.12 — the two majors

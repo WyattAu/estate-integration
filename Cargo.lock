@@ -501,29 +501,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-extra"
-version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9963ff19f40c6102c76756ef0a46004c0d58957d87259fc9208ff8441c12ab96"
-dependencies = [
- "axum",
- "axum-core",
- "bytes",
- "futures-util",
- "headers",
- "http",
- "http-body",
- "http-body-util",
- "mime",
- "pin-project-lite",
- "rustversion",
- "serde_core",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
 name = "axum-stack"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -552,21 +529,17 @@ dependencies = [
 
 [[package]]
 name = "barbican"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "584b10038fd1c2d372e3265607126e01cffbf6508f4cc7074f3c59033e489629"
+checksum = "f9de1f81d16f52b7e7218e3980308eee8a36d46a94018ccb7265ebef2698566c"
 dependencies = [
  "axum",
- "axum-extra",
  "http",
- "pin-project-lite",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "tokenkit 0.1.1",
+ "tokenkit",
  "tower",
- "tower-layer",
- "tower-service",
  "tracing",
 ]
 
@@ -1110,7 +1083,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "tokenkit 0.4.1",
+ "tokenkit",
  "uuid",
 ]
 
@@ -2502,7 +2475,7 @@ dependencies = [
  "theme-kit",
  "thiserror 2.0.21",
  "throttle-kit",
- "tokenkit 0.4.1",
+ "tokenkit",
  "tokio",
  "toml 1.1.8+spec-1.1.0",
  "tower",
@@ -2524,7 +2497,7 @@ dependencies = [
  "wiremock",
  "worker-kit",
  "ws-barbican",
- "ws-kit 0.4.2",
+ "ws-kit",
  "xcp-core",
 ]
 
@@ -2645,9 +2618,9 @@ checksum = "b97b65636e5b9ef369943878ac74335ba1c55c1cb6adbf1e2c293c624248d693"
 
 [[package]]
 name = "fetch-kit"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef93544fff3c46c9865f0f3c9c04c234d7dd958c4ee09e4e46626e5ff2dbb403"
+checksum = "632e4f4123ccf989bc714d2a95a92b2fcb29bbb27910a78080e2797201885c9a"
 dependencies = [
  "async-trait",
  "http",
@@ -3245,30 +3218,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "headers"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc2700e3fe555c3310aa7286cac6167449f2c87e0eb58769c9208a1c58a1d106"
-dependencies = [
- "base64 0.22.1",
- "bytes",
- "headers-core",
- "http",
- "httpdate",
- "mime",
- "sha1",
-]
-
-[[package]]
-name = "headers-core"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54b4a22553d4242c49fddb9ba998a99962b5cc6f22cb5a3482bec22522403ce4"
-dependencies = [
- "http",
-]
-
-[[package]]
 name = "healthkit"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3821,9 +3770,9 @@ dependencies = [
 
 [[package]]
 name = "invoice-kit"
-version = "0.2.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d0b216b0f3c0c10030c78416792f366de31e366a0f1b00438c0b69bd3b34132"
+checksum = "f1093a8d7495d775be03195bee0f18f4865ea4953e090a13b028efc390e7b16b"
 dependencies = [
  "double-entry",
  "sha2 0.10.9",
@@ -4212,9 +4161,9 @@ dependencies = [
 
 [[package]]
 name = "ledger-kit"
-version = "0.1.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c235f29a2745ccad3a9f65fafb9fade9a2e3f03efded9f1bcb5e84d4a7414657"
+checksum = "d15fdd15f95521007f5860817604993cb3b56f98d77aac3e1cfe19e90ce64ce7"
 dependencies = [
  "async-trait",
  "decimal-money",
@@ -7982,21 +7931,6 @@ checksum = "fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee"
 
 [[package]]
 name = "tokenkit"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "420028108ec323158bc362a0ae53a5606b0f2c1fbd98fadd3e8e71034a120e4f"
-dependencies = [
- "chrono",
- "jsonwebtoken 9.3.1",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "uuid",
- "zeroize",
-]
-
-[[package]]
-name = "tokenkit"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e812d02a90e6360c8e443091b3b196a2114cdd384dc52e5865c3e0e1fa23eb4"
@@ -8859,9 +8793,9 @@ checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
 
 [[package]]
 name = "vat-return"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fff7964e57df48b5bb60e2cd0a9cc901bcc115a2c533299b44abde9e71ea791f"
+checksum = "d0c36ce1715b3f5fc8d7b8388c283543998fabb05327c06e2721b436bcb8e0aa"
 dependencies = [
  "ap-kit",
  "invoice-kit",
@@ -9545,36 +9479,17 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "ws-barbican"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "545c199ca462fc52f3b003e24caa1fd85e845658a68bc43d26871cbf813a6443"
+checksum = "f139c8e2b73e0b0f2d6bbb31a758661520164e5a408e9365d9e21edc4a5f3731"
 dependencies = [
  "axum",
  "barbican",
  "http",
  "serde",
- "tokenkit 0.1.1",
+ "tokenkit",
  "tokio",
- "ws-kit 0.3.0",
-]
-
-[[package]]
-name = "ws-kit"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acc2480c9636f5b4a2622d7108fdfd022d727d669091363fd76b1eb2d6bde7d0"
-dependencies = [
- "axum",
- "dashmap",
- "futures",
- "http",
- "loom",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "tokio",
- "tower",
- "uuid",
+ "ws-kit",
 ]
 
 [[package]]
