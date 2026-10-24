@@ -20,23 +20,31 @@
 //!    tables use. A 2.5 tie pins both behaviors: half-up rounds away to 3,
 //!    half-even rounds to the even 2.
 
-use double_entry::{
-    currencies, Account, AccountType, Amount, JournalEntry, Ledger, Line,
-};
+use double_entry::{currencies, Account, AccountType, Amount, JournalEntry, Ledger, Line};
 use fx_kit::{revalue, MonetaryItem, Rate};
 use vat_rules::TieMode;
 
 fn chart() -> Ledger {
     let mut ledger = Ledger::new();
-    ledger.add_account(Account::new("1200", "Accounts receivable", AccountType::Asset));
-    ledger.add_account(Account::new("6900", "Exchange gain/loss", AccountType::Revenue));
+    ledger.add_account(Account::new(
+        "1200",
+        "Accounts receivable",
+        AccountType::Asset,
+    ));
+    ledger.add_account(Account::new(
+        "6900",
+        "Exchange gain/loss",
+        AccountType::Revenue,
+    ));
     ledger
 }
 
 fn post(ledger: &mut Ledger, id: &str, date: &str, lines: Vec<Line>) {
     let version = ledger.version();
     let entry = JournalEntry::draft(id, date, "2026-10", lines);
-    ledger.post(&entry, version).expect("the revaluation posting balances");
+    ledger
+        .post(&entry, version)
+        .expect("the revaluation posting balances");
 }
 
 fn usd_item(foreign_minor: i64, booked_base_minor: i64) -> MonetaryItem {
@@ -68,11 +76,20 @@ fn a_revaluation_difference_posts_and_balances() {
         "FX-1",
         "2026-10-31",
         vec![
-            Line::debit("1200", Amount::minor(entry.difference_minor, currencies::EUR)),
-            Line::credit("6900", Amount::minor(entry.difference_minor, currencies::EUR)),
+            Line::debit(
+                "1200",
+                Amount::minor(entry.difference_minor, currencies::EUR),
+            ),
+            Line::credit(
+                "6900",
+                Amount::minor(entry.difference_minor, currencies::EUR),
+            ),
         ],
     );
-    assert_eq!(ledger.balance(&double_entry::AccountId::new("1200")), 50_000);
+    assert_eq!(
+        ledger.balance(&double_entry::AccountId::new("1200")),
+        50_000
+    );
 }
 
 #[test]
@@ -130,17 +147,20 @@ fn signs_follow_the_item_a_payable_weakening_is_a_loss() {
     rates.insert("USD".to_string(), Rate::parse("0.95").expect("parses"));
     let report = revalue(&items, &rates, "EUR", TieMode::HalfUp).expect("revalues");
     let entry = report.entries.first().expect("entry");
-    assert_eq!(entry.difference_minor, -50_000, "the payable's restatement is a loss");
+    assert_eq!(
+        entry.difference_minor, -50_000,
+        "the payable's restatement is a loss"
+    );
 }
 
 #[test]
 fn the_note_shows_the_per_currency_split_not_just_the_net() {
     let items = vec![
-        usd_item(1_000_000, 900_000),           // USD: +50_000 gain
+        usd_item(1_000_000, 900_000), // USD: +50_000 gain
         MonetaryItem {
             foreign_minor: 1_000_000,
             currency: "JPY".to_string(),
-            booked_base_minor: 7_000,           // booked at 0.007, closing 0.0067
+            booked_base_minor: 7_000, // booked at 0.007, closing 0.0067
         },
     ];
     let mut rates = std::collections::HashMap::new();
@@ -148,7 +168,10 @@ fn the_note_shows_the_per_currency_split_not_just_the_net() {
     rates.insert("JPY".to_string(), Rate::parse("0.0067").expect("parses"));
     let report = revalue(&items, &rates, "EUR", TieMode::HalfUp).expect("revalues");
 
-    assert_eq!(report.per_currency(), vec![("JPY".to_string(), -300), ("USD".to_string(), 50_000)]);
+    assert_eq!(
+        report.per_currency(),
+        vec![("JPY".to_string(), -300), ("USD".to_string(), 50_000)]
+    );
     assert_eq!(report.net_difference(), 49_700);
 }
 

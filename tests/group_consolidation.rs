@@ -33,9 +33,11 @@ fn eur(amount: i64) -> Amount {
 fn parent() -> TrialBalance {
     let mut ledger = Ledger::new();
     ledger.add_account(Account::new("1000", "Cash", AccountType::Asset));
-    ledger.add_account(
-        Account::new("1500", "Intercompany receivable", AccountType::Asset),
-    );
+    ledger.add_account(Account::new(
+        "1500",
+        "Intercompany receivable",
+        AccountType::Asset,
+    ));
     ledger.add_account(Account::new("3000", "Share capital", AccountType::Equity));
     post(
         &mut ledger,
@@ -60,9 +62,11 @@ fn parent() -> TrialBalance {
 fn sub() -> TrialBalance {
     let mut ledger = Ledger::new();
     ledger.add_account(Account::new("1000", "Cash", AccountType::Asset));
-    ledger.add_account(
-        Account::new("2500", "Intercompany payable", AccountType::Liability),
-    );
+    ledger.add_account(Account::new(
+        "2500",
+        "Intercompany payable",
+        AccountType::Liability,
+    ));
     ledger.add_account(Account::new("3000", "Share capital", AccountType::Equity));
     post(
         &mut ledger,
@@ -145,7 +149,9 @@ fn a_one_sided_position_fails_naming_the_missing_mirror() {
     positions.remove(1);
     let error = consolidate("EUR", &group(), &positions).expect_err("one-sided");
     match error {
-        group_kit::ConsolidationError::OneSidedIntercompany { lender, borrower, .. } => {
+        group_kit::ConsolidationError::OneSidedIntercompany {
+            lender, borrower, ..
+        } => {
             assert_eq!((lender.as_str(), borrower.as_str()), ("parent", "sub"));
         }
         other => panic!("wrong error: {other:?}"),
@@ -167,10 +173,16 @@ fn a_disagreement_fails_naming_both_books() {
 
 #[test]
 fn the_same_entity_twice_is_refused() {
-    let entities = vec![("parent".to_string(), parent()), ("parent".to_string(), parent())];
+    let entities = vec![
+        ("parent".to_string(), parent()),
+        ("parent".to_string(), parent()),
+    ];
     let error = consolidate("EUR", &entities, &loan_positions());
     assert!(
-        matches!(error, Err(group_kit::ConsolidationError::DuplicateEntity(_))),
+        matches!(
+            error,
+            Err(group_kit::ConsolidationError::DuplicateEntity(_))
+        ),
         "a duplicate entity is a caller bug, not a consolidation"
     );
 }
@@ -190,10 +202,16 @@ fn an_entity_row_off_the_group_currency_is_refused() {
             Line::credit("3000", Amount::minor(1_000, double_entry::currencies::USD)),
         ],
     );
-    let entities = vec![("overseas".to_string(), TrialBalance::from_ledger(&ledger, "2026-10-31"))];
+    let entities = vec![(
+        "overseas".to_string(),
+        TrialBalance::from_ledger(&ledger, "2026-10-31"),
+    )];
     let error = consolidate("EUR", &entities, &[]);
     assert!(
-        matches!(error, Err(group_kit::ConsolidationError::CurrencyMismatch { .. })),
+        matches!(
+            error,
+            Err(group_kit::ConsolidationError::CurrencyMismatch { .. })
+        ),
         "fx-kit owns restatement; the group close takes one currency"
     );
 }
