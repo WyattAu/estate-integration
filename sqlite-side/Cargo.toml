@@ -36,7 +36,7 @@ trendkit-profile = "=0.3.0"
 skillkit-core = "=0.1.0"   # the `skillkit` and `trendkit` facades are CLIs with no lib target
 skillkit-store = "=0.1.0"
 # The clock is injected into the engine so collection is deterministic.
-clock-kit = "=0.1.0"
+clock-kit = "=0.1.1"
 
 [dev-dependencies]
 # The same CAS skillkit-store delegates to, so the round-trip test reads blobs

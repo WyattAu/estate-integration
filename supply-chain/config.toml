@@ -18,7 +18,7 @@ version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.a2l-parse]]
-version = "0.1.0"
+version = "0.1.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.abnf-core]]
@@ -38,7 +38,7 @@ version = "0.25.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.actor-kit]]
-version = "0.2.5"
+version = "0.2.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.aead]]
@@ -210,11 +210,11 @@ version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.barbican]]
-version = "0.2.1"
+version = "0.2.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.barbican]]
-version = "0.2.3"
+version = "0.2.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.base16ct]]
@@ -238,7 +238,7 @@ version = "1.8.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.billing-kit]]
-version = "0.2.0"
+version = "0.2.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.bip32]]
@@ -274,7 +274,7 @@ version = "1.8.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.blobkit]]
-version = "0.4.2"
+version = "0.4.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.block-buffer]]
@@ -366,7 +366,7 @@ version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.can-core]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.cas-kit]]
@@ -454,7 +454,7 @@ version = "1.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.clock-kit]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.cmake]]
@@ -470,7 +470,7 @@ version = "0.3.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.color-kit]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.color_quant]]
@@ -658,7 +658,7 @@ version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.dbc-parse]]
-version = "0.1.0"
+version = "0.1.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.deadpool]]
@@ -750,7 +750,7 @@ version = "2.0.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.dsp-core]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.dsp-spectral]]
@@ -874,7 +874,7 @@ version = "0.5.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.eventbus-kit]]
-version = "0.4.0"
+version = "0.4.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.exponential-backoff]]
@@ -902,11 +902,11 @@ version = "0.4.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.fetch-kit]]
-version = "0.2.0"
+version = "0.2.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.fetch-kit]]
-version = "0.2.1"
+version = "0.2.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.ff]]
@@ -954,7 +954,7 @@ version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.font-parse]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.font-shape]]
@@ -970,7 +970,7 @@ version = "0.12.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.formula-lang]]
-version = "0.1.1"
+version = "0.1.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.fraction]]
@@ -1242,7 +1242,11 @@ version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.idempotency-kit]]
-version = "1.0.0"
+version = "1.0.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.idempotency-kit]]
+version = "1.0.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.ident_case]]
@@ -1782,7 +1786,7 @@ version = "2.2.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.outbox-kit]]
-version = "0.2.0"
+version = "0.2.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.outref]]
@@ -2394,7 +2398,7 @@ version = "0.1.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.sheet-core]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.sheet-engine]]
@@ -2402,11 +2406,11 @@ version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.sheet-xlsx]]
-version = "0.1.1"
+version = "0.1.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.sheet-xlsx]]
-version = "0.1.2"
+version = "0.1.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.shm-rings]]
@@ -2426,7 +2430,7 @@ version = "0.3.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.sieve-kit]]
-version = "0.2.1"
+version = "0.2.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.signal-hook-registry]]
@@ -2618,7 +2622,7 @@ version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.tamper-audit]]
-version = "0.2.2"
+version = "0.2.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.tantivy]]
@@ -2682,7 +2686,7 @@ version = "0.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.theme-kit]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.thiserror]]
@@ -3306,7 +3310,7 @@ version = "0.14.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.worker-kit]]
-version = "0.3.0"
+version = "0.3.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.writeable]]
@@ -3314,11 +3318,11 @@ version = "0.6.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.ws-barbican]]
-version = "0.1.2"
+version = "0.1.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.ws-barbican]]
-version = "0.1.4"
+version = "0.1.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.ws-kit]]
@@ -3334,7 +3338,7 @@ version = "0.18.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.xcp-core]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.yaml_serde]]

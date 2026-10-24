@@ -27,7 +27,7 @@ errcode = []
 salting = "=2.0.1"
 tokenkit = { version = "=1.0.1", features = ["revocation", "rotation"] }
 validkit = "=1.3.3"
-barbican = "=0.2.3"
+barbican = "=0.2.4"
 # 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
 # NOTE: the `timeout` feature is deliberately OFF — see tests/outbox_dispatch.rs
 # and the README findings: outbox-kit 0.1.0's dispatcher match on
@@ -38,12 +38,12 @@ healthkit = { version = "=1.3.2", features = ["axum"] }
 throttle-kit = { version = "=2.1.2", features = ["in-memory", "tower"] }
 otelkit = "=2.2.3"
 mailkit = { version = "=0.3.3", features = ["resend", "sendgrid"] }
-sieve-kit = "=0.2.1"
+sieve-kit = "=0.2.2"
 media-kit = "=0.2.2"
-blobkit = { version = "=0.4.2", features = ["memory", "std", "serde"] }
+blobkit = { version = "=0.4.3", features = ["memory", "std", "serde"] }
 cas-kit = { version = "=0.2.2", features = ["tokio"] }
 mail-sync-kit = "=0.1.1"
-eventbus-kit = { version = "=0.4.0", features = ["sqlite"] }
+eventbus-kit = { version = "=0.4.1", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
 # NOTE: `retry-backoff` was pinned here from round 1 and never used by any
 # suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
@@ -58,12 +58,12 @@ loop-retry = "=0.1.1"                          # round 6 (transitive via fetch-k
 # --- round 3: dogfooding the 2026-09-16 kit wave -----------------------------
 # Each pin names the suite that exercises it (tests/).
 config-kit = "=1.0.0"                        # tests/config_secrets.rs
-idempotency-kit = "=1.0.0"                   # tests/idempotent_webhook.rs (default: memory)
+idempotency-kit = "=1.0.1"                   # tests/idempotent_webhook.rs (default: memory)
 # outbox-kit 0.2.0 — the pin that used to be held at 0.1.0. ledger-kit
 # 0.1.1 declares `outbox-kit = "^0.2"`, so one graph now holds a single
 # major and the durable-journal suite runs on the current release. See the
 # README round-6 finding for what the hold was and what released it.
-outbox-kit = "=0.2.0"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
+outbox-kit = "=0.2.1"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
 percentile-kit = "=0.1.1"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.1"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=0.2.1"                       # tests/metrics_scrape.rs
@@ -76,11 +76,11 @@ telemetry-init = "=0.1.3"                    # tests/telemetry_bootstrap.rs (def
 # outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
 # E0004, verified). Same regression class as the round-3 finding; see the
 # README integration findings for the details and the ask.
-worker-kit = { version = "=0.3.0", default-features = false, features = ["leader"]  } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
+worker-kit = { version = "=0.3.1", default-features = false, features = ["leader"]  } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
 shutdown-kit = "=0.3.3"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
 
 # --- round 5: estate-integration composition round ---------------------------
-clock-kit = { version = "=0.1.0", features = ["tsc"] }  # tests/clock_precision.rs, tests/hw_pinned_hotpath.rs (`tsc`: hardware-counter reads behind calibration)
+clock-kit = { version = "=0.1.1", features = ["tsc"] }  # tests/clock_precision.rs, tests/hw_pinned_hotpath.rs (`tsc`: hardware-counter reads behind calibration)
 book-kit = "=0.1.0"                          # tests/book_feed.rs
 wire-kit = "=0.1.0"                          # tests/book_feed.rs
 hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
@@ -98,7 +98,7 @@ poolkit = { version = "=0.1.2", features = ["sqlite"] }  # tests/ipc_stack.rs (s
 uds-kit = "=0.1.1"                        # tests/ipc_stack.rs (timeout-bounded raw client)
 # Round 20: the spreadsheet-diff pair — byte-level deltas over parsed workbooks.
 delta-kit = "=0.2.1"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
-sheet-xlsx = "=0.1.2"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
+sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 # Round 22: the month-end close — statements matched against a real ledger.
 recon-kit = "=0.1.0"                      # tests/month_close.rs (the matching engine)
 # Round 23: the reporting layer — trial balance and aging over the close.
@@ -119,10 +119,10 @@ decimal-money = "=1.1.2"                      # tests/money_stack.rs
 # ^0.2 to ^1, which is the version ledger-kit uses. Until this release the
 # graph held two majors of the estate's money crate and `Price::gross()`
 # could not be handed to `Ledger::post` — see the README round-7 finding.
-billing-kit = "=0.2.0"                        # tests/money_stack.rs (default: serde)
+billing-kit = "=0.2.1"                        # tests/money_stack.rs (default: serde)
 sheet-engine = "=0.1.0"                       # tests/money_stack.rs (formula-driven report), tests/spreadsheet_engine.rs (engine + recalc)
-sheet-core = "=0.1.0"                         # tests/money_stack.rs (cell vocabulary)
-formula-lang = "=0.1.1"                       # tests/money_stack.rs (Value), tests/spreadsheet_engine.rs (is_volatile predicate)
+sheet-core = "=0.1.1"                         # tests/money_stack.rs (cell vocabulary)
+formula-lang = "=0.1.3"                       # tests/money_stack.rs (Value), tests/spreadsheet_engine.rs (is_volatile predicate)
 rust_decimal = "1"                            # tests/money_stack.rs (dec! / Decimal)
 
 # --- round 7: the provisioning + session stack ------------------------------
@@ -131,9 +131,9 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 # auth story the accounting product needs on day one.
 accessctl = { version = "=0.1.3", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
-tamper-audit = "=0.2.2"                     # tests/auth_provision.rs (hash-linked audit chain)
+tamper-audit = "=0.2.3"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=1.0.1"                           # tests/auth_provision.rs (typed WS transport)
-ws-barbican = "=0.1.4"                      # tests/auth_provision.rs (token from header/query/cookie)
+ws-barbican = "=0.1.6"                      # tests/auth_provision.rs (token from header/query/cookie)
 
 # --- round 9: collaborative documents + publication -----------------------
 # Five crates that had no composed suite. The centre of gravity is
@@ -147,7 +147,7 @@ docs-pipeline = "=0.1.4"                   # tests/collab_docs.rs (render + sani
 # --- round 10: the single-binary service substrate ------------------------
 # Four crates that everything else in the estate assumes compose, and that
 # had no composed suite until now.
-actor-kit = "=0.2.5"                      # tests/systems_substrate.rs (work-stealing actors)
+actor-kit = "=0.2.7"                      # tests/systems_substrate.rs (work-stealing actors)
 slab-pool = "=0.1.1"                      # tests/systems_substrate.rs (borrow-checked pool guards)
 shared-state = "=0.1.3"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
 shm-rings = "=0.2.3"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
@@ -187,7 +187,7 @@ oauth-toolkit = "=0.4.1"                 # tests/crypto_auth.rs (PKCE vs RFC 763
 multi-chain-wallet = "=0.3.0"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
-fetch-kit = "=0.2.1"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
+fetch-kit = "=0.2.2"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
 # built on reqwest 0.13, while the workspace's other reqwest consumers
 # (axum-stack-era suites, wiremock hosts) stay on 0.12 — the two majors
@@ -201,10 +201,10 @@ http = "1"                                   # `http::Extensions` in fetch-kit's
 # --- round 6: the product-phase substrate wave -----------------------------
 # The automotive calibration pipeline: A2L description + DBC bit layout +
 # CAN wire + XCP protocol, composed in tests/calibration_stack.rs.
-a2l-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
-dbc-parse = "=0.1.0"                         # tests/calibration_stack.rs (no_std, zero deps)
-can-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; thiserror)
-xcp-core = "=0.1.0"                          # tests/calibration_stack.rs (no_std; can-core + thiserror)
+a2l-parse = "=0.1.2"                         # tests/calibration_stack.rs (no_std, zero deps)
+dbc-parse = "=0.1.2"                         # tests/calibration_stack.rs (no_std, zero deps)
+can-core = "=0.1.1"                          # tests/calibration_stack.rs (no_std; thiserror)
+xcp-core = "=0.1.1"                          # tests/calibration_stack.rs (no_std; can-core + thiserror)
 # The L2 calibration layer over the four substrate crates above.
 # It re-exports a2l-parse/dbc-parse/xcp-core, so the suite can cross-check
 # the layer's answers against the substrates through one dependency.
@@ -216,11 +216,11 @@ dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tes
 # The L0 leaves the stacks above sit on, pinned directly. Exercising them
 # only through their parents left their own error paths unwalked, and both
 # take untrusted bytes (font-parse: SFNT/OTF/WOFF from web fonts).
-font-parse = "=0.1.0"                      # tests/leaf_parsers.rs (L0 SFNT parser)
+font-parse = "=0.1.1"                      # tests/leaf_parsers.rs (L0 SFNT parser)
 font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
 font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
 # DSP primitives (biquad, FFT) that hostile coefficients could drive to a NaN.
-dsp-core = "=0.1.0"                        # tests/leaf_parsers.rs (L0 DSP)
+dsp-core = "=0.1.1"                        # tests/leaf_parsers.rs (L0 DSP)
 # The audiobook stack, published 2026-10-21: domain model over two L0 codecs.
 # Composed the day it shipped, which is the whole point of exact pins on
 # fresh artifacts.
@@ -270,8 +270,8 @@ ui-text-edit = { version = "=0.1.2", features = ["a11y"] }  # tests/text_field.r
 # compose rather than merely existing. theme-egui is compiled against egui
 # 0.37, so it composes here and not in chisel-doc (which pins 0.36); that is
 # the one-crate-per-toolkit-major rule from ADR-0005 in practice.
-theme-kit = "=0.1.0"                       # tests/ui_semantics.rs (L1 tokens)
-color-kit = "=0.1.0"                       # tests/ui_semantics.rs (L0 colour)
+theme-kit = "=0.1.1"                       # tests/ui_semantics.rs (L1 tokens)
+color-kit = "=0.1.1"                       # tests/ui_semantics.rs (L0 colour)
 theme-egui = "=0.1.0"                      # tests/ui_semantics.rs (L2 lowering)
 docs-core = "=0.1.0"                       # tests/ui_semantics.rs (L2 docs)
 # The signal engine and the trend application it was extracted from. The
