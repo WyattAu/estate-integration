@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "accessctl"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86d715b80801bd4e5c3ba81cb74d606dcb695ea506f282757c61b51d0e1469ac"
+checksum = "a985856c02d1e4c19abafdd87be5a50cae02e5e773ef382413174fea3c70f87b"
 dependencies = [
  "cedar-policy",
  "serde",
