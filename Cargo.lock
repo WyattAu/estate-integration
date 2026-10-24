@@ -538,7 +538,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "tokenkit",
+ "tokenkit 0.4.1",
  "tower",
  "tracing",
 ]
@@ -1083,7 +1083,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "tokenkit",
+ "tokenkit 0.4.1",
  "uuid",
 ]
 
@@ -2476,7 +2476,7 @@ dependencies = [
  "theme-kit",
  "thiserror 2.0.21",
  "throttle-kit",
- "tokenkit",
+ "tokenkit 1.0.0",
  "tokio",
  "toml 1.1.8+spec-1.1.0",
  "tower",
@@ -2498,7 +2498,7 @@ dependencies = [
  "wiremock",
  "worker-kit",
  "ws-barbican",
- "ws-kit",
+ "ws-kit 1.0.0",
  "xcp-core",
 ]
 
@@ -7945,6 +7945,20 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e812d02a90e6360c8e443091b3b196a2114cdd384dc52e5865c3e0e1fa23eb4"
 dependencies = [
+ "chrono",
+ "jsonwebtoken 11.1.0",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "uuid",
+]
+
+[[package]]
+name = "tokenkit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4462a10af58c46787b34a586794522cd195e83051a72fc236e4b0973fe474dc2"
+dependencies = [
  "async-trait",
  "chrono",
  "jsonwebtoken 11.1.0",
@@ -9497,9 +9511,9 @@ dependencies = [
  "barbican",
  "http",
  "serde",
- "tokenkit",
+ "tokenkit 0.4.1",
  "tokio",
- "ws-kit",
+ "ws-kit 0.4.2",
 ]
 
 [[package]]
@@ -9507,6 +9521,23 @@ name = "ws-kit"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed4c29a82ab7f0b05285d50d6beb8dd208855b969c19e60a59f27825d9222f1c"
+dependencies = [
+ "axum",
+ "bytes",
+ "dashmap",
+ "http",
+ "loom",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "tokio",
+]
+
+[[package]]
+name = "ws-kit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf0b3ede85a9d5c812987bbe4f8eb5e70f5bc0977a5ff8e5860bcb254762f5e7"
 dependencies = [
  "axum",
  "bytes",
