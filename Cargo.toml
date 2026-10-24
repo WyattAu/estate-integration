@@ -27,7 +27,7 @@ errcode = []
 salting = "=2.0.0"
 tokenkit = { version = "=1.0.0", features = ["revocation", "rotation"] }
 validkit = "=1.3.1"
-barbican = "=0.2.2"
+barbican = "=0.2.3"
 # 2.0.0 → 2.0.1 (round 3): test-only release over 2.0.0; current exact pin.
 # NOTE: the `timeout` feature is deliberately OFF — see tests/outbox_dispatch.rs
 # and the README findings: outbox-kit 0.1.0's dispatcher match on
@@ -128,11 +128,11 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 # accessctl, scim-kit, tamper-audit, ws-kit and ws-barbican had no composed
 # suite until now; together with barbican/tokenkit they form the multi-tenant
 # auth story the accounting product needs on day one.
-accessctl = { version = "=0.1.2", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
+accessctl = { version = "=0.1.3", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.1"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=1.0.0"                           # tests/auth_provision.rs (typed WS transport)
-ws-barbican = "=0.1.3"                      # tests/auth_provision.rs (token from header/query/cookie)
+ws-barbican = "=0.1.4"                      # tests/auth_provision.rs (token from header/query/cookie)
 
 # --- round 9: collaborative documents + publication -----------------------
 # Five crates that had no composed suite. The centre of gravity is
@@ -244,7 +244,7 @@ validkit-derive = "=0.1.0"                  # tests/proc_macro_derives.rs (Valid
 # Platform side of Chisel Docs, published 2026-10-21: the three crates every
 # Chisel service stands on (asset CAS, sessions and roles, ids and settings).
 chisel-assets = "=0.1.0"                    # tests/chisel_platform.rs (asset CAS)
-chisel-auth = "=0.1.0"                      # tests/chisel_platform.rs (sessions)
+chisel-auth = "=0.2.0"                      # tests/chisel_platform.rs (sessions)
 chisel-kernel = "=0.1.0"                    # tests/chisel_platform.rs (ids + settings)
 
 # Service adapters, published 2026-10-21 and earlier. Neither needs its
@@ -264,7 +264,7 @@ input-kit = "=0.1.0"                       # tests/input_composition.rs, tests/t
 # a drift between the published artifact and this suite is attributable to a
 # real version change. The suite was written against a path pin before
 # publication, per the ADR-0005 rule.
-ui-text-edit = { version = "=0.1.0", features = ["a11y"] }  # tests/text_field.rs (L2 field)
+ui-text-edit = { version = "=0.1.1", features = ["a11y"] }  # tests/text_field.rs (L2 field)
 # The theme stack, exact-pinned so the published artifacts are proven to
 # compose rather than merely existing. theme-egui is compiled against egui
 # 0.37, so it composes here and not in chisel-doc (which pins 0.36); that is

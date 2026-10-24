@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "accessctl"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a985856c02d1e4c19abafdd87be5a50cae02e5e773ef382413174fea3c70f87b"
+checksum = "464c9b9eb5391d4191107017196fdca6e09f9ca56b83f7f30a45138b5de14918"
 dependencies = [
  "cedar-policy",
  "serde",
@@ -529,9 +529,9 @@ dependencies = [
 
 [[package]]
 name = "barbican"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9de1f81d16f52b7e7218e3980308eee8a36d46a94018ccb7265ebef2698566c"
+checksum = "a9dcbf788392716fc486594da3f42e20c447b4b045a208a0603da5c734f1c375"
 dependencies = [
  "axum",
  "http",
@@ -1071,9 +1071,9 @@ dependencies = [
 
 [[package]]
 name = "chisel-auth"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a24c9c12e2b814e248681b35782eaa8a0a2df5b17c84c63a72dad197b1756df"
+checksum = "da7f092aef9cd53212cce738ee445ed529ab286b51a408b92be65e4c6b2b0498"
 dependencies = [
  "chisel-kernel",
  "chrono",
@@ -1085,6 +1085,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokenkit 0.4.1",
  "uuid",
+ "webauthn-kit",
 ]
 
 [[package]]
@@ -7941,9 +7942,9 @@ checksum = "fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee"
 
 [[package]]
 name = "tokenkit"
-version = "0.4.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e812d02a90e6360c8e443091b3b196a2114cdd384dc52e5865c3e0e1fa23eb4"
+checksum = "4462a10af58c46787b34a586794522cd195e83051a72fc236e4b0973fe474dc2"
 dependencies = [
  "chrono",
  "jsonwebtoken 11.1.0",
@@ -8597,9 +8598,9 @@ dependencies = [
 
 [[package]]
 name = "ui-text-edit"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8f9e02cd33705a0d262f190aa3d998cc7f5d7248db12e7759b95ae4021d431e"
+checksum = "2b575cf1ab292c12970db955fc46ebcbb63081594f2d52ce323df163a9ec7232"
 dependencies = [
  "a11y-kit",
  "input-kit",
@@ -9095,6 +9096,7 @@ dependencies = [
  "base64 0.22.1",
  "ciborium",
  "ring",
+ "serde",
  "serde_json",
  "sha2 0.10.9",
  "thiserror 2.0.21",
@@ -9503,9 +9505,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "ws-barbican"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f139c8e2b73e0b0f2d6bbb31a758661520164e5a408e9365d9e21edc4a5f3731"
+checksum = "3e005ca0e279666055987d526e77952f57385f3583986abe9aa4ad4494754d53"
 dependencies = [
  "axum",
  "barbican",
@@ -9518,9 +9520,9 @@ dependencies = [
 
 [[package]]
 name = "ws-kit"
-version = "0.4.2"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed4c29a82ab7f0b05285d50d6beb8dd208855b969c19e60a59f27825d9222f1c"
+checksum = "cf0b3ede85a9d5c812987bbe4f8eb5e70f5bc0977a5ff8e5860bcb254762f5e7"
 dependencies = [
  "axum",
  "bytes",
