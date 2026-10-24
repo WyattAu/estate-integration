@@ -2415,6 +2415,7 @@ dependencies = [
  "futures",
  "fx-kit",
  "geo-kit",
+ "group-kit",
  "healthkit",
  "hmac 0.12.1",
  "http",
@@ -3109,6 +3110,16 @@ dependencies = [
  "ff 0.14.0",
  "rand_core 0.10.1",
  "subtle",
+]
+
+[[package]]
+name = "group-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74a394979238d0c4eb6450fb9363ed329b61c6c93eecf37584af1a54c52d1f6c"
+dependencies = [
+ "double-entry",
+ "report-kit",
 ]
 
 [[package]]
