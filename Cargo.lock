@@ -1050,9 +1050,9 @@ dependencies = [
 
 [[package]]
 name = "chaos-kit"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0acb8bfd8d1c3706d05d897f2ad936ef567720eee9532509c0adcb807429db14"
+checksum = "e21844badba116cad773a88c4568f1f858af0cf615f4046b1a68504da404103a"
 dependencies = [
  "pin-project-lite",
  "tokio",
@@ -4695,9 +4695,9 @@ dependencies = [
 
 [[package]]
 name = "multi-chain-wallet"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd1c9c1081fb6fdfa38993a785aff88e8ddf6c539f67e659bc4c990c7915e511"
+checksum = "339b2b1c59810e0258d29e951943ed62d7186228aa0ba26c3b80094426674ae3"
 dependencies = [
  "bip32",
  "bip39",
