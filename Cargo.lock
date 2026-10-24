@@ -2492,6 +2492,7 @@ dependencies = [
  "simd-tokenizer",
  "slab-pool",
  "sqlx",
+ "statement-camt",
  "statement-ofx",
  "tamper-audit",
  "tantivy",
@@ -7426,6 +7427,15 @@ dependencies = [
  "libc",
  "psm",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "statement-camt"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cadfd3d9c10a2041edaf9c92aeec661956961dfa5f7034666d61c1f7034e7bd5"
+dependencies = [
+ "recon-kit",
 ]
 
 [[package]]
