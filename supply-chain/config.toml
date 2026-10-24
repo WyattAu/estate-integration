@@ -501,6 +501,10 @@ criteria = "safe-to-deploy"
 version = "0.1.2"
 criteria = "safe-to-deploy"
 
+[[exemptions.config-kit]]
+version = "1.0.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.const-oid]]
 version = "0.9.6"
 criteria = "safe-to-deploy"
@@ -1237,6 +1241,10 @@ criteria = "safe-to-deploy"
 version = "0.1.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.idempotency-kit]]
+version = "1.0.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.ident_case]]
 version = "1.0.1"
 criteria = "safe-to-deploy"
@@ -1414,11 +1422,11 @@ version = "1.5.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.ledger-kit]]
-version = "0.1.1"
+version = "1.0.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.ledger-kit]]
-version = "1.0.0"
+version = "1.0.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.lettre]]
