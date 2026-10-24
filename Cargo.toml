@@ -107,7 +107,6 @@ fx-kit = "=0.1.0"                         # tests/fx_revaluation.rs (IAS 21 rest
 # Round 24: the OFX adapter — a real bank file feeding the matching engine.
 statement-ofx = "=0.1.0"                  # tests/ofx_close.rs (parse OFX, reconcile)
 statement-camt = "=0.1.0"                 # tests/camt_close.rs (ISO 20022 close)
-fx-kit = "=0.1.0"                         # tests/fx_period.rs (IAS 21 revaluation posting)                 # tests/camt_close.rs (ISO 20022 close)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.
 vat-return = "=0.1.1"                     # tests/vat_period.rs (the quarter's boxes)
 invoice-kit = "=1.0.0"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
@@ -132,7 +131,7 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 accessctl = { version = "=0.1.2", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
 scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.1"                     # tests/auth_provision.rs (hash-linked audit chain)
-ws-kit = "=0.4.2"                           # tests/auth_provision.rs (typed WS transport)
+ws-kit = "=1.0.0"                           # tests/auth_provision.rs (typed WS transport)
 ws-barbican = "=0.1.3"                      # tests/auth_provision.rs (token from header/query/cookie)
 
 # --- round 9: collaborative documents + publication -----------------------
