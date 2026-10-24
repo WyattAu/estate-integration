@@ -224,6 +224,16 @@ invariant rather than by an expected value alone.
 
 ## Integration findings
 
+- **`hw_pinned_hotpath` timing tolerance (2026-10-24, environment-dependent
+  flake, not a crate drift).** `pinned_core_hot_loop_measurement_is_tolerance_
+  stable` requires the median to sit within 2x of the fastest run; under
+  concurrent build load on this machine it fails roughly one run in three
+  (median 313k vs fastest 154k observed). Passes clean on an idle machine.
+  Owner: the suite's author. Ask: widen the tolerance, or take the median of
+  N inner runs, so a loaded CI box does not flake the suite.
+
+
+
 Dogfooding notes filed back to the estate (pinned in test comments):
 
 - tokenkit 0.4.1 flattens every `jsonwebtoken` error into

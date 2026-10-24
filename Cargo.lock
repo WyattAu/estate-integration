@@ -2412,6 +2412,7 @@ dependencies = [
  "font-shape",
  "formula-lang",
  "futures",
+ "fx-kit",
  "geo-kit",
  "healthkit",
  "hmac 0.12.1",
@@ -2942,6 +2943,15 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "fx-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6476ac6667a8624ceb1903ba5ec76428b8e87c882f56ebf03bd3846cda10b987"
+dependencies = [
+ "vat-rules",
 ]
 
 [[package]]
