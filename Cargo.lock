@@ -2444,7 +2444,7 @@ dependencies = [
  "mail-sync-kit",
  "mailkit",
  "media-kit",
- "metrics-kit",
+ "metrics-kit 1.0.0",
  "model-router",
  "mp4-core",
  "multi-chain-wallet",
@@ -4565,6 +4565,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5f6040b0ee54a30bed9114814f3b9106591de2e2941e386e548b5887b5e731c"
 
 [[package]]
+name = "metrics-kit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97ac0302f40bde9d7a9c28aebecb57101481b121d23b6d5e8b9347f6eaac8d6c"
+
+[[package]]
 name = "micromap"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5193,7 +5199,7 @@ dependencies = [
  "async-trait",
  "breaker",
  "futures",
- "metrics-kit",
+ "metrics-kit 0.2.1",
  "rand 0.10.3",
  "serde",
  "thiserror 2.0.21",
@@ -7799,11 +7805,11 @@ dependencies = [
 
 [[package]]
 name = "telemetry-init"
-version = "0.1.3"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bb0d9d78345b455550875437c1f40f66f84bc551b9cc12b049529080360c472"
+checksum = "a8d6e180fa4e5dc4a767347a20e10192de92193f317f5a6e131220e9d616a1e6"
 dependencies = [
- "metrics-kit",
+ "metrics-kit 0.2.1",
  "thiserror 2.0.21",
  "tracing",
  "tracing-core",
