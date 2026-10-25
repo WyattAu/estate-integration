@@ -939,6 +939,19 @@ dependencies = [
  "clap",
  "tempfile",
  "thiserror 2.0.21",
+ "zstd",
+]
+
+[[package]]
+name = "cas-kit"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49195d88fefddf60ab60d139b2ad4cd461c0a705ee36d8e8252e1a1da7fb2972"
+dependencies = [
+ "blake3",
+ "clap",
+ "tempfile",
+ "thiserror 2.0.21",
  "tokio",
  "zstd",
 ]
@@ -1065,7 +1078,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "608e778458cb90bf94fd7cd2553a648e24ff7888f626b918953fee6c0f41453c"
 dependencies = [
- "cas-kit",
+ "cas-kit 0.2.2",
  "thiserror 2.0.21",
 ]
 
@@ -2390,7 +2403,7 @@ dependencies = [
  "cache-pal",
  "cal-model",
  "can-core",
- "cas-kit",
+ "cas-kit 1.0.0",
  "chaos-kit",
  "chisel-assets",
  "chisel-auth",
@@ -2561,9 +2574,9 @@ dependencies = [
 
 [[package]]
 name = "eventbus-kit"
-version = "0.4.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37bbffa3afb547963767d523b268428c2964b93cc220d4b211ea080c26d46e87"
+checksum = "56253a268b48cead516dbff58f0aac2c06974ee03ecd1dd5b69b1338e86e4977"
 dependencies = [
  "async-trait",
  "dashmap",
@@ -2690,9 +2703,9 @@ checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
 
 [[package]]
 name = "flag-kit"
-version = "0.7.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce99ab21bc03f2c3af185f5923b0cf97fc96e1a8cdb174b3b0b35b7977542956"
+checksum = "516fcd1f35d73d9488be33e90706d8ea96a5f099b163805de76d28b4e46799ee"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4485,9 +4498,9 @@ dependencies = [
 
 [[package]]
 name = "mailkit"
-version = "0.3.3"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f286e51b33400e5102fa5f0d2a31aa536094a2e0926a92a8b86b83ccf731f78"
+checksum = "06145ebeb459af29558abbc7c9eeec9734c83d68895ae4d2e6a4cab7845ff24f"
 dependencies = [
  "chrono",
  "reqwest 0.12.28",
