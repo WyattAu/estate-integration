@@ -3129,12 +3129,14 @@ dependencies = [
 
 [[package]]
 name = "group-kit"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04802a2d0c77d586c221cf55b95be0a7a89bf8ae207e65b85fae0ba58294afd2"
+checksum = "aaa7ef0364ff808865aef1ffe5d9eaff3652f5b4f92c1d35fbcdc548290ea09a"
 dependencies = [
  "double-entry",
+ "fx-kit",
  "report-kit",
+ "vat-rules",
 ]
 
 [[package]]
