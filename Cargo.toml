@@ -37,13 +37,13 @@ breaker = { version = "=2.0.2", features = ["tower"] }
 healthkit = { version = "=1.3.2", features = ["axum"] }
 throttle-kit = { version = "=2.1.2", features = ["in-memory", "tower"] }
 otelkit = "=2.2.3"
-mailkit = { version = "=0.3.3", features = ["resend", "sendgrid"] }
+mailkit = { version = "=1.0.0", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.2"
 media-kit = "=0.2.2"
 blobkit = { version = "=0.4.3", features = ["memory", "std", "serde"] }
-cas-kit = { version = "=0.2.2", features = ["tokio"] }
+cas-kit = { version = "=1.0.0", features = ["tokio"] }
 mail-sync-kit = "=0.1.1"
-eventbus-kit = { version = "=0.4.1", features = ["sqlite"] }
+eventbus-kit = { version = "=1.0.0", features = ["sqlite"] }
 resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
 # NOTE: `retry-backoff` was pinned here from round 1 and never used by any
 # suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
@@ -176,7 +176,7 @@ uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typ
 # `chrono` gates `FlagChange::now`; without it a change record has to be
 # built with an explicit timestamp, so the suite takes the feature to pin the
 # clock-stamping path.
-flag-kit = { version = "=0.7.1", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
+flag-kit = { version = "=1.0.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
 otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
 envstack = "=0.2.2"                      # tests/flags_and_lifecycle.rs (layer precedence)
