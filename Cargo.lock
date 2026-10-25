@@ -2428,6 +2428,7 @@ dependencies = [
  "geo-kit",
  "group-kit",
  "healthkit",
+ "hex",
  "hmac 0.12.1",
  "http",
  "http-errors",
@@ -2453,6 +2454,7 @@ dependencies = [
  "otel-stack",
  "otelkit",
  "outbox-kit",
+ "pay-kit",
  "percentile-kit",
  "pid-manager",
  "policy-kit",
@@ -2508,7 +2510,7 @@ dependencies = [
  "vat-return",
  "vat-rules",
  "webauthn-kit",
- "webhookkit",
+ "webhookkit 2.2.1",
  "wire-kit",
  "wiremock",
  "worker-kit",
@@ -5322,6 +5324,19 @@ dependencies = [
  "getrandom 0.4.3",
  "phc",
  "rand_core 0.10.1",
+]
+
+[[package]]
+name = "pay-kit"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b170ca1c0daa751fdebf8fb3db66d639e2ee39b0b5c57448d4d0b67ab272cbd"
+dependencies = [
+ "double-entry",
+ "invoice-kit",
+ "serde",
+ "serde_json",
+ "webhookkit 1.1.2",
 ]
 
 [[package]]
@@ -9151,6 +9166,20 @@ dependencies = [
  "sha2 0.10.9",
  "thiserror 2.0.21",
  "x509-parser",
+]
+
+[[package]]
+name = "webhookkit"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c01cd27112fe8e6ba5742167582615a670abfd7fca14cafb8d46ae6ff0499d16"
+dependencies = [
+ "hex",
+ "hmac 0.12.1",
+ "serde_json",
+ "sha2 0.10.9",
+ "subtle",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
