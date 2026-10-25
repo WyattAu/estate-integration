@@ -229,9 +229,9 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "ap-kit"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fcdd34759802bdcd2297ed031cdeffb0551e53897e36b2c0c4fa7d10396e80c"
+checksum = "c31601d8defebc8151197810587cec9cb5df2839464b1ac0a37b7158fe88d023"
 dependencies = [
  "double-entry",
  "vat-rules",
@@ -1993,9 +1993,9 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "double-entry"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "355ca88958b55a3230acd963d42ab389528e529e084e2077c661b10858041019"
+checksum = "56a8b69418f349404539d7ad2c577912a9d3ef713a5cf834e26fecfdfbcc9732"
 
 [[package]]
 name = "downcast-rs"
@@ -3126,9 +3126,9 @@ dependencies = [
 
 [[package]]
 name = "group-kit"
-version = "0.1.0"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74a394979238d0c4eb6450fb9363ed329b61c6c93eecf37584af1a54c52d1f6c"
+checksum = "04802a2d0c77d586c221cf55b95be0a7a89bf8ae207e65b85fae0ba58294afd2"
 dependencies = [
  "double-entry",
  "report-kit",
@@ -3817,9 +3817,9 @@ dependencies = [
 
 [[package]]
 name = "invoice-kit"
-version = "1.0.0"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1093a8d7495d775be03195bee0f18f4865ea4953e090a13b028efc390e7b16b"
+checksum = "fcee556635604bd2d0a4bc776566c3609121287668533365ae57b745f684c618"
 dependencies = [
  "double-entry",
  "sha2 0.10.9",
@@ -4224,9 +4224,9 @@ dependencies = [
 
 [[package]]
 name = "ledger-pg"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4f6a7525110e7bfe5bfbf1b43eaaa81536af20fc47bedf11887325a67b2b8a1"
+checksum = "c55a65bd8fd7e4bc881411d96fe29e081f7a170a10dc60fca2ce7fc85874d799"
 dependencies = [
  "double-entry",
  "sqlx",
@@ -6179,9 +6179,9 @@ dependencies = [
 
 [[package]]
 name = "report-kit"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23c4dba4dd721f6440dfe9a0aa0d6738548941454922b071e5b1d2e0e266928f"
+checksum = "56de586e5ac3f11231ea22127fbd1192cdffcf0538766b420a0dc39b27f6f4c5"
 dependencies = [
  "double-entry",
 ]
@@ -8856,9 +8856,9 @@ checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
 
 [[package]]
 name = "vat-return"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0c36ce1715b3f5fc8d7b8388c283543998fabb05327c06e2721b436bcb8e0aa"
+checksum = "9aa98e69c37d64bcadbeb0c20142471224d89b42473e7e51548111449be257f6"
 dependencies = [
  "ap-kit",
  "invoice-kit",
