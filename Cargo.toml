@@ -112,6 +112,7 @@ statement-camt = "=0.1.0"                 # tests/camt_close.rs (ISO 20022 close
 ledger-pg = "=0.1.3"                      # tests/persistence.rs (post to Postgres, report from Postgres)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.
 vat-return = "=0.1.2"                     # tests/vat_period.rs (the quarter's boxes)
+vat-mtd = "=0.1.0"                        # tests/vat_filing.rs (documents → boxes → MTD body)                     # tests/vat_period.rs (the quarter's boxes)
 invoice-kit = "=1.0.2"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.0"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.3"                       # tests/payable.rs (AP: recoverability, three-way split)

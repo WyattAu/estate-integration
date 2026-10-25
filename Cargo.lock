@@ -2504,6 +2504,7 @@ dependencies = [
  "uuid",
  "validkit",
  "validkit-derive",
+ "vat-mtd",
  "vat-return",
  "vat-rules",
  "webauthn-kit",
@@ -8853,6 +8854,17 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
+name = "vat-mtd"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f5011844091b9e2f0ad5b257fc31075efd6a18786405f497dbd31c1c8e13ad6"
+dependencies = [
+ "serde",
+ "serde_json",
+ "vat-return",
+]
 
 [[package]]
 name = "vat-return"
