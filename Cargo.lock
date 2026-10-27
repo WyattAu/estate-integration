@@ -2421,7 +2421,7 @@ dependencies = [
  "hw-kit",
  "i18n-kit",
  "id3-core",
- "idempotency-kit 1.0.1",
+ "idempotency-kit",
  "image",
  "input-kit",
  "invoice-kit",
@@ -2497,7 +2497,7 @@ dependencies = [
  "vat-return",
  "vat-rules",
  "webauthn-kit",
- "webhookkit 2.2.1",
+ "webhookkit",
  "wire-kit",
  "wiremock",
  "worker-kit",
@@ -3621,19 +3621,6 @@ dependencies = [
 
 [[package]]
 name = "idempotency-kit"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f139909c8a8e8c0478a9fd42e317a6d31392dfa5bd7af989ca31b78b0462d712"
-dependencies = [
- "async-trait",
- "blake3",
- "dashmap",
- "hex",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "idempotency-kit"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ea1693a27df69230c09837608f501af5c2fd7d45047b23bcfdc5b2cc6efad2b"
@@ -4203,7 +4190,7 @@ checksum = "1e2a322e4f224ed9cf9974ccd91b2f287a41d8ff7a2cf094a8e7d758f864bd10"
 dependencies = [
  "async-trait",
  "decimal-money",
- "idempotency-kit 1.0.1",
+ "idempotency-kit",
  "outbox-kit",
  "serde_json",
  "tamper-audit",
@@ -5318,7 +5305,7 @@ dependencies = [
  "invoice-kit",
  "serde",
  "serde_json",
- "webhookkit 1.1.2",
+ "webhookkit",
 ]
 
 [[package]]
@@ -9159,21 +9146,6 @@ dependencies = [
  "hmac 0.12.1",
  "serde_json",
  "sha2 0.10.9",
- "subtle",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "webhookkit"
-version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09194f57213d2ce2bde946e789d66e4f41ce6bd1feb2725f72631b96c31eafe8"
-dependencies = [
- "hex",
- "hmac 0.13.0",
- "idempotency-kit 0.1.0",
- "serde_json",
- "sha2 0.11.1",
  "subtle",
  "thiserror 2.0.21",
 ]

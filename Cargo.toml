@@ -67,7 +67,7 @@ outbox-kit = "=0.2.2"                        # tests/outbox_dispatch.rs (default
 percentile-kit = "=0.1.1"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.2"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=1.0.0"                       # tests/metrics_scrape.rs
-webhookkit = "=2.2.1"                        # tests/idempotent_webhook.rs
+webhookkit = "=1.1.2"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
 telemetry-init = "=1.0.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)

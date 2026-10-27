@@ -41,7 +41,7 @@ clock-kit = "=0.1.1"
 [dev-dependencies]
 # The same CAS skillkit-store delegates to, so the round-trip test reads blobs
 # through the crate's own access path rather than guessing the shard layout.
-cas-kit = "=0.2.2"
+cas-kit = "=1.0.0"
 
 # `TrendSource::collect` is async-fn-in-trait and deliberately not `Send`, so a
 # single-threaded block_on is the right executor for it.
