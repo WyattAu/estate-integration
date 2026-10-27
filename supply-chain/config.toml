@@ -2070,7 +2070,7 @@ version = "0.41.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.recon-kit]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.redox_syscall]]
@@ -3110,7 +3110,7 @@ version = "1.1.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.webhookkit]]
-version = "2.2.1"
+version = "2.2.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.webpki-root-certs]]
