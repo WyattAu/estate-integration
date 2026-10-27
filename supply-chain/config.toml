@@ -845,6 +845,10 @@ criteria = "safe-to-deploy"
 version = "0.1.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.error-classify-derive]]
+version = "0.1.1"
+criteria = "safe-to-deploy"
+
 [[exemptions.error-codes]]
 version = "1.1.1"
 criteria = "safe-to-deploy"
@@ -1143,6 +1147,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.http-errors]]
 version = "0.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.http-errors]]
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.httparse]]
