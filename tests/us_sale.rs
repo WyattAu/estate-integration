@@ -14,7 +14,6 @@
 
 use double_entry::money::currencies;
 use double_entry::{Account, AccountId, AccountType, JournalEntry, Ledger, Line};
-use invoice_kit::{Decimal, Invoice, InvoiceLine};
 use sales_tax::{
     compute_tax, JurisdictionLevel, JurisdictionRate, NexusRegistry, RoundingScope, SaleLine,
 };
