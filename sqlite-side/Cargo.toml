@@ -28,13 +28,13 @@ publish = false
 
 [dependencies]
 signalkit = "=0.1.0"
-bizkit-core = "=0.1.1"      # tests/bizkit_edgar.rs (EDGAR parse + store)
+bizkit-core = "=0.1.3"      # tests/bizkit_edgar.rs (EDGAR parse + store)
 signalkit-core = "=0.1.3"
 signalkit-integrity = "=0.2.7"
 trendkit-core = "=0.3.1"
 trendkit-profile = "=0.3.0"
 skillkit-core = "=0.1.0"   # the `skillkit` and `trendkit` facades are CLIs with no lib target
-skillkit-store = "=0.1.0"
+skillkit-store = "=0.1.2"
 # The clock is injected into the engine so collection is deterministic.
 clock-kit = "=0.1.1"
 
