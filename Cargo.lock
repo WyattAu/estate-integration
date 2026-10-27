@@ -2360,11 +2360,10 @@ dependencies = [
 
 [[package]]
 name = "error-classify-derive"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a449e5224e3212b5aa9872e85449bdf4af66a8691575eec311ebdee12dc1d639"
+checksum = "bbd9717ee547aaf2cced4af9259a397dc9ec7f59d963fcf5aaa24af4055f2c3a"
 dependencies = [
- "proc-macro2",
  "quote",
  "syn 2.0.119",
 ]
@@ -3400,14 +3399,11 @@ dependencies = [
 
 [[package]]
 name = "http-errors"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f4c87f03d00c358d3fd685660ca69d2825253a47a03c9ea1daf38047392259c"
+checksum = "9a4c661262f1d1d23e23ed455873f0256af0f82659af650e63ea6ee96d1c6dc4"
 dependencies = [
- "http",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
+ "error-codes",
 ]
 
 [[package]]

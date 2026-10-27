@@ -163,7 +163,7 @@ shm-rings = "=0.2.3"                      # tests/systems_substrate.rs (SPMC sha
 # enum -> code -> status -> recovery class -> envelope -> pagination.
 error-codes = "=1.1.1"                     # tests/api_errors.rs (codes, ProblemDetail, HttpError)
 error-classify = "=0.3.1"                 # tests/api_errors.rs (AppError trait)
-http-errors = "=0.1.0"                    # tests/api_errors.rs (status + problem derive)
+http-errors = "=0.1.1"                    # tests/api_errors.rs (status + problem derive)
 typed-id-new = "=0.1.0"                   # tests/api_errors.rs (UUIDv7 newtypes)
 typed-id-derive = "=0.1.1"                 # tests/api_errors.rs (the TypedId derive)
 api-types = "=0.1.1"                      # tests/api_errors.rs (ApiResponse, PaginationMeta)
@@ -244,7 +244,7 @@ contact-miner = "=0.1.0"                    # tests/geo_contacts.rs (extraction 
 # Proc-macro crates, consumed directly: the macros are imported from these
 # crates themselves, and the generated code names the runtime crates
 # (error-classify and validkit, both pinned above).
-error-classify-derive = "=0.1.0"            # tests/proc_macro_derives.rs (AppError derive)
+error-classify-derive = "=0.1.1"            # tests/proc_macro_derives.rs (AppError derive)
 validkit-derive = "=0.1.0"                  # tests/proc_macro_derives.rs (Validated derive)
 
 # Platform side of Chisel Docs, published 2026-10-21: the three crates every
