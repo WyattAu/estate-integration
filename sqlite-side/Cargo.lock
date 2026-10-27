@@ -419,7 +419,7 @@ dependencies = [
  "futures",
  "signalkit",
  "signalkit-core",
- "signalkit-integrity 0.2.7",
+ "signalkit-integrity",
  "skillkit-core",
  "skillkit-store",
  "trendkit-core",
@@ -1737,19 +1737,19 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "signalkit"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1e691c8d21a8a375ee5399461bfd267926c4c25997e9aeb586fbd3e0a6371c2"
+checksum = "d0f27eab487e7e55558ca5af42080f168c0bb2ac869c077118d54494e1e349ad"
 dependencies = [
  "signalkit-core",
- "signalkit-integrity 0.1.1",
+ "signalkit-integrity",
 ]
 
 [[package]]
 name = "signalkit-core"
-version = "0.1.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebf5b4e4e963818af1c9da083eb9bf14fe8ae6a9f5de3c56c9f0d057aedeb9d2"
+checksum = "148df0bcb65d132635fa47319f142b5a5605de44ece21a450843091d41d02e4d"
 dependencies = [
  "clock-kit",
  "fetch-kit",
@@ -1762,19 +1762,9 @@ dependencies = [
 
 [[package]]
 name = "signalkit-integrity"
-version = "0.1.1"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66cd53a188174486c80e146ade91c1b7bef053318dd39772447efe92d8f8a372"
-dependencies = [
- "rusqlite",
- "signalkit-core",
-]
-
-[[package]]
-name = "signalkit-integrity"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e56d0e5e0f3609435e575169d8ba46649eaa241e06337088d0bd15dd0737b4f3"
+checksum = "682ec903822fb2ea43be9d965653d17365e1281ea3deb363cd5fe65027590bf6"
 dependencies = [
  "rusqlite",
  "signalkit-core",
@@ -2111,9 +2101,9 @@ dependencies = [
 
 [[package]]
 name = "trendkit-core"
-version = "0.3.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c0e4a240aa9c007e41b22a0ed61fcbd42b4d807b28cbd02db7e6abb7244e6bb"
+checksum = "38907b8092feb5c89342a154909875d0675d6e5c2af709ef58edc044ad690fd0"
 dependencies = [
  "fetch-kit",
  "retry-backoff",
@@ -2128,9 +2118,9 @@ dependencies = [
 
 [[package]]
 name = "trendkit-profile"
-version = "0.3.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2457dbcd9e266ef903a6dbef12d8a22816bf443eca0345026154f8a97be71aa"
+checksum = "c0b79a9a31e69ee64bdf1e6b0f1c47175f26818983dafacf8f5019f0ca995aa8"
 dependencies = [
  "trendkit-core",
 ]
