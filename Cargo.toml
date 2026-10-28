@@ -67,7 +67,12 @@ outbox-kit = "=0.2.2"                        # tests/outbox_dispatch.rs (default
 percentile-kit = "=0.1.1"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.2"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=1.0.0"                       # tests/metrics_scrape.rs
-webhookkit = "=2.2.3"                        # tests/idempotent_webhook.rs
+# HELD at 1.1.2 (cycle 13, iteration 3): 2.2.3's published lib does not
+# compile under its own declared hmac 0.13 stack (the ct_eq call predates
+# the hybrid-array migration; the fix is on webhookkit main, commit
+# 480015f, awaiting the 2.2.4 publish). 1.1.2's verify_hmac_sha256 has an
+# identical signature, so the migration is a one-line pin flip then.
+webhookkit = "=1.1.2"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
 telemetry-init = "=1.0.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
@@ -100,7 +105,11 @@ uds-kit = "=0.1.1"                        # tests/ipc_stack.rs (timeout-bounded 
 delta-kit = "=0.2.2"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
 sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 # Round 22: the month-end close — statements matched against a real ledger.
-recon-kit = "=0.1.1"                      # tests/month_close.rs (the matching engine)
+# HELD at 0.1.0 (cycle 13, iteration 3): statement-camt 0.1.1 exact-pins
+# recon-kit =0.1.0 internally, so root's =0.1.1 makes the manifest
+# unresolvable. Lifts when statement-camt republishes against
+# recon-kit 0.1.1.
+recon-kit = "=0.1.0"                      # tests/month_close.rs (the matching engine)
 # Round 23: the reporting layer — trial balance and aging over the close.
 report-kit = "=0.2.3"                     # tests/reporting.rs (trial balance + aging)
 fx-kit = "=0.1.4"                         # tests/fx_revaluation.rs (IAS 21 restatement)
