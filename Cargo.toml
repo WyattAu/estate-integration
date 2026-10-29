@@ -148,7 +148,7 @@ ws-barbican = "=0.1.6"                      # tests/auth_provision.rs (token fro
 # --- round 9: collaborative documents + publication -----------------------
 # Five crates that had no composed suite. The centre of gravity is
 # convergence under varying delivery order, which no per-crate test can see.
-crdts-kit = "1.0.0"                       # tests/collab_docs.rs (RGA convergence, presence)
+crdts-kit = "=1.0.0"                      # tests/collab_docs.rs (RGA convergence, presence)
 i18n-kit = "=0.1.4"                        # tests/collab_docs.rs (fallback chains, pluralization)
 # NOTE: eventbus-kit is the *package* name published from the `eventbus` repo;
 # the pin above already carries it, so no second dependency is needed here.
