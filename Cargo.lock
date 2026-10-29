@@ -6031,9 +6031,9 @@ dependencies = [
 
 [[package]]
 name = "recon-kit"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f41b07667bd265112e5642cfc5e47991592806e4826974a1fd1e7d44bd9fe0f0"
+checksum = "ab75cd6c500bb461105817027aea7846974881116bccaf46aaffd6cf020eecf9"
 
 [[package]]
 name = "redox_syscall"
@@ -7425,18 +7425,18 @@ dependencies = [
 
 [[package]]
 name = "statement-camt"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5b63f575c9003a25c7b7867007d9902fd39da61c2c3dd23c069e1a0c70ae904"
+checksum = "a793dabf7bff093c042646cd79f46983e60d406b8d586b548b2bed042000c6c9"
 dependencies = [
  "recon-kit",
 ]
 
 [[package]]
 name = "statement-ofx"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7d21b8df47c6764f18ec3166ebdc317d5a19377f771f3f443ccae1f87dd32d9"
+checksum = "ca151b0a885fa86770003fb727fbf156d894c2b4b2a39a2f926a2c2bbf7721b8"
 dependencies = [
  "recon-kit",
 ]

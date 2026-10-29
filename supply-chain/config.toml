@@ -533,10 +533,6 @@ criteria = "safe-to-deploy"
 version = "1.5.3"
 criteria = "safe-to-deploy"
 
-[[exemptions.crdts-kit]]
-version = "0.1.1"
-criteria = "safe-to-deploy"
-
 [[exemptions.critical-section]]
 version = "1.2.0"
 criteria = "safe-to-deploy"
@@ -2034,7 +2030,7 @@ version = "0.41.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.recon-kit]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.redox_syscall]]
@@ -2470,11 +2466,11 @@ version = "0.1.25"
 criteria = "safe-to-deploy"
 
 [[exemptions.statement-camt]]
-version = "0.1.1"
+version = "0.1.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.statement-ofx]]
-version = "0.1.1"
+version = "0.1.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.streaming-iterator]]
