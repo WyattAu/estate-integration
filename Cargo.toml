@@ -42,9 +42,9 @@ sieve-kit = "=0.2.2"
 media-kit = "=0.2.2"
 blobkit = { version = "=0.4.3", features = ["memory", "std", "serde"] }
 cas-kit = { version = "=1.0.0", features = ["tokio"] }
-mail-sync-kit = "=0.1.1"
+mail-sync-kit = "=0.1.2"
 eventbus-kit = { version = "=1.0.0", features = ["sqlite"] }
-resilient-fetch = { version = "=0.1.0", features = ["circuit-breaker", "json"] }
+resilient-fetch = { version = "=0.1.1", features = ["circuit-breaker", "json"] }
 # NOTE: `retry-backoff` was pinned here from round 1 and never used by any
 # suite. It resolves to bk-rs/retry-rs, a *third-party* crate (8.6k
 # downloads) — not this account's `loop-retry` (published by the
@@ -63,14 +63,19 @@ idempotency-kit = "=1.0.1"                   # tests/idempotent_webhook.rs (defa
 # 0.1.1 declares `outbox-kit = "^0.2"`, so one graph now holds a single
 # major and the durable-journal suite runs on the current release. See the
 # README round-6 finding for what the hold was and what released it.
-outbox-kit = "=0.2.1"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
-percentile-kit = "=0.1.1"                    # tests/percentile_report.rs (default: tracker+report)
+outbox-kit = "=0.2.2"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
+percentile-kit = "=1.0.0"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.2"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=1.0.0"                       # tests/metrics_scrape.rs
-webhookkit = "=2.2.1"                        # tests/idempotent_webhook.rs
+# HELD at 1.1.2 (cycle 13, iteration 3): 2.2.3's published lib does not
+# compile under its own declared hmac 0.13 stack (the ct_eq call predates
+# the hybrid-array migration; the fix is on webhookkit main, commit
+# 480015f, awaiting the 2.2.4 publish). 1.1.2's verify_hmac_sha256 has an
+# identical signature, so the migration is a one-line pin flip then.
+webhookkit = "=1.1.2"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
-telemetry-init = "=1.0.0"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
+telemetry-init = "=1.0.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)
 # NOTE: default-features = false. worker-kit's default `breaker` feature pins
 # breaker with `features = ["timeout"]`, which unifies graph-wide and breaks
 # outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
@@ -81,11 +86,11 @@ shutdown-kit = "=0.3.3"                      # tests/worker_supervisor_drain.rs 
 
 # --- round 5: estate-integration composition round ---------------------------
 clock-kit = { version = "=0.1.1", features = ["tsc"] }  # tests/clock_precision.rs, tests/hw_pinned_hotpath.rs (`tsc`: hardware-counter reads behind calibration)
-book-kit = "=0.1.0"                          # tests/book_feed.rs
-wire-kit = "=0.1.0"                          # tests/book_feed.rs
-hw-kit = { version = "=0.1.0", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
-uring-kit = "=0.1.0"                         # tests/uring_proxy.rs
-ledger-kit = "=1.0.1"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
+book-kit = "=0.1.1"                          # tests/book_feed.rs
+wire-kit = "=0.1.1"                          # tests/book_feed.rs
+hw-kit = { version = "=0.1.1", features = ["libc"] }    # tests/hw_pinned_hotpath.rs (`libc`: sched_setaffinity pinning)
+uring-kit = "=0.1.1"                         # tests/uring_proxy.rs
+ledger-kit = "=1.0.2"                        # tests/ledger_settlement.rs (default: audit+outbox), tests/money_stack.rs
 
 # --- round 6: the accounting core -------------------------------------------
 # decimal-money is ledger-kit's own money type (re-exported as
@@ -93,21 +98,34 @@ ledger-kit = "=1.0.1"                        # tests/ledger_settlement.rs (defau
 # three pins are one type in three places, which is the point the suite
 # asserts rather than assumes.
 # Round 19: the IPC stack — HTTP over a Unix domain socket with pooled storage.
-axum-stack = "=0.2.1"                      # tests/ipc_stack.rs (health routes, request-id)
-poolkit = { version = "=0.1.2", features = ["sqlite"] }  # tests/ipc_stack.rs (sqlite pool)
+axum-stack = "=1.0.0"                      # tests/ipc_stack.rs (health routes, request-id)
+poolkit = { version = "=0.1.3", features = ["sqlite"] }  # tests/ipc_stack.rs (sqlite pool)
 uds-kit = "=0.1.1"                        # tests/ipc_stack.rs (timeout-bounded raw client)
 # Round 20: the spreadsheet-diff pair — byte-level deltas over parsed workbooks.
-delta-kit = "=0.2.1"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
+delta-kit = "=0.2.2"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
 sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 # Round 22: the month-end close — statements matched against a real ledger.
+<<<<<<< HEAD
 recon-kit = "=0.2.0"                      # tests/month_close.rs (the matching engine)
+=======
+# HELD at 0.1.0 (cycle 13, iteration 3): statement-camt 0.1.1 exact-pins
+# recon-kit =0.1.0 internally, so root's =0.1.1 makes the manifest
+# unresolvable. Lifts when statement-camt republishes against
+# recon-kit 0.1.1.
+recon-kit = "=0.1.1"                      # tests/month_close.rs (the matching engine)
+>>>>>>> origin/main
 # Round 23: the reporting layer — trial balance and aging over the close.
 report-kit = "=0.2.3"                     # tests/reporting.rs (trial balance + aging)
 fx-kit = "=0.1.4"                         # tests/fx_revaluation.rs (IAS 21 restatement)
 group-kit = "=0.2.3"                       # tests/group_consolidation.rs (the group close)
 # Round 24: the OFX adapter — a real bank file feeding the matching engine.
+<<<<<<< HEAD
 statement-ofx = "=0.1.3"                  # tests/ofx_close.rs (parse OFX, reconcile)
 statement-camt = "=0.1.3"                 # tests/camt_close.rs (ISO 20022 close)
+=======
+statement-ofx = "=0.1.2"                  # tests/ofx_close.rs (parse OFX, reconcile)
+statement-camt = "=0.1.2"                 # tests/camt_close.rs (ISO 20022 close)
+>>>>>>> origin/main
 # Round 29: persistence — the stored books, faithful through to the reports.
 ledger-pg = "=0.2.2"                      # tests/persistence.rs (post to Postgres, report from Postgres)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.
@@ -125,7 +143,7 @@ decimal-money = "=1.1.2"                      # tests/money_stack.rs
 # graph held two majors of the estate's money crate and `Price::gross()`
 # could not be handed to `Ledger::post` — see the README round-7 finding.
 billing-kit = "=0.2.1"                        # tests/money_stack.rs (default: serde)
-sheet-engine = "=0.1.0"                       # tests/money_stack.rs (formula-driven report), tests/spreadsheet_engine.rs (engine + recalc)
+sheet-engine = "=0.1.1"                       # tests/money_stack.rs (formula-driven report), tests/spreadsheet_engine.rs (engine + recalc)
 sheet-core = "=0.1.1"                         # tests/money_stack.rs (cell vocabulary)
 formula-lang = "=0.1.3"                       # tests/money_stack.rs (Value), tests/spreadsheet_engine.rs (is_volatile predicate)
 rust_decimal = "1"                            # tests/money_stack.rs (dec! / Decimal)
@@ -135,7 +153,7 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 # suite until now; together with barbican/tokenkit they form the multi-tenant
 # auth story the accounting product needs on day one.
 accessctl = { version = "=0.1.3", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
-scim-kit = "=0.1.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
+scim-kit = "=1.0.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.3"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=1.0.1"                           # tests/auth_provision.rs (typed WS transport)
 ws-barbican = "=0.1.6"                      # tests/auth_provision.rs (token from header/query/cookie)
@@ -143,8 +161,8 @@ ws-barbican = "=0.1.6"                      # tests/auth_provision.rs (token fro
 # --- round 9: collaborative documents + publication -----------------------
 # Five crates that had no composed suite. The centre of gravity is
 # convergence under varying delivery order, which no per-crate test can see.
-crdts-kit = "=0.1.1"                       # tests/collab_docs.rs (RGA convergence, presence)
-i18n-kit = "=0.1.3"                        # tests/collab_docs.rs (fallback chains, pluralization)
+crdts-kit = "1.0.0"                       # tests/collab_docs.rs (RGA convergence, presence)
+i18n-kit = "=0.1.4"                        # tests/collab_docs.rs (fallback chains, pluralization)
 # NOTE: eventbus-kit is the *package* name published from the `eventbus` repo;
 # the pin above already carries it, so no second dependency is needed here.
 docs-pipeline = "=0.1.4"                   # tests/collab_docs.rs (render + sanitisation boundary)
@@ -155,7 +173,7 @@ docs-pipeline = "=0.1.4"                   # tests/collab_docs.rs (render + sani
 actor-kit = "=0.2.7"                      # tests/systems_substrate.rs (work-stealing actors)
 slab-pool = "=0.1.1"                      # tests/systems_substrate.rs (borrow-checked pool guards)
 shared-state = "=0.1.3"                   # tests/systems_substrate.rs (TTL cache, readiness gate)
-shm-rings = "=0.2.3"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
+shm-rings = "=1.0.0"                      # tests/systems_substrate.rs (SPMC shared-memory ring)
 
 # --- round 11: the API surface layer ---------------------------------------
 # Seven crates every service returns from a handler, and that had never been
@@ -166,9 +184,9 @@ error-classify = "=0.3.1"                 # tests/api_errors.rs (AppError trait)
 http-errors = "=0.1.1"                    # tests/api_errors.rs (status + problem derive)
 typed-id-new = "=0.1.0"                   # tests/api_errors.rs (UUIDv7 newtypes)
 typed-id-derive = "=0.1.1"                 # tests/api_errors.rs (the TypedId derive)
-api-types = "=0.1.1"                      # tests/api_errors.rs (ApiResponse, PaginationMeta)
-api-paginate = "=0.1.1"                   # tests/api_errors.rs (offset + cursor pagination)
-json-envelope = "=0.1.1"                  # tests/api_errors.rs (the parallel envelope)
+api-types = "=0.1.2"                      # tests/api_errors.rs (ApiResponse, PaginationMeta)
+api-paginate = "=0.1.2"                   # tests/api_errors.rs (offset + cursor pagination)
+json-envelope = "=0.1.2"                  # tests/api_errors.rs (the parallel envelope)
 uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typed ids wrap UUIDv7)
 
 # --- round 12: the operational shell ---------------------------------------
@@ -179,19 +197,19 @@ uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typ
 # clock-stamping path.
 flag-kit = { version = "=1.0.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
-otel-stack = "=0.2.0"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
-envstack = "=0.2.2"                      # tests/flags_and_lifecycle.rs (layer precedence)
+otel-stack = "=0.2.1"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
+envstack = "=1.0.0"                      # tests/flags_and_lifecycle.rs (layer precedence)
 
 # --- round 13: the authentication stack -------------------------------------
 # Four Tier A security crates. Every primitive here is checked against a
 # published vector (RFC 4231, RFC 7636, RFC 4648) or against the *other*
 # crate, never against itself.
 cryptkit = "=0.1.1"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
-webauthn-kit = "=0.4.1"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
+webauthn-kit = "=1.0.0"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
 oauth-toolkit = "=0.4.1"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
 multi-chain-wallet = "=0.3.1"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
-policy-kit = "=0.1.0"                        # tests/policy_gateway.rs (default: json)
+policy-kit = "=0.1.1"                        # tests/policy_gateway.rs (default: json)
 fetch-kit = "=0.2.2"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
 # built on reqwest 0.13, while the workspace's other reqwest consumers
@@ -213,56 +231,56 @@ xcp-core = "=0.1.1"                          # tests/calibration_stack.rs (no_st
 # The L2 calibration layer over the four substrate crates above.
 # It re-exports a2l-parse/dbc-parse/xcp-core, so the suite can cross-check
 # the layer's answers against the substrates through one dependency.
-cal-model = "=0.1.1"                         # tests/cal_model_session.rs, tests/round16_debt.rs
+cal-model = "=0.1.2"                         # tests/cal_model_session.rs, tests/round16_debt.rs
 # The spectral analysis/restoration layer over dsp-core.
-dsp-spectral = "=0.1.0"                     # tests/dsp_spectral_restore.rs, tests/round16_debt.rs (no_std; dsp-core + thiserror)
+dsp-spectral = "=0.1.1"                     # tests/dsp_spectral_restore.rs, tests/round16_debt.rs (no_std; dsp-core + thiserror)
 # The font toolchain's write path: an editable outline model and a CPU
 # rasterizer/shaper, layered over font-parse.
 # The L0 leaves the stacks above sit on, pinned directly. Exercising them
 # only through their parents left their own error paths unwalked, and both
 # take untrusted bytes (font-parse: SFNT/OTF/WOFF from web fonts).
 font-parse = "=0.1.1"                      # tests/leaf_parsers.rs (L0 SFNT parser)
-font-model = "=0.1.0"                      # tests/font_pipeline.rs (L1 model)
-font-shape = "=0.1.0"                      # tests/font_pipeline.rs (L2 raster/shape)
+font-model = "=0.1.1"                      # tests/font_pipeline.rs (L1 model)
+font-shape = "=0.1.1"                      # tests/font_pipeline.rs (L2 raster/shape)
 # DSP primitives (biquad, FFT) that hostile coefficients could drive to a NaN.
 dsp-core = "=0.1.1"                        # tests/leaf_parsers.rs (L0 DSP)
 # The audiobook stack, published 2026-10-21: domain model over two L0 codecs.
 # Composed the day it shipped, which is the whole point of exact pins on
 # fresh artifacts.
-audiobook-core = "=0.5.0"                   # tests/audiobook_stack.rs (L1 model, published 2026-10-21)
-id3-core = "=0.3.0"                          # tests/audiobook_stack.rs (L0 ID3)
-mp4-core = "=0.3.1"                          # tests/audiobook_stack.rs (L0 MP4)
+audiobook-core = "=0.5.1"                   # tests/audiobook_stack.rs (L1 model, published 2026-10-21)
+id3-core = "=0.3.1"                          # tests/audiobook_stack.rs (L0 ID3)
+mp4-core = "=0.3.2"                          # tests/audiobook_stack.rs (L0 MP4)
 
 # AI-infrastructure leaves: token estimation and model/cost routing. Composed
 # together because the estimate and the budget must agree to be meaningful.
 model-router = "=0.2.1"                     # tests/token_routing.rs (routing + cost)
-simd-tokenizer = "=0.1.3"                   # tests/token_routing.rs (token estimate)
+simd-tokenizer = "=1.0.0"                   # tests/token_routing.rs (token estimate)
 # Data-hygiene leaves: coordinate and address validation, contact extraction
 # from scraped pages. Both guard boundaries where malformed input is normal.
-geo-kit = "=1.1.1"                          # tests/geo_contacts.rs (coords + address)
+geo-kit = "=1.1.2"                          # tests/geo_contacts.rs (coords + address)
 contact-miner = "=0.1.0"                    # tests/geo_contacts.rs (extraction + validation)
 # Proc-macro crates, consumed directly: the macros are imported from these
 # crates themselves, and the generated code names the runtime crates
 # (error-classify and validkit, both pinned above).
 error-classify-derive = "=0.1.1"            # tests/proc_macro_derives.rs (AppError derive)
-validkit-derive = "=0.1.0"                  # tests/proc_macro_derives.rs (Validated derive)
+validkit-derive = "=0.1.1"                  # tests/proc_macro_derives.rs (Validated derive)
 
 # Platform side of Chisel Docs, published 2026-10-21: the three crates every
 # Chisel service stands on (asset CAS, sessions and roles, ids and settings).
-chisel-assets = "=0.1.0"                    # tests/chisel_platform.rs (asset CAS)
-chisel-auth = "=0.2.1"                      # tests/chisel_platform.rs (sessions)
-chisel-kernel = "=0.1.0"                    # tests/chisel_platform.rs (ids + settings)
+chisel-assets = "=0.1.3"                    # tests/chisel_platform.rs (asset CAS)
+chisel-auth = "=0.2.4"                      # tests/chisel_platform.rs (sessions)
+chisel-kernel = "=0.1.2"                    # tests/chisel_platform.rs (ids + settings)
 
 # Service adapters, published 2026-10-21 and earlier. Neither needs its
 # service to be composed: the Workflow is pure JSON manipulation and the
 # search runs on an in-memory index.
-comfyui-kit = "=0.2.2"                      # tests/service_clients.rs (ComfyUI workflow)
-tantivy-helper = "=0.3.0"                   # tests/service_clients.rs (search)
+comfyui-kit = "=0.2.3"                      # tests/service_clients.rs (ComfyUI workflow)
+tantivy-helper = "=0.3.1"                   # tests/service_clients.rs (search)
 # The composition/IME layer and the two neighbours it has to agree with.
 # `a11y-kit` because a composing textbox must be announced as such, and
 # `tui-actions` because a keymap must not fire shortcuts the IME owns.
-a11y-kit = "=0.2.0"                        # tests/input_composition.rs (L1 tree)
-tui-actions = "=0.1.0"                     # tests/input_composition.rs (L2 keymap)
+a11y-kit = "=0.2.1"                        # tests/input_composition.rs (L1 tree)
+tui-actions = "=0.1.1"                     # tests/input_composition.rs (L2 keymap)
 # input-kit 0.1.0 is on crates.io; pinned exact so a drift between the
 # published artifact and this suite is attributable to a real version change.
 input-kit = "=0.1.0"                       # tests/input_composition.rs, tests/text_field.rs (L1 compose)
@@ -277,8 +295,8 @@ ui-text-edit = { version = "=0.1.2", features = ["a11y"] }  # tests/text_field.r
 # the one-crate-per-toolkit-major rule from ADR-0005 in practice.
 theme-kit = "=0.1.1"                       # tests/ui_semantics.rs (L1 tokens)
 color-kit = "=0.1.1"                       # tests/ui_semantics.rs (L0 colour)
-theme-egui = "=0.1.0"                      # tests/ui_semantics.rs (L2 lowering)
-docs-core = "=0.1.0"                       # tests/ui_semantics.rs (L2 docs)
+theme-egui = "=0.1.1"                      # tests/ui_semantics.rs (L2 lowering)
+docs-core = "=0.1.1"                       # tests/ui_semantics.rs (L2 docs)
 # The signal engine and the trend application it was extracted from. The
 # suites assert type identity across trendkit-core's re-exports, so a copy of
 # model/score reappearing inside trendkit-core turns the tests red.
@@ -301,7 +319,7 @@ async-trait = "0.1"
 tracing = "0.1"
 reqwest = { version = "0.12", features = ["json"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
-cache-pal = "=0.4.0"                      # tests/round16_debt.rs (TTL cache beside shared-state and shm-rings)
+cache-pal = "=0.4.1"                      # tests/round16_debt.rs (TTL cache beside shared-state and shm-rings)
 chronoshift = "=1.0.1"                    # tests/round16_debt.rs (superseded time source, beside clock-kit)
 
 [dev-dependencies]
