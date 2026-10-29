@@ -39,7 +39,7 @@ throttle-kit = { version = "=2.1.2", features = ["in-memory", "tower"] }
 otelkit = "=2.2.3"
 mailkit = { version = "=1.0.0", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.2"
-media-kit = "=0.2.2"
+media-kit = "=1.0.0"
 blobkit = { version = "=0.4.3", features = ["memory", "std", "serde"] }
 cas-kit = { version = "=1.0.0", features = ["tokio"] }
 mail-sync-kit = "=0.1.2"
@@ -100,7 +100,7 @@ ledger-kit = "=1.0.2"                        # tests/ledger_settlement.rs (defau
 # Round 19: the IPC stack — HTTP over a Unix domain socket with pooled storage.
 axum-stack = "=1.0.0"                      # tests/ipc_stack.rs (health routes, request-id)
 poolkit = { version = "=0.1.3", features = ["sqlite"] }  # tests/ipc_stack.rs (sqlite pool)
-uds-kit = "=0.1.1"                        # tests/ipc_stack.rs (timeout-bounded raw client)
+uds-kit = "=1.0.0"                        # tests/ipc_stack.rs (timeout-bounded raw client)
 # Round 20: the spreadsheet-diff pair — byte-level deltas over parsed workbooks.
 delta-kit = "=0.2.2"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
 sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
@@ -238,7 +238,7 @@ mp4-core = "=0.3.2"                          # tests/audiobook_stack.rs (L0 MP4)
 
 # AI-infrastructure leaves: token estimation and model/cost routing. Composed
 # together because the estimate and the budget must agree to be meaningful.
-model-router = "=0.2.1"                     # tests/token_routing.rs (routing + cost)
+model-router = "=1.0.0"                     # tests/token_routing.rs (routing + cost)
 simd-tokenizer = "=1.0.0"                   # tests/token_routing.rs (token estimate)
 # Data-hygiene leaves: coordinate and address validation, contact extraction
 # from scraped pages. Both guard boundaries where malformed input is normal.

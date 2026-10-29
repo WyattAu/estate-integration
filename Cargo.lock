@@ -4521,9 +4521,9 @@ dependencies = [
 
 [[package]]
 name = "media-kit"
-version = "0.2.2"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3015ca23719ff286d8f08872dd793437b86202b57539a48397beb1b5f60747b3"
+checksum = "dde0a66356f0f4d358a1ee10e6469d173c954503864d80a15a109f1fd2f7b431"
 dependencies = [
  "image",
  "kamadak-exif",
@@ -4626,9 +4626,9 @@ dependencies = [
 
 [[package]]
 name = "model-router"
-version = "0.2.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5cf0dcd944fa54d0161219cbb6a7e5995ac6d910f21e8f4d71d6ed5904d8296"
+checksum = "b24ab00f70f75611c64224abdf9cb23de68d9801ddcd4715bf431aa5c5d03d9c"
 dependencies = [
  "thiserror 2.0.21",
 ]
@@ -8587,9 +8587,9 @@ dependencies = [
 
 [[package]]
 name = "uds-kit"
-version = "0.1.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb577b048eee76de5624316d84536e99416020d5731869390fdbe0fc26759dca"
+checksum = "90eb8ce2ebb39a6128504d3973ca0401cef436f41778914e2f06cfcb538af45e"
 dependencies = [
  "thiserror 2.0.21",
  "tokio",
