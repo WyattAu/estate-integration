@@ -136,6 +136,7 @@ fn build_ledger() -> (Ledger, Vec<LedgerSide>) {
             booked_on: paid_on.into(),
             amount: gross as u64,
             direction: Direction::Credit,
+            memo: String::new(),
         });
     }
 
@@ -159,6 +160,7 @@ fn build_ledger() -> (Ledger, Vec<LedgerSide>) {
         booked_on: "2026-07-14".into(),
         amount: 1_500,
         direction: Direction::Debit,
+        memo: String::new(),
     });
 
     (ledger, sides)

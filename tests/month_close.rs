@@ -90,6 +90,7 @@ fn invoice_and_settlement(
             booked_on: paid_on.to_string(),
             amount: gross as u64,
             direction: Direction::Credit,
+            memo: String::new(),
         },
     )
 }
@@ -172,6 +173,7 @@ fn build_month(ledger: &mut Ledger) -> (Vec<LedgerSide>, u64) {
         booked_on: "2026-07-14".into(),
         amount: 1_500,
         direction: Direction::Debit,
+        memo: String::new(),
     });
     (sides, version)
 }
@@ -343,6 +345,7 @@ fn an_unrecorded_card_charge_becomes_a_ledger_entry_and_the_close_repeats() {
         booked_on: card.booked_on.clone(),
         amount: card.amount,
         direction: card.direction,
+        memo: String::new(),
     });
 
     // The re-close: the card charge is now an exact match. The fee stays a
