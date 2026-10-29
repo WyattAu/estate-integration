@@ -1,0 +1,59 @@
+# MSRV gate — verifies the crate compiles on the toolchain its manifest
+# promises. Install per repo: cp templates/msrv.yml <repo>/.github/workflows/.
+#
+# Why: `rust-version` in Cargo.toml is a promise to every consumer; until
+# something compiles on exactly that toolchain, it is documentation. This
+# job resolves the declared version, installs it, and runs `cargo check
+# --locked` on it. Compile-only by design: the MSRV promise is about
+# compilability, and running the full suite doubles the toolchain
+# download and the wall clock.
+#
+# Advisory note: a failure here means the manifest promises a toolchain
+# the code no longer builds on -- fix by code or by raising rust-version
+# (a 0.x minor bump under the estate's semver practice).
+
+name: msrv
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/**"
+      - ".github/workflows/msrv.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: msrv-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve the declared MSRV
+        id: msrv
+        run: |
+          msrv=$(grep -oP '(?<=^rust-version = ")[^"]+' Cargo.toml | head -1)
+          if [ -z "$msrv" ]; then
+            echo "no rust-version declared in Cargo.toml" >&2
+            exit 1
+          fi
+          echo "msrv=$msrv" >> "$GITHUB_OUTPUT"
+          echo "declared MSRV: $msrv"
+
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
+        with:
+          toolchain: ${{ steps.msrv.outputs.msrv }}
+
+      - name: Compile on the declared MSRV
+        run: cargo check --workspace --all-features --locked

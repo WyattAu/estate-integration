@@ -1,0 +1,53 @@
+# Dependency-hygiene gate — flags duplicate majors in the composition
+# graph. Install per repo: cp templates/dep-hygiene.yml <repo>/.github/workflows/.
+#
+# Why: the estate pins its own crates exactly, and a graph that carries two
+# majors of the same crate (a new direct requirement plus an old transitive)
+# compiles fine in pure-Rust cases but is the state ADR-0008 exists to
+# prevent. The check is scripts/check-duplicate-majors.py from
+# WyattAu/engineering-standards, checked out to a sibling directory.
+#
+# Semantics (see the script's docstring): chose-both failures block; a
+# crate under two versions where only one is directly required is
+# transitive and reported without failing; holds are carried in the
+# script's HOLDS table with measured reasons (webhookkit's hmac 0.13
+# break is the precedent).
+
+name: dep-hygiene
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "sqlite-side/**"
+      - ".github/workflows/dep-hygiene.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dep-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  duplicate-majors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out the gate scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: WyattAu/engineering-standards
+          ref: main
+          path: engineering-standards
+          persist-credentials: false
+
+      - name: Duplicate-major check (root + side graphs)
+        run: python3 engineering-standards/scripts/check-duplicate-majors.py .
