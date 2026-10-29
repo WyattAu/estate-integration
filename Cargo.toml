@@ -105,27 +105,14 @@ uds-kit = "=0.1.1"                        # tests/ipc_stack.rs (timeout-bounded 
 delta-kit = "=0.2.2"                      # tests/spreadsheet_diff.rs (delta + inverse + strict apply)
 sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx round-trip, cell diff)
 # Round 22: the month-end close — statements matched against a real ledger.
-<<<<<<< HEAD
 recon-kit = "=0.2.0"                      # tests/month_close.rs (the matching engine)
-=======
-# HELD at 0.1.0 (cycle 13, iteration 3): statement-camt 0.1.1 exact-pins
-# recon-kit =0.1.0 internally, so root's =0.1.1 makes the manifest
-# unresolvable. Lifts when statement-camt republishes against
-# recon-kit 0.1.1.
-recon-kit = "=0.1.1"                      # tests/month_close.rs (the matching engine)
->>>>>>> origin/main
 # Round 23: the reporting layer — trial balance and aging over the close.
 report-kit = "=0.2.3"                     # tests/reporting.rs (trial balance + aging)
 fx-kit = "=0.1.4"                         # tests/fx_revaluation.rs (IAS 21 restatement)
 group-kit = "=0.2.3"                       # tests/group_consolidation.rs (the group close)
 # Round 24: the OFX adapter — a real bank file feeding the matching engine.
-<<<<<<< HEAD
 statement-ofx = "=0.1.3"                  # tests/ofx_close.rs (parse OFX, reconcile)
 statement-camt = "=0.1.3"                 # tests/camt_close.rs (ISO 20022 close)
-=======
-statement-ofx = "=0.1.2"                  # tests/ofx_close.rs (parse OFX, reconcile)
-statement-camt = "=0.1.2"                 # tests/camt_close.rs (ISO 20022 close)
->>>>>>> origin/main
 # Round 29: persistence — the stored books, faithful through to the reports.
 ledger-pg = "=0.2.2"                      # tests/persistence.rs (post to Postgres, report from Postgres)
 # Round 25: the VAT return — the AR/AP/vat-rules triangle closes.

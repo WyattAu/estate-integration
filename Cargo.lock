@@ -6031,15 +6031,9 @@ dependencies = [
 
 [[package]]
 name = "recon-kit"
-<<<<<<< HEAD
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0775c72910fd19478c2c4a6d2af00485766cc1f42b77a153c4bff99c256e3bd"
-=======
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab75cd6c500bb461105817027aea7846974881116bccaf46aaffd6cf020eecf9"
->>>>>>> origin/main
 
 [[package]]
 name = "redox_syscall"
@@ -7431,30 +7425,18 @@ dependencies = [
 
 [[package]]
 name = "statement-camt"
-<<<<<<< HEAD
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9474be4e6ce2cc9d51989fddfdc0992c61f1d71b2db10c365ba3fd29c75875e"
-=======
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a793dabf7bff093c042646cd79f46983e60d406b8d586b548b2bed042000c6c9"
->>>>>>> origin/main
 dependencies = [
  "recon-kit",
 ]
 
 [[package]]
 name = "statement-ofx"
-<<<<<<< HEAD
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38414d289c5ec73c99465f3b9fe01b84642cc923cd316ff39a7416289c6a20d7"
-=======
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca151b0a885fa86770003fb727fbf156d894c2b4b2a39a2f926a2c2bbf7721b8"
->>>>>>> origin/main
 dependencies = [
  "recon-kit",
 ]
