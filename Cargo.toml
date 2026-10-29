@@ -64,7 +64,7 @@ idempotency-kit = "=1.0.1"                   # tests/idempotent_webhook.rs (defa
 # major and the durable-journal suite runs on the current release. See the
 # README round-6 finding for what the hold was and what released it.
 outbox-kit = "=0.2.2"                        # tests/outbox_dispatch.rs (default: memory+dispatch)
-percentile-kit = "=0.1.1"                    # tests/percentile_report.rs (default: tracker+report)
+percentile-kit = "=1.0.0"                    # tests/percentile_report.rs (default: tracker+report)
 chaos-kit = "=0.1.2"                         # tests/chaos_resilience.rs (default: tower+tokio-test)
 metrics-kit = "=1.0.0"                       # tests/metrics_scrape.rs
 # HELD at 1.1.2 (cycle 13, iteration 3): 2.2.3's published lib does not
@@ -144,7 +144,7 @@ rust_decimal = "1"                            # tests/money_stack.rs (dec! / Dec
 # suite until now; together with barbican/tokenkit they form the multi-tenant
 # auth story the accounting product needs on day one.
 accessctl = { version = "=0.1.3", features = ["cedar"] }  # tests/auth_provision.rs (hardcoded + Cedar agreement)
-scim-kit = "=0.1.1"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
+scim-kit = "=1.0.0"                         # tests/auth_provision.rs (RFC 7644 shape, filters, paging)
 tamper-audit = "=0.2.3"                     # tests/auth_provision.rs (hash-linked audit chain)
 ws-kit = "=1.0.1"                           # tests/auth_provision.rs (typed WS transport)
 ws-barbican = "=0.1.6"                      # tests/auth_provision.rs (token from header/query/cookie)
@@ -245,7 +245,7 @@ mp4-core = "=0.3.2"                          # tests/audiobook_stack.rs (L0 MP4)
 # AI-infrastructure leaves: token estimation and model/cost routing. Composed
 # together because the estimate and the budget must agree to be meaningful.
 model-router = "=0.2.1"                     # tests/token_routing.rs (routing + cost)
-simd-tokenizer = "=0.1.3"                   # tests/token_routing.rs (token estimate)
+simd-tokenizer = "=1.0.0"                   # tests/token_routing.rs (token estimate)
 # Data-hygiene leaves: coordinate and address validation, contact extraction
 # from scraped pages. Both guard boundaries where malformed input is normal.
 geo-kit = "=1.1.2"                          # tests/geo_contacts.rs (coords + address)
