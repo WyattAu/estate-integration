@@ -1466,9 +1466,9 @@ dependencies = [
 
 [[package]]
 name = "crdts-kit"
-version = "0.1.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08e1bcc026faf31c7fe1d621c20accb080e7de99409a3ca926952936a737cef0"
+checksum = "0d3af64e25eb4547257595deddb2eedad9e8ec37964c9444b01e73ba78640495"
 dependencies = [
  "uuid",
 ]
