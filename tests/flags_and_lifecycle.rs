@@ -663,21 +663,22 @@ async fn envstack_layers_resolve_in_push_order_with_first_layer_winning() {
         Some("from-env".to_owned()),
         "the FIRST layer that has the key wins, not the last"
     );
-    // **The two layers disagree about case**, which is the operational trap:
-    // env keys are lowercased, while `with_default` keeps the case it was
-    // given. So `stack.get("LEDGER_BACKEND")` still answers — from the
-    // *defaults* layer, which declared it in that spelling — while
-    // `get("ledger_backend")` answers from the env layer. Two spellings of one
-    // setting, both live, with the env layer's value winning only because it
-    // was pushed first. A host that reads the original spelling gets the
-    // default and silently ignores the operator's override.
+    // **The two layers disagree about case**, which was the operational trap
+    // in the 0.x behavior: env keys are lowercased, while `with_default`
+    // keeps the case it was given — so `get("LEDGER_BACKEND")` answered
+    // from the *defaults* layer while the operator's env override sat in
+    // the env layer under the folded spelling, silently ignored.
+    // envstack 1.0.1 closes the trap: a layer that has a key answers
+    // case-insensitively, so the env override wins for either spelling.
+    // (First-layer-wins still decides *which* value; only the spelling
+    // match is now forgiving.)
     assert_eq!(
         stack
             .get("LEDGER_BACKEND")
             .and_then(|v| v.as_str().map(str::to_owned)),
-        Some("from-defaults".to_owned()),
-        "the ORIGINAL spelling still resolves — from the defaults layer, \
-         which does not fold case"
+        Some("from-env".to_owned()),
+        "the operator's override wins for the ORIGINAL spelling too — \
+         envstack 1.0.1 resolved the silent-ignore trap"
     );
     assert_eq!(
         stack
