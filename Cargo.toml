@@ -81,7 +81,7 @@ telemetry-init = "=1.0.1"                    # tests/telemetry_bootstrap.rs (def
 # outbox-kit 0.1.0's compile (`Dispatcher::process` has no `Timeout` arm —
 # E0004, verified). Same regression class as the round-3 finding; see the
 # README integration findings for the details and the ask.
-worker-kit = { version = "=0.3.1", default-features = false, features = ["leader"]  } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
+worker-kit = { version = "=0.3.2", default-features = false, features = ["leader"]  } # tests/worker_supervisor_drain.rs (`leader` pulls only async-trait — no redis)
 shutdown-kit = "=0.3.3"                      # tests/worker_supervisor_drain.rs (ShutdownGuard)
 
 # --- round 5: estate-integration composition round ---------------------------
@@ -119,7 +119,7 @@ ledger-pg = "=0.2.2"                      # tests/persistence.rs (post to Postgr
 vat-return = "=0.1.10"                     # tests/vat_period.rs (the quarter's boxes)
 vat-mtd = "=0.1.6"                        # tests/vat_filing.rs (documents → boxes → MTD body)
 pay-kit = "=0.1.3"                        # tests/payment_loop.rs (webhook → verified → settled)
-sales-tax = "=0.1.0"                      # tests/us_sale.rs (nexus-gated US arithmetic)                        # tests/payment_loop.rs (webhook → verified → settled)                        # tests/vat_filing.rs (documents → boxes → MTD body)                     # tests/vat_period.rs (the quarter's boxes)
+sales-tax = "=0.2.0"                      # tests/us_sale.rs (nexus-gated US arithmetic)                        # tests/payment_loop.rs (webhook → verified → settled)                        # tests/vat_filing.rs (documents → boxes → MTD body)                     # tests/vat_period.rs (the quarter's boxes)
 invoice-kit = "=1.2.0"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.1"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.5"                       # tests/payable.rs (AP: recoverability, three-way split)
@@ -183,7 +183,7 @@ uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typ
 flag-kit = { version = "=1.0.0", features = ["chrono"] }  # tests/flags_and_lifecycle.rs (deterministic rollout; `chrono` gates FlagChange::now)
 pid-manager = "=0.1.0"                   # tests/flags_and_lifecycle.rs (lock ownership + staleness)
 otel-stack = "=0.2.1"                    # tests/flags_and_lifecycle.rs (telemetry facade defaults)
-envstack = "=1.0.0"                      # tests/flags_and_lifecycle.rs (layer precedence)
+envstack = "=1.0.1"                      # tests/flags_and_lifecycle.rs (layer precedence)
 
 # --- round 13: the authentication stack -------------------------------------
 # Four Tier A security crates. Every primitive here is checked against a
@@ -191,11 +191,11 @@ envstack = "=1.0.0"                      # tests/flags_and_lifecycle.rs (layer p
 # crate, never against itself.
 cryptkit = "=0.1.1"                      # tests/crypto_auth.rs (HMAC vs RFC 4231, constant-time eq)
 webauthn-kit = "=1.0.0"                  # tests/crypto_auth.rs (challenges, base64url, sign counts)
-oauth-toolkit = "=0.4.1"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
+oauth-toolkit = "=0.4.2"                 # tests/crypto_auth.rs (PKCE vs RFC 7636, CSRF store)
 multi-chain-wallet = "=0.3.1"            # tests/crypto_auth.rs (key derivation)
 rust_decimal_macros = "1"                     # tests/money_stack.rs (dec!)
 policy-kit = "=0.1.1"                        # tests/policy_gateway.rs (default: json)
-fetch-kit = "=0.2.2"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
+fetch-kit = "=0.2.3"                         # tests/policy_gateway.rs (default: json+rustls-tls+retry — hermetic)
 # tests/policy_gateway.rs: fetch-kit 0.2.0's native middleware stack is
 # built on reqwest 0.13, while the workspace's other reqwest consumers
 # (axum-stack-era suites, wiremock hosts) stay on 0.12 — the two majors

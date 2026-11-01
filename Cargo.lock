@@ -2261,9 +2261,9 @@ dependencies = [
 
 [[package]]
 name = "envstack"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c835b25d99324f98c601c795f5bb2b74efbe952273cc96f3b8b42b8c48e33fc3"
+checksum = "07c44a9a724cb5b59ac3a62466ff43bc6a78ce52cf4874453144b3765a8d3fde"
 dependencies = [
  "serde",
  "serde_json",
@@ -2622,9 +2622,9 @@ checksum = "b97b65636e5b9ef369943878ac74335ba1c55c1cb6adbf1e2c293c624248d693"
 
 [[package]]
 name = "fetch-kit"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf58047a3edec543033e02b5133f66a70799aef098b7ea6a14d38403fcdadd5e"
+checksum = "272e4496c4d2f572b2f5fa1642c4c59245f916369984eccaeffd790a75d3f4e3"
 dependencies = [
  "async-trait",
  "http",
@@ -4937,9 +4937,9 @@ dependencies = [
 
 [[package]]
 name = "oauth-toolkit"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "347aee1755785a096302d42770e6427555ac0bef6ddb09f8e26b0bd62ff87ce8"
+checksum = "2b4079fe4bfb7c723d35f961c4012c7aecaf10288d7828c762a0443cf9116ef7"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6599,9 +6599,9 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "sales-tax"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28b7fce575c0051ae17eb204a5057379935e22a3651a286232417f2fb9df2c17"
+checksum = "0f94d31fa1a200250f2dfbada266fb7ae55b3aa22188b9d52b79eea00df8f502"
 dependencies = [
  "fx-kit",
  "vat-rules",
@@ -9515,9 +9515,9 @@ dependencies = [
 
 [[package]]
 name = "worker-kit"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f289e5affeca944342ff80def514d9e217a581bdc44148f56a7aaa8fc5dba69"
+checksum = "46151e750f600346586a8e6a72746b248b591adec3d4a21b7392f4db1a58d8ba"
 dependencies = [
  "async-trait",
  "futures",
