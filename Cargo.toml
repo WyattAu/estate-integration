@@ -316,6 +316,9 @@ wiremock = "0.6"
 thiserror = "2"
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
+# tests/typed_ids.rs: the published derive composed directly (the typedids
+# facade was never published; typed-id-new 0.0.0 is a placeholder).
+typed-id-derive = "=0.1.1"
 tempfile = "3"
 # ipc_stack.rs runs DDL through the pool's AnyPool; the sqlite driver comes from
 # poolkit's facade feature so the graph has exactly one sqlx.
