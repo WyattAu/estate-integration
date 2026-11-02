@@ -2447,7 +2447,7 @@ dependencies = [
  "idempotency-kit",
  "image",
  "input-kit",
- "invoice-kit",
+ "invoice-kit 2.0.0",
  "json-envelope",
  "ledger-kit",
  "ledger-pg",
@@ -3818,6 +3818,17 @@ name = "invoice-kit"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b1aaac803effd435b56389091ac9e759cf7a0f0f3ff6165473e5ef9b4d27146"
+dependencies = [
+ "double-entry",
+ "sha2 0.10.9",
+ "vat-rules",
+]
+
+[[package]]
+name = "invoice-kit"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46012b9cdfab3f4c9d50c001ed7a019a83ebbd50a1e671d808a041c3f20a7400"
 dependencies = [
  "double-entry",
  "sha2 0.10.9",
@@ -5324,7 +5335,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce29b7c4a1ea3147dd522ca5be65f2b121f446e8e3639e5416f2bf75700032e8"
 dependencies = [
  "double-entry",
- "invoice-kit",
+ "invoice-kit 1.2.0",
  "serde",
  "serde_json",
  "webhookkit",
@@ -8877,7 +8888,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d92b611b0b6199063696bc837073a46081d809eb39102882ad044085ff40ec75"
 dependencies = [
  "ap-kit",
- "invoice-kit",
+ "invoice-kit 1.2.0",
  "vat-rules",
 ]
 
