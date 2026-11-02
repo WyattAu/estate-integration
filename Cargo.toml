@@ -108,8 +108,8 @@ sheet-xlsx = "=0.1.4"                     # tests/spreadsheet_diff.rs (xlsx roun
 recon-kit = "=0.2.0"                      # tests/month_close.rs (the matching engine)
 # Round 23: the reporting layer — trial balance and aging over the close.
 report-kit = "=0.2.3"                     # tests/reporting.rs (trial balance + aging)
-fx-kit = "=0.1.4"                         # tests/fx_revaluation.rs (IAS 21 restatement)
-group-kit = "=0.2.3"                       # tests/group_consolidation.rs (the group close)
+fx-kit = "=0.1.5"                         # tests/fx_revaluation.rs (IAS 21 restatement)
+group-kit = "=0.2.4"                       # tests/group_consolidation.rs (the group close)
 # Round 24: the OFX adapter — a real bank file feeding the matching engine.
 statement-ofx = "=0.1.3"                  # tests/ofx_close.rs (parse OFX, reconcile)
 statement-camt = "=0.1.3"                 # tests/camt_close.rs (ISO 20022 close)
@@ -119,7 +119,7 @@ ledger-pg = "=0.2.2"                      # tests/persistence.rs (post to Postgr
 vat-return = "=0.1.10"                     # tests/vat_period.rs (the quarter's boxes)
 vat-mtd = "=0.1.6"                        # tests/vat_filing.rs (documents → boxes → MTD body)
 pay-kit = "=0.1.3"                        # tests/payment_loop.rs (webhook → verified → settled)
-sales-tax = "=0.2.0"                      # tests/us_sale.rs (nexus-gated US arithmetic)                        # tests/payment_loop.rs (webhook → verified → settled)                        # tests/vat_filing.rs (documents → boxes → MTD body)                     # tests/vat_period.rs (the quarter's boxes)
+sales-tax = "=0.2.1"                      # tests/us_sale.rs (nexus-gated US arithmetic)                        # tests/payment_loop.rs (webhook → verified → settled)                        # tests/vat_filing.rs (documents → boxes → MTD body)                     # tests/vat_period.rs (the quarter's boxes)
 invoice-kit = "=1.2.0"                    # tests/invoicing.rs (AR invoicing, EN 16931 arithmetic)
 vat-rules = "=0.1.1"                     # tests/payable.rs (the AR/AP shared tax vocabulary)
 ap-kit = "=0.1.5"                       # tests/payable.rs (AP: recoverability, three-way split)
@@ -322,7 +322,7 @@ typed-id-derive = "=0.1.1"
 # tests/accounting_stack.rs: the money-area composition layer's router —
 # recon-kit + sales-tax + vat-rules behind axum, driven here as an embedder
 # would (JSON over oneshot, no database for the pure-computation routes).
-ledger_api = { version = "=0.1.0", package = "accounting-api" }
+ledger_api = { version = "=0.1.1", package = "accounting-api" }
 tempfile = "3"
 # ipc_stack.rs runs DDL through the pool's AnyPool; the sqlite driver comes from
 # poolkit's facade feature so the graph has exactly one sqlx.

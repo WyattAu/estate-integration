@@ -49,16 +49,16 @@ dependencies = [
 
 [[package]]
 name = "accounting-api"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82a21f50b64c761d27fa26e0a7b551fc0a0463af3ddaf8d377efa59b6637f60d"
+checksum = "f58f76d4b26790e2e9c5616d265771d6d2d2f97e3f3d2d39d5ec9e283fe21a25"
 dependencies = [
  "axum",
  "double-entry",
  "ledger-pg",
  "recon-kit",
  "report-kit",
- "sales-tax 0.1.0",
+ "sales-tax",
  "serde",
  "serde_json",
  "sqlx",
@@ -2475,7 +2475,7 @@ dependencies = [
  "resilient-fetch",
  "rust_decimal",
  "rust_decimal_macros",
- "sales-tax 0.2.0",
+ "sales-tax",
  "salting",
  "scim-kit",
  "serde",
@@ -2973,9 +2973,9 @@ dependencies = [
 
 [[package]]
 name = "fx-kit"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab37869bc3eecb4e6b8304f8947ec478e4c5c8f2a6c10e1c42a2bf349931f864"
+checksum = "564522ff2c405a556b68b72c7876703ff14b4264fc3defae7a9559c68943b382"
 dependencies = [
  "vat-rules",
 ]
@@ -3138,9 +3138,9 @@ dependencies = [
 
 [[package]]
 name = "group-kit"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbe99f898aca489c19a4eaa234dde9421cf6b2ad03a22746ea7007015a5fe749"
+checksum = "87a1388e98b48ac215c4c67b4c33468cec2939792d179722d6aff56136286eac"
 dependencies = [
  "double-entry",
  "fx-kit",
@@ -6622,19 +6622,9 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "sales-tax"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28b7fce575c0051ae17eb204a5057379935e22a3651a286232417f2fb9df2c17"
-dependencies = [
- "fx-kit",
- "vat-rules",
-]
-
-[[package]]
-name = "sales-tax"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f94d31fa1a200250f2dfbada266fb7ae55b3aa22188b9d52b79eea00df8f502"
+checksum = "a39d7bd42e1ecbc2ef7b4691f31a76edb8da156f4438f6b032f805ccae9c4449"
 dependencies = [
  "fx-kit",
  "vat-rules",
