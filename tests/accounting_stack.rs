@@ -11,6 +11,11 @@
 //! `unwrap_or((0,))` fallback is asserted here as the documented hermetic
 //! behaviour.
 
+// An HTTP composition suite is request/response scaffolding: builder
+// fallibility and body decoding are not what is under test. The repo's
+// HTTP suites (see ledger-api tests/api.rs) scope the same allow.
+#![allow(clippy::expect_used, clippy::indexing_slicing, clippy::unwrap_used)]
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use ledger_api::SharedState;

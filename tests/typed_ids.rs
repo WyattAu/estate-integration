@@ -6,6 +6,11 @@
 //! type-distinct across ID kinds — the property the accounting and ledger
 //! stacks rely on.
 
+// A round-trip assertion is test scaffolding: the failure mode is a panic
+// with the rendering in the message, which is the point. The repo's other
+// composition suites scope the same allow (see accounting_stack.rs).
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 use typed_id_derive::TypedId;
 use uuid::Uuid;
 
