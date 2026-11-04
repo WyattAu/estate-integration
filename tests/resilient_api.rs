@@ -301,15 +301,17 @@ async fn breaker_tower_layer_opens_against_failing_upstream() {
     );
 }
 
-/// otelkit initializes hermetically (no OTLP endpoint, no network) and a
-/// per-request span wraps the handler — proving telemetry composes with
-/// the axum stack without external collectors.
+/// otelkit initializes hermetically (stdout span exporter — no OTLP
+/// endpoint, no network) and a per-request span wraps the handler —
+/// proving telemetry composes with the axum stack without external
+/// collectors. otelkit 3.x refuses no-export-path configs, so the
+/// hermetic path must be selected explicitly.
 #[tokio::test]
 async fn otelkit_spans_requests_without_collector() {
-    // Default config: JSON logs to stdout, no OTLP/Sentry — hermetic.
-    let _guard = otelkit::init(otelkit::TelemetryConfig::new(
-        "estate-integration-resilient-api",
-    ))
+    let _guard = otelkit::init(otelkit::TelemetryConfig {
+        exporter: otelkit::Exporter::Stdout,
+        ..otelkit::TelemetryConfig::new("estate-integration-resilient-api")
+    })
     .expect("telemetry init without collector");
 
     let app = Router::new().route(

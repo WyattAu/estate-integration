@@ -260,26 +260,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "api-paginate"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b13a5ed90ab607449b7378b88be582cfd69b4809ea1cf40557d86687ad945d1"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "api-types"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50e9cc1036b7338b7a2dec898383fac2311da09a23f3a1894ef68bcd123aaa19"
-dependencies = [
- "http",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "ar_archive_writer"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -918,9 +898,9 @@ dependencies = [
 
 [[package]]
 name = "cache-pal"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ba96431f321b913b686ce71b3de55f0ec0497e67a86436fe353ce8e6321c151"
+checksum = "acd391cfbc58cb85900e67d5401af42a8e8c1c873d2492d1d86a08749908b321"
 dependencies = [
  "async-trait",
  "moka",
@@ -2384,8 +2364,6 @@ dependencies = [
  "accounting-api",
  "actor-kit",
  "ap-kit",
- "api-paginate",
- "api-types",
  "async-trait",
  "audiobook-core",
  "axum",
@@ -2424,7 +2402,6 @@ dependencies = [
  "envstack",
  "error-classify",
  "error-classify-derive",
- "error-codes",
  "eventbus-kit",
  "fetch-kit",
  "flag-kit",
@@ -2440,7 +2417,6 @@ dependencies = [
  "hex",
  "hmac 0.12.1",
  "http",
- "http-errors",
  "hw-kit",
  "i18n-kit",
  "id3-core",
@@ -2448,7 +2424,6 @@ dependencies = [
  "image",
  "input-kit",
  "invoice-kit",
- "json-envelope",
  "ledger-kit",
  "ledger-pg",
  "loop-retry",
@@ -2509,6 +2484,7 @@ dependencies = [
  "tracing",
  "tui-actions",
  "typed-id-derive",
+ "typedids",
  "uds-kit",
  "ui-text-edit",
  "uring-kit",
@@ -3394,15 +3370,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "http-errors"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a4c661262f1d1d23e23ed455873f0256af0f82659af650e63ea6ee96d1c6dc4"
-dependencies = [
- "error-codes",
-]
-
-[[package]]
 name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4002,16 +3969,6 @@ dependencies = [
  "cfg-if",
  "futures-util",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "json-envelope"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b16021096cd9d00eb1e216d458ef1227d6854480cd580137435228032f15e5b"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -5171,18 +5128,18 @@ dependencies = [
 
 [[package]]
 name = "otel-stack"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbf44e06baa0578ac0ded0bf96a473addf25760bb866685d4f73e0d8ef87d5e5"
+checksum = "bd5531f5b68e834199623f95e0b8ab96cb49a4adcc942c18ef93a4e390c9fcfe"
 dependencies = [
  "otelkit",
 ]
 
 [[package]]
 name = "otelkit"
-version = "2.2.3"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c33214e453c082361b171b4107af06a7abb0b2c00a250199796b182f0e351324"
+checksum = "d7e01ec3b53d97a912938ecc8e0736e865cbb2876be4684a2ce90668b4315d9e"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
@@ -8583,6 +8540,16 @@ name = "typed-path"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ce898823d8cd0f028662d2f349694b1af0a5cc9be83f1d213a00d3147445e1e"
+
+[[package]]
+name = "typedids"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0184033418515d492f235648f7790561b16972914b52a47de44183a9ec78ec8"
+dependencies = [
+ "typed-id-derive",
+ "uuid",
+]
 
 [[package]]
 name = "typeid"

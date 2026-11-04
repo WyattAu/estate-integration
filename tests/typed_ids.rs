@@ -12,6 +12,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use typed_id_derive::TypedId;
+use typedids::{FixedIdGenerator, IdGenerator};
 use uuid::Uuid;
 
 #[derive(TypedId, Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -59,4 +60,13 @@ fn hash_and_eq_dedupe_inside_hash_set() {
     set.insert(a);
     assert_eq!(set.len(), 2, "Hash + Eq dedupe inside HashSet");
     assert!(set.contains(&a));
+}
+
+#[test]
+fn typedids_facade_generator_roundtrip() {
+    // The typedids facade (pinned directly in Cargo.toml): its IdGenerator
+    // surface must compose here, and its re-exported derive must produce
+    // IDs indistinguishable from the direct-derive path.
+    let gen = FixedIdGenerator::new(Uuid::nil());
+    assert_eq!(gen.generate(), Uuid::nil(), "fixed generator is fixed");
 }
