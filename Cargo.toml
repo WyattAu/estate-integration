@@ -165,13 +165,16 @@ shm-rings = "=1.0.0"                      # tests/systems_substrate.rs (SPMC sha
 # --- round 11: the API surface layer ---------------------------------------
 # Seven crates every service returns from a handler, and that had never been
 # composed with each other. The spine is one error travelling every hop:
-# error-classify composed in tests/proc_macro_derives.rs (the generated
-# code names the runtime crate). The wider api_errors chain (error-codes,
-# http-errors, api-types, api-paginate, json-envelope) lost its suite when
-# typed-id-new was yanked (c8f8741); those pins were dropped 2026-11-04
-# until a suite composes them again — an uncomposed pin is drift bait.
+# api_errors chain, restored as a suite 2026-11-04 (tests/api_errors.rs);
+# the original suite was removed with typed-id-new's yank (c8f8741) and
+# the typed-id facade now publishes as `typedids`.
 error-classify = "=0.3.1"                 # tests/proc_macro_derives.rs (AppError trait, ErrorCode)
-uuid = { version = "1", features = ["v7", "serde"] }  # tests/typed_ids.rs (typed ids wrap UUIDv7)
+error-codes = "=1.1.1"                    # tests/api_errors.rs (codes, ProblemDetail, HttpError)
+http-errors = "=0.1.1"                    # tests/api_errors.rs (status + problem derive)
+api-types = "=0.1.2"                      # tests/api_errors.rs (ApiResponse, PaginationMeta)
+api-paginate = "=0.2.0"                   # tests/api_errors.rs (offset + cursor pagination; utoipa 5)
+json-envelope = "=0.1.2"                  # tests/api_errors.rs (the parallel envelope)
+uuid = { version = "1", features = ["v7", "serde"] }  # tests/api_errors.rs (typed ids wrap UUIDv7)
 
 # --- round 12: the operational shell ---------------------------------------
 # Four crates every binary sets up at startup: feature flags, process
