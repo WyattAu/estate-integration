@@ -8571,9 +8571,9 @@ checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
 
 [[package]]
 name = "typed-id-derive"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fdb5a3c12220549551e0f732cf82829e53fde2971a52b40c9414aa2a7ac3e25"
+checksum = "7255aed8de549f4578038c07e215dd507bbe831c81c1bfce7aab6313d6bec044"
 dependencies = [
  "quote",
  "syn 2.0.119",

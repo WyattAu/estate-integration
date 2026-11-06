@@ -321,7 +321,7 @@ serde = { version = "1", features = ["derive"] }
 # tests/typed_ids.rs: the derive composed directly, plus the typedids
 # facade (published 0.1.0 on 2026-11-03) pinned for its IdGenerator
 # surface and aligned uuid re-export.
-typed-id-derive = "=0.1.1"
+typed-id-derive = "=0.1.2"
 typedids = "=0.1.0"
 # tests/accounting_stack.rs: the money-area composition layer's router —
 # recon-kit + sales-tax + vat-rules behind axum, driven here as an embedder
