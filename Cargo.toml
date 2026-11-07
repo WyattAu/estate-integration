@@ -35,7 +35,7 @@ barbican = "=0.2.4"
 # `timeout` feature anywhere in the graph breaks outbox-kit's build.
 breaker = { version = "=2.0.2", features = ["tower"] }
 healthkit = { version = "=1.3.2", features = ["axum"] }
-throttle-kit = { version = "=2.1.2", features = ["in-memory", "tower"] }
+throttle-kit = { version = "=3.0.0", features = ["in-memory", "tower"] }
 otelkit = "=3.0.1"
 mailkit = { version = "=1.0.0", features = ["resend", "sendgrid"] }
 sieve-kit = "=0.2.2"

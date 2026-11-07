@@ -7940,9 +7940,9 @@ dependencies = [
 
 [[package]]
 name = "throttle-kit"
-version = "2.1.2"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78535cfa0aeec475746060d85bd62409bf9724dc371cc5741fed6bb316b96cdd"
+checksum = "55926fda5d1dfb83af51316e951904d044f7ce822d080ab79a6e444c2cbb977b"
 dependencies = [
  "axum",
  "dashmap",
