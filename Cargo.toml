@@ -72,7 +72,7 @@ metrics-kit = "=1.0.0"                       # tests/metrics_scrape.rs
 # the hybrid-array migration; the fix is on webhookkit main, commit
 # 480015f, awaiting the 2.2.4 publish). 1.1.2's verify_hmac_sha256 has an
 # identical signature, so the migration is a one-line pin flip then.
-webhookkit = "=1.1.2"                        # tests/idempotent_webhook.rs
+webhookkit = "=2.2.4"                        # tests/idempotent_webhook.rs
 
 # --- round 4: dogfooding the 2026-09-25 wave -----------------------------
 telemetry-init = "=1.0.1"                    # tests/telemetry_bootstrap.rs (default: metrics+json; `otlp` stays OFF — hermetic)

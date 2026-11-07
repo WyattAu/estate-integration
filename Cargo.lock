@@ -2520,7 +2520,7 @@ dependencies = [
  "vat-return",
  "vat-rules",
  "webauthn-kit",
- "webhookkit",
+ "webhookkit 2.2.4",
  "wire-kit",
  "wiremock",
  "worker-kit",
@@ -5328,7 +5328,7 @@ dependencies = [
  "invoice-kit",
  "serde",
  "serde_json",
- "webhookkit",
+ "webhookkit 1.1.2",
 ]
 
 [[package]]
@@ -9178,6 +9178,21 @@ dependencies = [
  "hmac 0.12.1",
  "serde_json",
  "sha2 0.10.9",
+ "subtle",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "webhookkit"
+version = "2.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "299b8cdeb3051bcd419c991f0d7b4f506fd31251f2c8cb0d9ff14fac5cdae9b9"
+dependencies = [
+ "hex",
+ "hmac 0.13.0",
+ "idempotency-kit",
+ "serde_json",
+ "sha2 0.11.1",
  "subtle",
  "thiserror 2.0.21",
 ]
