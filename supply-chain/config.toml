@@ -953,32 +953,8 @@ criteria = "safe-to-deploy"
 version = "1.3.0"
 criteria = "safe-to-deploy"
 
-[[exemptions.futures]]
-version = "0.3.34"
-criteria = "safe-to-deploy"
-
-[[exemptions.futures-channel]]
-version = "0.3.34"
-criteria = "safe-to-deploy"
-
-[[exemptions.futures-executor]]
-version = "0.3.34"
-criteria = "safe-to-deploy"
-
 [[exemptions.futures-intrusive]]
 version = "0.5.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.futures-io]]
-version = "0.3.34"
-criteria = "safe-to-deploy"
-
-[[exemptions.futures-macro]]
-version = "0.3.34"
-criteria = "safe-to-deploy"
-
-[[exemptions.futures-sink]]
-version = "0.3.34"
 criteria = "safe-to-deploy"
 
 [[exemptions.futures-task]]
@@ -2925,16 +2901,8 @@ criteria = "safe-to-deploy"
 version = "1.0.5"
 criteria = "safe-to-deploy"
 
-[[exemptions.utf8_iter]]
-version = "1.1.0"
-criteria = "safe-to-deploy"
-
 [[exemptions.utf8parse]]
 version = "0.2.2"
-criteria = "safe-to-deploy"
-
-[[exemptions.utf_types]]
-version = "1.0.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.uuid]]
@@ -3017,10 +2985,6 @@ criteria = "safe-to-deploy"
 version = "2.5.0"
 criteria = "safe-to-deploy"
 
-[[exemptions.want]]
-version = "0.3.2"
-criteria = "safe-to-deploy"
-
 [[exemptions.wasi]]
 version = "0.11.1+wasi-snapshot-preview1"
 criteria = "safe-to-deploy"
@@ -3071,10 +3035,6 @@ criteria = "safe-to-deploy"
 
 [[exemptions.webhookkit]]
 version = "2.2.4"
-criteria = "safe-to-deploy"
-
-[[exemptions.webpki-root-certs]]
-version = "1.0.11"
 criteria = "safe-to-deploy"
 
 [[exemptions.webpki-roots]]
