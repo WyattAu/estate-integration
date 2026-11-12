@@ -90,12 +90,18 @@ Footer.
 "#;
     let html = compile(doc, &BuildContext::new(&root)).expect("the released artifacts compose");
     assert!(html.contains("<docs-island"), "docs-core island emission");
-    assert!(html.contains("docs-symbol"), "docs-symbols extraction emitted");
+    assert!(
+        html.contains("docs-symbol"),
+        "docs-symbols extraction emitted"
+    );
     assert!(html.contains("dsym-rust-"), "anchor id flowed through");
     assert!(html.contains("pub fn spin_up"), "exact span embedded");
     assert!(html.contains("docs-witness"), "witness block emitted");
     assert!(html.contains("hello"), "witness stdout embedded");
-    assert!(html.contains("<h1>Released pipeline</h1>"), "prose rendered");
+    assert!(
+        html.contains("<h1>Released pipeline</h1>"),
+        "prose rendered"
+    );
 }
 
 /// Cross-crate data flow: a symbol span extracted by docs-symbols is
@@ -128,8 +134,8 @@ fn extracted_symbols_flow_into_the_search_index() {
 fn witness_output_binds_to_a_certificate_grade_hash() {
     let (_guard, root) = pipeline_root();
     let wasm = std::fs::read(root.join("hello.wasm")).expect("fixture wasm");
-    let w = docs_witness::run(&wasm, &docs_witness::WitnessConfig::default())
-        .expect("witness runs");
+    let w =
+        docs_witness::run(&wasm, &docs_witness::WitnessConfig::default()).expect("witness runs");
 
     let cert = docs_proof::CertificateBuilder::new(
         "witness_hello_output",
@@ -140,14 +146,12 @@ fn witness_output_binds_to_a_certificate_grade_hash() {
 
     assert!(docs_proof::verify(&cert, &String::from_utf8_lossy(&w.stdout), TOOLCHAIN).is_ok());
     // One byte of stdout drift breaks the attestation.
-    assert!(
-        docs_proof::verify(
-            &cert,
-            &format!("{}x", String::from_utf8_lossy(&w.stdout)),
-            TOOLCHAIN
-        )
-        .is_err()
-    );
+    assert!(docs_proof::verify(
+        &cert,
+        &format!("{}x", String::from_utf8_lossy(&w.stdout)),
+        TOOLCHAIN
+    )
+    .is_err());
 }
 
 /// The pins in Cargo.toml claim exact published versions; the VERSION
