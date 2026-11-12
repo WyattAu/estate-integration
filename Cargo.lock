@@ -2250,9 +2250,9 @@ dependencies = [
 
 [[package]]
 name = "docs-proof"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "088fd591e420a77ab1ba8eea1e87622db8e40ed17fe165a40b7a731cfb370a03"
+checksum = "9bd0f8db9e820c539c0a8bd72d9c4a5f4acd38d1d5bb375c02b198890dade2f7"
 dependencies = [
  "serde",
  "serde_json",
@@ -2262,12 +2262,11 @@ dependencies = [
 
 [[package]]
 name = "docs-search"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7265f15b81685afbc508f55aa140475d237e888a511ce4ddc4f4672b9a5067f"
+checksum = "f803e80d6887b0f13051a285dce9a72d18057489028844c74482c6160ffa1f65"
 dependencies = [
  "fst",
- "roaring",
  "thiserror 2.0.21",
 ]
 
@@ -2960,26 +2959,6 @@ name = "fearless_simd"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b97b65636e5b9ef369943878ac74335ba1c55c1cb6adbf1e2c293c624248d693"
-
-[[package]]
-name = "fearless_simd"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "629c9d6b6f30b5604089e0980f4d924a013aacb1654a6cdf5d3d852224f68651"
-dependencies = [
- "libm",
-]
-
-[[package]]
-name = "fearless_simd_macros"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e91d94c6885390b81782d7ee60fd6583b33907333a8b340de25ccf468353315"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 3.0.9",
-]
 
 [[package]]
 name = "fetch-kit"
@@ -6892,18 +6871,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "roaring"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eccfaa25083dbde9444486adda410c9cd23565d7f54a2df916c0bdf4bee44931"
-dependencies = [
- "bytemuck",
- "byteorder",
- "fearless_simd 1.2.0",
- "fearless_simd_macros",
-]
-
-[[package]]
 name = "rsa"
 version = "0.9.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9460,7 +9427,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbb2141a2bca6e6d598e471fd4d1d7eed8e020aad6a28187edda07f091a325dd"
 dependencies = [
  "bytemuck",
- "fearless_simd 0.4.1",
+ "fearless_simd",
  "guillotiere",
  "log",
  "peniko",
