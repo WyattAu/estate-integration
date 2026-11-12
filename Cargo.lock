@@ -2250,11 +2250,12 @@ dependencies = [
 
 [[package]]
 name = "docs-proof"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c803cf3769465cf5464db724e2b9599350fa7f28f2eadf8d0ebb63300f93a39"
+checksum = "088fd591e420a77ab1ba8eea1e87622db8e40ed17fe165a40b7a731cfb370a03"
 dependencies = [
  "serde",
+ "serde_json",
  "sha2 0.10.9",
  "thiserror 2.0.21",
 ]
