@@ -1,13 +1,13 @@
 # Dogfood coverage: what `estate-integration` actually proves
 
-Generated from this repo's `Cargo.toml` (73 exact pins) against
+Generated from this repo's `Cargo.toml` (78 exact pins) against
 `engineering-standards/scripts/estate-audit.py` (the manifest). Refresh both
 after any publish or pin change; this file is the human view of that report.
 
 The 161 crates published under the account divide three ways:
 
-- **71 composed**: pulled by a suite here and exercised against their
-  neighbours, in 33 suites.
+- **76 composed**: pulled by a suite here and exercised against their
+  neighbours, in 34 suites.
 - **75 exempt**: product monorepos, UI components and dormant families that
   carry their own tests (listed below).
 - **16 debt**: published, working, and never proven to work alongside
@@ -33,21 +33,17 @@ The 161 crates published under the account divide three ways:
 | net | `breaker`, `fetch-kit`, `idempotency-kit`, `mail-sync-kit`, `mailkit`, `outbox-kit`, `resilient-fetch`, `sieve-kit`, `throttle-kit`, `webhookkit`, `wire-kit`, `ws-barbican`, `ws-kit` |
 | obsv | `chaos-kit`, `config-kit`, `envstack`, `flag-kit`, `healthkit`, `metrics-kit`, `otel-stack`, `otelkit`, `percentile-kit`, `pid-manager`, `shutdown-kit`, `telemetry-init`, `worker-kit` |
 
-## Coverage debt (16)
+## Coverage debt (5)
 
-| area | count | crates |
-|---|---|---|
-| app | 1 | `model-router` |
-| conc | 2 | `chronoshift`, `poolkit` |
-| data | 11 | `cache-pal`, `contact-miner`, `delta-kit`, `dsp-core`, `error-classify-derive`, `font-parse`, `geo-kit`, `simd-tokenizer`, `tantivy-helper`, `validkit-derive` |
-| money | 1 | `sheet-xlsx` |
-| net | 1 | `uds-kit` |
+| count | crates |
+|---|---|
+| 5 | `alertkit`, `feedkit`, `graphkit`, `marketdata-kit`, `ontokit` |
 
-Ten of the eleven `data` entries are parsers, extractors and derive macros with
-no shared surface; `cache-pal` is the one worth wiring, since it is the only
-crate here that competes for memory with `shm-rings`. `chronoshift` is
-similarly real: `clock-kit` is already composed, and two clocks in one process
-is a bug factory.
+Five crates, refreshed against the audit on 2026-11-12. The docs program's
+five crates left this list the week they shipped (round 15): a graph
+conflict between two of them and `docs-pipeline` (two majors of the
+native-linked `tree-sitter`) was caught by the `docs_program` suite on
+its first run, which is the whole argument for composing.
 
 ## Retiring debt
 
@@ -68,6 +64,7 @@ Each round adds suites and closes debt. Counts are crates newly composed:
 | 12 | `api_errors` + `flags_and_lifecycle`: error envelope and process ownership | 12 |
 | 13 | `crypto_auth`: HMAC + WebAuthn + PKCE + CSRF + wallet | 4 |
 | 14 | `accounting_core`: the new immutable double-entry ledger, composed against `ledger-kit` | 1 |
+| 15 | `docs_program`: the docs hypermedium stack - compiler over symbols/witness/proof over core, plus search beside it; caught a tree-sitter links conflict between published crates on run one | 5 |
 
 Debt fell **53 → 32 → 24 → 20 → 16** over rounds 7–14.
 

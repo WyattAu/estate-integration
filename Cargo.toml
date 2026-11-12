@@ -284,6 +284,18 @@ theme-kit = "=0.1.1"                       # tests/ui_semantics.rs (L1 tokens)
 color-kit = "=0.1.1"                       # tests/ui_semantics.rs (L0 colour)
 theme-egui = "=0.1.1"                      # tests/ui_semantics.rs (L2 lowering)
 docs-core = "=0.1.1"                       # tests/ui_semantics.rs (L2 docs)
+# The docs extension program, published 2026-11-10/11: four capability
+# crates + the L3 compiler that composes them. Composed the week they
+# shipped, per ADR-0005: per-crate tests prove each crate alone, and
+# nothing else proves the published versions resolve directives through
+# each other. Lean stays out of this suite: lean-check runs in
+# docs-compiler's own lean-oracle job (elan + pinned toolchain), and the
+# fence resolution under test here is the lean-free pipeline.
+docs-search = "=0.1.0"                     # tests/docs_program.rs (L0 index)
+docs-symbols = "=0.1.1"                    # tests/docs_program.rs (L0 extraction; 0.1.1 = tree-sitter 0.25 so one native lib per graph)
+docs-proof = "=0.1.0"                      # tests/docs_program.rs (L0 certificates)
+docs-witness = "=0.1.0"                    # tests/docs_program.rs (L1 witnesses)
+docs-compiler = "=0.1.0"                   # tests/docs_program.rs (L3 pipeline)
 # The signal engine and the trend application it was extracted from. The
 # suites assert type identity across trendkit-core's re-exports, so a copy of
 # model/score reappearing inside trendkit-core turns the tests red.
@@ -328,6 +340,8 @@ typedids = "=0.1.0"
 # would (JSON over oneshot, no database for the pure-computation routes).
 ledger_api = { version = "=0.1.2", package = "accounting-api" }
 tempfile = "3"
+# tests/docs_program.rs: builds the witness fixture module from wat text.
+wat = "1"
 # ipc_stack.rs runs DDL through the pool's AnyPool; the sqlite driver comes from
 # poolkit's facade feature so the graph has exactly one sqlx.
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "any", "sqlite"] }
