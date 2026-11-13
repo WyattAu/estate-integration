@@ -193,10 +193,47 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
 /// ships.
 #[test]
 fn the_pins_and_the_crates_agree() {
-    assert_eq!(docs_compiler::VERSION, "0.2.0");
+    assert_eq!(docs_compiler::VERSION, "0.3.1");
     assert_eq!(docs_search::VERSION, "0.2.0");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
     assert_eq!(docs_proof::VERSION, "0.1.2");
     assert_eq!(docs_core::VERSION, "0.2.0");
+}
+
+/// Wave 2b dogfood: the `d2` fence renders static SVG through the
+/// published compiler. Runtime-gated: CI runners have no d2, so the
+/// test skips where the binary is absent and exercises the real
+/// out-of-process path wherever it exists.
+#[test]
+fn d2_fence_renders_static_svg_when_d2_exists() {
+    let have_d2 = std::process::Command::new("d2")
+        .arg("--version")
+        .output()
+        .is_ok_and(|o| o.status.success());
+    if !have_d2 {
+        eprintln!("skipped: no d2 binary on PATH");
+        return;
+    }
+    let (_guard, root) = (tempfile::tempdir().expect("tempdir"), std::env::temp_dir());
+    let html = docs_compiler::compile(
+        "```d2 layout=dagre caption=\"round 17\"\na -> b\n```\n",
+        &docs_compiler::BuildContext::new(&root),
+    )
+    .expect("diagram renders through the published compiler");
+    assert!(html.contains("figure class=\"docs-diagram\""), "{html}");
+    assert!(html.contains("<svg"), "static SVG embedded: {html}");
+    assert!(html.contains("<figcaption>round 17</figcaption>"), "{html}");
+    // Raw-HTML block integrity (the 0.3.1 fix): one block, shapes present.
+    let figure_start = html.find("<figure").expect("figure");
+    let figure_end = html[figure_start..].find("</figure>").expect("close") + figure_start;
+    let figure = &html[figure_start..figure_end];
+    assert!(
+        !figure.contains("\n\n") && !figure.contains("<pre><code>"),
+        "{figure}"
+    );
+    assert!(
+        figure.contains("<path") || figure.contains("<text"),
+        "{figure}"
+    );
 }
