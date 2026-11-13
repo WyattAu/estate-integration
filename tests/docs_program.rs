@@ -193,7 +193,7 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
 /// ships.
 #[test]
 fn the_pins_and_the_crates_agree() {
-    assert_eq!(docs_compiler::VERSION, "0.3.1");
+    assert_eq!(docs_compiler::VERSION, "0.4.0");
     assert_eq!(docs_search::VERSION, "0.2.0");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
@@ -235,5 +235,50 @@ fn d2_fence_renders_static_svg_when_d2_exists() {
     assert!(
         figure.contains("<path") || figure.contains("<text"),
         "{figure}"
+    );
+}
+
+/// Wave 2c dogfood: the SEO floor through the published compiler -
+/// full documents with head artifacts, plus site-level GEO artifacts.
+#[test]
+fn seo_floor_through_the_published_compiler() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let src = dir.path().join("src");
+    let out = dir.path().join("out");
+    std::fs::create_dir_all(&src).expect("src");
+    std::fs::write(
+        src.join("site.toml"),
+        "base_url = \"https://docs.example.com\"\nsite_title = \"Estate Docs\"\nauthor = \"Wyatt\"\n",
+    )
+    .expect("site.toml");
+    std::fs::write(
+        src.join("page.md"),
+        "---\ntitle: Page\ndescription: The page description.\ndate: 2026-11-13\n---\n\n# Page\n",
+    )
+    .expect("page.md");
+
+    let report = docs_compiler::compile_site(&src, &out).expect("site builds");
+    assert!(report.configured);
+    let page = std::fs::read_to_string(out.join("page.html")).expect("page");
+    assert!(
+        page.contains("<title>Page</title>"),
+        "front-matter title: {page}"
+    );
+    assert!(page.contains("rel=\"canonical\""), "canonical: {page}");
+    assert!(page.contains("application/ld+json"), "JSON-LD: {page}");
+    let llms = std::fs::read_to_string(out.join("llms.txt")).expect("llms.txt");
+    assert!(
+        llms.contains("[Page](https://docs.example.com/page.html): The page description."),
+        "{llms}"
+    );
+    let sitemap = std::fs::read_to_string(out.join("sitemap.xml")).expect("sitemap");
+    assert!(
+        sitemap.contains("<lastmod>2026-11-13</lastmod>"),
+        "{sitemap}"
+    );
+    let robots = std::fs::read_to_string(out.join("robots.txt")).expect("robots");
+    assert!(
+        robots.contains("policy: allow"),
+        "recorded decision: {robots}"
     );
 }
