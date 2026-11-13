@@ -453,6 +453,10 @@ criteria = "safe-to-deploy"
 version = "1.0.1"
 criteria = "safe-to-deploy"
 
+[[exemptions.chunked_transfer]]
+version = "1.4.1"
+criteria = "safe-to-deploy"
+
 [[exemptions.ciborium]]
 version = "0.2.2"
 criteria = "safe-to-deploy"
@@ -734,11 +738,11 @@ version = "0.2.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-compiler]]
-version = "0.1.0"
+version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-core]]
-version = "0.1.1"
+version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-pipeline]]
@@ -1281,6 +1285,14 @@ criteria = "safe-to-deploy"
 version = "2.14.2"
 criteria = "safe-to-deploy"
 
+[[exemptions.inotify]]
+version = "0.11.5"
+criteria = "safe-to-deploy"
+
+[[exemptions.inotify-sys]]
+version = "0.1.8"
+criteria = "safe-to-deploy"
+
 [[exemptions.input-kit]]
 version = "0.1.0"
 criteria = "safe-to-deploy"
@@ -1405,6 +1417,14 @@ criteria = "safe-to-deploy"
 version = "0.1.6"
 criteria = "safe-to-deploy"
 
+[[exemptions.kqueue]]
+version = "1.2.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.kqueue-sys]]
+version = "1.1.2"
+criteria = "safe-to-deploy"
+
 [[exemptions.kurbo]]
 version = "0.13.1"
 criteria = "safe-to-deploy"
@@ -1415,6 +1435,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.lalrpop-util]]
 version = "0.22.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.latex2mathml]]
+version = "0.2.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.lazy_static]]
@@ -1673,6 +1697,14 @@ criteria = "safe-to-deploy"
 version = "0.12.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.notify]]
+version = "8.2.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.notify-types]]
+version = "2.3.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.num]]
 version = "0.4.3"
 criteria = "safe-to-deploy"
@@ -1715,6 +1747,10 @@ criteria = "safe-to-run"
 
 [[exemptions.oauth-toolkit]]
 version = "0.4.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.objc2-core-services]]
+version = "0.3.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.object]]

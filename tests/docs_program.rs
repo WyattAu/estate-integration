@@ -160,8 +160,11 @@ fn witness_output_binds_to_a_certificate_grade_hash() {
 /// `render` deliberately does not have.
 #[test]
 fn docs_core_wave2_math_and_the_untrusted_boundary() {
-    let math = docs_core::render("Euler: $e^{i\\pi} + 1 = 0$.\n\n$$\\frac{a}{b}$$\n", "/_assets")
-        .expect("math renders");
+    let math = docs_core::render(
+        "Euler: $e^{i\\pi} + 1 = 0$.\n\n$$\\frac{a}{b}$$\n",
+        "/_assets",
+    )
+    .expect("math renders");
     assert!(math.contains("<math"), "MathML emitted: {math}");
     assert!(math.contains("display=\"block\""), "display math: {math}");
 
@@ -169,10 +172,19 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
         "Prose.\n\n```island nav-search client=load\n{\"count\": 1}\n```\n\n<script>alert(1)</script>\n\n$$x^2$$\n",
     )
     .expect("untrusted renders");
-    assert!(!untrusted.contains("docs-island"), "untrusted cannot declare islands: {untrusted}");
+    assert!(
+        !untrusted.contains("docs-island"),
+        "untrusted cannot declare islands: {untrusted}"
+    );
     assert!(!untrusted.contains("<script"), "scripts die: {untrusted}");
-    assert!(untrusted.contains("<math"), "math survives sanitization: {untrusted}");
-    assert!(untrusted.contains("<p>Prose.</p>"), "prose survives: {untrusted}");
+    assert!(
+        untrusted.contains("<math"),
+        "math survives sanitization: {untrusted}"
+    );
+    assert!(
+        untrusted.contains("<p>Prose.</p>"),
+        "prose survives: {untrusted}"
+    );
 }
 
 /// The pins in Cargo.toml claim exact published versions; the VERSION
