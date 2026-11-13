@@ -283,7 +283,7 @@ ui-text-edit = { version = "=0.1.2", features = ["a11y"] }  # tests/text_field.r
 theme-kit = "=0.1.1"                       # tests/ui_semantics.rs (L1 tokens)
 color-kit = "=0.1.1"                       # tests/ui_semantics.rs (L0 colour)
 theme-egui = "=0.1.1"                      # tests/ui_semantics.rs (L2 lowering)
-docs-core = "=0.1.1"                       # tests/ui_semantics.rs (L2 docs)
+docs-core = "=0.2.0"                       # tests/ui_semantics.rs (L2 docs)
 # The docs extension program, published 2026-11-10/11: four capability
 # crates + the L3 compiler that composes them. Composed the week they
 # shipped, per ADR-0005: per-crate tests prove each crate alone, and
@@ -295,7 +295,7 @@ docs-search = "=0.2.0"                     # tests/docs_program.rs (L0 index)
 docs-symbols = "=0.1.1"                    # tests/docs_program.rs (L0 extraction; 0.1.1 = tree-sitter 0.25 so one native lib per graph)
 docs-proof = "=0.1.2"                      # tests/docs_program.rs (L0 certificates)
 docs-witness = "=0.1.0"                    # tests/docs_program.rs (L1 witnesses)
-docs-compiler = "=0.1.0"                   # tests/docs_program.rs (L3 pipeline)
+docs-compiler = "=0.2.0"                   # tests/docs_program.rs (L3 pipeline)
 # The signal engine and the trend application it was extracted from. The
 # suites assert type identity across trendkit-core's re-exports, so a copy of
 # model/score reappearing inside trendkit-core turns the tests red.

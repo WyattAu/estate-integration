@@ -154,16 +154,37 @@ fn witness_output_binds_to_a_certificate_grade_hash() {
     .is_err());
 }
 
+/// Wave 2 dogfood: the published docs-core 0.2.0 renders `$` math to
+/// build-time MathML (no client JS) and `render_untrusted` strips
+/// island fences pre-render then sanitizes - the boundary the trusted
+/// `render` deliberately does not have.
+#[test]
+fn docs_core_wave2_math_and_the_untrusted_boundary() {
+    let math = docs_core::render("Euler: $e^{i\\pi} + 1 = 0$.\n\n$$\\frac{a}{b}$$\n", "/_assets")
+        .expect("math renders");
+    assert!(math.contains("<math"), "MathML emitted: {math}");
+    assert!(math.contains("display=\"block\""), "display math: {math}");
+
+    let untrusted = docs_core::render_untrusted(
+        "Prose.\n\n```island nav-search client=load\n{\"count\": 1}\n```\n\n<script>alert(1)</script>\n\n$$x^2$$\n",
+    )
+    .expect("untrusted renders");
+    assert!(!untrusted.contains("docs-island"), "untrusted cannot declare islands: {untrusted}");
+    assert!(!untrusted.contains("<script"), "scripts die: {untrusted}");
+    assert!(untrusted.contains("<math"), "math survives sanitization: {untrusted}");
+    assert!(untrusted.contains("<p>Prose.</p>"), "prose survives: {untrusted}");
+}
+
 /// The pins in Cargo.toml claim exact published versions; the VERSION
 /// constants are the crates' own admission of what they are. If these
 /// diverge from the pins, this suite has been testing artifacts nobody
 /// ships.
 #[test]
 fn the_pins_and_the_crates_agree() {
-    assert_eq!(docs_compiler::VERSION, "0.1.0");
+    assert_eq!(docs_compiler::VERSION, "0.2.0");
     assert_eq!(docs_search::VERSION, "0.2.0");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
     assert_eq!(docs_proof::VERSION, "0.1.2");
-    assert_eq!(docs_core::VERSION, "0.1.1");
+    assert_eq!(docs_core::VERSION, "0.2.0");
 }
