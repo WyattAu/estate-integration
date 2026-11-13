@@ -283,7 +283,7 @@ ui-text-edit = { version = "=0.1.2", features = ["a11y"] }  # tests/text_field.r
 theme-kit = "=0.1.1"                       # tests/ui_semantics.rs (L1 tokens)
 color-kit = "=0.1.1"                       # tests/ui_semantics.rs (L0 colour)
 theme-egui = "=0.1.1"                      # tests/ui_semantics.rs (L2 lowering)
-docs-core = "=0.2.0"                       # tests/ui_semantics.rs (L2 docs)
+docs-core = "=0.2.1"                       # tests/ui_semantics.rs (L2 docs)
 # The docs extension program, published 2026-11-10/11: four capability
 # crates + the L3 compiler that composes them. Composed the week they
 # shipped, per ADR-0005: per-crate tests prove each crate alone, and

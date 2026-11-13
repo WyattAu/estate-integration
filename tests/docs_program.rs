@@ -198,7 +198,7 @@ fn the_pins_and_the_crates_agree() {
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
     assert_eq!(docs_proof::VERSION, "0.1.2");
-    assert_eq!(docs_core::VERSION, "0.2.0");
+    assert_eq!(docs_core::VERSION, "0.2.1");
 }
 
 /// Wave 2b dogfood: the `d2` fence renders static SVG through the
