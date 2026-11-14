@@ -193,7 +193,7 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
 /// ships.
 #[test]
 fn the_pins_and_the_crates_agree() {
-    assert_eq!(docs_compiler::VERSION, "0.4.0");
+    assert_eq!(docs_compiler::VERSION, "0.5.1");
     assert_eq!(docs_search::VERSION, "0.2.0");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
@@ -281,4 +281,35 @@ fn seo_floor_through_the_published_compiler() {
         robots.contains("policy: allow"),
         "recorded decision: {robots}"
     );
+}
+
+/// Wave 2c.5 dogfood: precompression + site head wiring through the
+/// published compiler. gzip exists on every host (its sidecar is
+/// asserted unconditionally); brotli/zstd/dcz are tool-gated.
+#[test]
+fn precompression_and_head_wiring_through_the_published_compiler() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let src = dir.path().join("src");
+    let out = dir.path().join("out");
+    std::fs::create_dir_all(&src).expect("src");
+    for n in 0..10 {
+        std::fs::write(
+            src.join(format!("p{n}.md")),
+            format!("# Page {n}\n\nDescription {n}.\n"),
+        )
+        .expect("page");
+    }
+    let report = docs_compiler::compile_site(&src, &out).expect("site builds");
+    assert!(report.compressed > 0, "sidecars: {report:?}");
+    assert!(out.join("p0.html.gz").is_file(), "gzip sidecar always");
+    if out.join("site.dict").is_file() {
+        assert!(report.dictionary, "dictionary recorded");
+        assert!(out.join("p0.html.dcz").is_file(), "dcz sidecar");
+    } else {
+        assert!(
+            report.warnings.iter().any(|w| w.contains("dictionary")),
+            "the dictionary skip is reported: {:?}",
+            report.warnings
+        );
+    }
 }
