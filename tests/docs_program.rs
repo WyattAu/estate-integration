@@ -330,7 +330,7 @@ fn site_chrome_and_search_through_the_published_compiler() {
     std::fs::create_dir_all(src.join("guides")).expect("guides dir");
     std::fs::write(
         src.join("guides/one.md"),
-        "# One\n\n## Setup\n\nBody text for the corpus.\n",
+        "# One\n\n## Setup\n\nBody text for the corpus.\n\n## Usage\n",
     )
     .expect("one.md");
     std::fs::write(src.join("guides/two.md"), "# Two\n\nMore corpus text.\n").expect("two.md");
