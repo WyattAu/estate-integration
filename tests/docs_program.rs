@@ -193,12 +193,12 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
 /// ships.
 #[test]
 fn the_pins_and_the_crates_agree() {
-    assert_eq!(docs_compiler::VERSION, "0.5.1");
+    assert_eq!(docs_compiler::VERSION, "0.6.2");
     assert_eq!(docs_search::VERSION, "0.2.0");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
     assert_eq!(docs_proof::VERSION, "0.1.2");
-    assert_eq!(docs_core::VERSION, "0.2.1");
+    assert_eq!(docs_core::VERSION, "0.3.0");
 }
 
 /// Wave 2b dogfood: the `d2` fence renders static SVG through the
@@ -312,4 +312,69 @@ fn precompression_and_head_wiring_through_the_published_compiler() {
             report.warnings
         );
     }
+}
+
+/// Wave 2d dogfood: site chrome + assets + search through the published
+/// compiler - the build owns the whole tree now, not just pages.
+#[test]
+fn site_chrome_and_search_through_the_published_compiler() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let src = dir.path().join("src");
+    let out = dir.path().join("out");
+    std::fs::create_dir_all(&src).expect("src");
+    std::fs::write(
+        src.join("site.toml"),
+        "base_url = \"https://docs.example.com\"\nsite_title = \"Estate Docs\"\nsearch_island = \"/_assets/islands/doc-search.js\"\n",
+    )
+    .expect("site.toml");
+    std::fs::create_dir_all(src.join("guides")).expect("guides dir");
+    std::fs::write(
+        src.join("guides/one.md"),
+        "# One\n\n## Setup\n\nBody text for the corpus.\n",
+    )
+    .expect("one.md");
+    std::fs::write(src.join("guides/two.md"), "# Two\n\nMore corpus text.\n").expect("two.md");
+    std::fs::create_dir_all(src.join("assets/icons")).expect("assets dir");
+    std::fs::write(src.join("assets/icons/logo.svg"), "<svg/>").expect("asset");
+
+    let report = docs_compiler::compile_site(&src, &out).expect("site builds");
+    assert!(report.configured);
+    assert!(report.assets_copied >= 1, "assets mirrored: {report:?}");
+
+    let page = std::fs::read_to_string(out.join("guides/one.html")).expect("page");
+    assert!(
+        page.contains("<nav class=\"sidebar\">"),
+        "sidebar chrome: {page}"
+    );
+    assert!(page.contains("class=\"active\""), "active nav item: {page}");
+    assert!(
+        page.contains("toc-l2"),
+        "TOC from anchored headings: {page}"
+    );
+    assert!(page.contains("pager next"), "pager: {page}");
+    assert!(page.contains("theme-toggle"), "theme toggle: {page}");
+    assert!(
+        page.contains("doc-search.js"),
+        "search island in header: {page}"
+    );
+
+    // Assets mirrored into the /_assets URL space.
+    assert!(
+        out.join("_assets/icons/logo.svg").is_file(),
+        "asset mirrored"
+    );
+
+    // Search corpus + binary index.
+    let corpus = std::fs::read_to_string(out.join("search.json")).expect("corpus");
+    assert!(
+        corpus.contains("\"Setup\""),
+        "corpus carries body text: {corpus}"
+    );
+    assert!(
+        out.join("search.bin").is_file(),
+        "docs-search index emitted"
+    );
+
+    // Anchored headings from docs-core 0.3.0.
+    assert!(page.contains("id=\"setup\""), "heading anchors: {page}");
 }
