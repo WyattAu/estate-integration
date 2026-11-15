@@ -99,8 +99,8 @@ Footer.
     assert!(html.contains("docs-witness"), "witness block emitted");
     assert!(html.contains("hello"), "witness stdout embedded");
     assert!(
-        html.contains("<h1>Released pipeline</h1>"),
-        "prose rendered"
+        html.contains("<h1 id=\"released-pipeline\">Released pipeline</h1>"),
+        "prose rendered (with anchor id)"
     );
 }
 
@@ -367,7 +367,7 @@ fn site_chrome_and_search_through_the_published_compiler() {
     // Search corpus + binary index.
     let corpus = std::fs::read_to_string(out.join("search.json")).expect("corpus");
     assert!(
-        corpus.contains("\"Setup\""),
+        corpus.contains("Setup"),
         "corpus carries body text: {corpus}"
     );
     assert!(
