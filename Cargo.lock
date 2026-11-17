@@ -2290,9 +2290,9 @@ dependencies = [
 
 [[package]]
 name = "docs-search"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd5895956e95eb309362e12ceae9aeb73bd8efa03be7de5c5d4ebdf45eb15380"
+checksum = "f0962a5c9e5faeda260f2bf951f0563f8d54ac615395624fa59e2d8e2073794c"
 dependencies = [
  "fst",
  "thiserror 2.0.21",
@@ -2747,7 +2747,7 @@ dependencies = [
  "docs-core",
  "docs-pipeline",
  "docs-proof",
- "docs-search 0.3.0",
+ "docs-search 0.3.1",
  "docs-symbols",
  "docs-witness",
  "double-entry",

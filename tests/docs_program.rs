@@ -194,7 +194,7 @@ fn docs_core_wave2_math_and_the_untrusted_boundary() {
 #[test]
 fn the_pins_and_the_crates_agree() {
     assert_eq!(docs_compiler::VERSION, "0.7.3");
-    assert_eq!(docs_search::VERSION, "0.3.0");
+    assert_eq!(docs_search::VERSION, "0.3.1");
     assert_eq!(docs_symbols::VERSION, "0.1.1");
     assert_eq!(docs_witness::VERSION, "0.1.0");
     assert_eq!(docs_proof::VERSION, "0.1.2");
