@@ -738,11 +738,11 @@ version = "0.2.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-compiler]]
-version = "0.5.1"
+version = "0.7.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-core]]
-version = "0.2.1"
+version = "0.3.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-pipeline]]
