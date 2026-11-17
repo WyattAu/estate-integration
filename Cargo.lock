@@ -2209,14 +2209,14 @@ dependencies = [
 
 [[package]]
 name = "docs-compiler"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be28603faf1b7deb34468207ebfcd6f5045a13f80b6db6ab5204f6b66de2a6ab"
+checksum = "d381c2fc47ead77ca048ee77802b86fe04d6e2334485eb3fe18b674a8012ca6f"
 dependencies = [
  "clap",
  "docs-core",
  "docs-proof",
- "docs-search",
+ "docs-search 0.2.0",
  "docs-symbols",
  "docs-witness",
  "notify",
@@ -2283,6 +2283,16 @@ name = "docs-search"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f803e80d6887b0f13051a285dce9a72d18057489028844c74482c6160ffa1f65"
+dependencies = [
+ "fst",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "docs-search"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd5895956e95eb309362e12ceae9aeb73bd8efa03be7de5c5d4ebdf45eb15380"
 dependencies = [
  "fst",
  "thiserror 2.0.21",
@@ -2737,7 +2747,7 @@ dependencies = [
  "docs-core",
  "docs-pipeline",
  "docs-proof",
- "docs-search",
+ "docs-search 0.3.0",
  "docs-symbols",
  "docs-witness",
  "double-entry",
