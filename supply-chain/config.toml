@@ -741,6 +741,10 @@ criteria = "safe-to-deploy"
 version = "0.7.1"
 criteria = "safe-to-deploy"
 
+[[exemptions.docs-compiler]]
+version = "0.7.3"
+criteria = "safe-to-deploy"
+
 [[exemptions.docs-core]]
 version = "0.3.0"
 criteria = "safe-to-deploy"
@@ -755,6 +759,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.docs-search]]
 version = "0.2.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.docs-search]]
+version = "0.3.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-symbols]]
