@@ -2209,9 +2209,9 @@ dependencies = [
 
 [[package]]
 name = "docs-compiler"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29de256137593449efb37e625a02427b6ae032f6b8e55dfb561d23e1fbd4222a"
+checksum = "376c3a00c2503c16651088ba0d29f0829d6f805f2b0a2f72dcaea4f875a05264"
 dependencies = [
  "clap",
  "docs-core",
