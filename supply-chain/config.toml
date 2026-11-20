@@ -738,7 +738,7 @@ version = "0.2.7"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-compiler]]
-version = "0.7.4"
+version = "0.7.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-core]]
@@ -766,7 +766,7 @@ version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.docs-witness]]
-version = "0.1.0"
+version = "0.1.1"
 criteria = "safe-to-deploy"
 
 [[exemptions.dotenvy]]
